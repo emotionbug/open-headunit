@@ -151,6 +151,9 @@ object LogExporter {
             "video=codec:${settings.videoCodec} fps:${settings.fpsLimit} resId:${settings.resolutionId} " +
             "view:${settings.viewMode.name} forceSw:${settings.forceSoftwareDecoding} " +
             "swDecoder:${settings.softwareVideoDecoder.name} | " +
+            // These are saved preferences; AudioMixer separately reports the actual backend.
+            "audioPrefs=aaudio:${settings.useAAudioOutput} aac:${settings.useAacAudio} " +
+            "latency:${settings.audioLatencyMultiplier} queue:${settings.audioQueueCapacity} | " +
             "wifi=mode:${settings.wifiConnectionMode} strategy:${wifiTransport(settings)} " +
             // The band and the stand-down arm decide how a stuttering capture reads, and both are
             // otherwise only in lines that rotate out of a head unit's buffer within a minute.

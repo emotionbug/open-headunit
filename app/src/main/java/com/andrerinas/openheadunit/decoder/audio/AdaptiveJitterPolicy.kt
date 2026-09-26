@@ -19,6 +19,8 @@ internal class AdaptiveJitterPolicy(
     private val chunkMaxima = IntArray(10)
     var largestChunkFrames = 0
         private set
+    var largestArrivalGapMs = 0L
+        private set
 
     val targetFrames: Int
         get() {
@@ -43,6 +45,7 @@ internal class AdaptiveJitterPolicy(
         }
         if (previousArrivalMs >= 0) {
             val gap = nowMs - previousArrivalMs
+            largestArrivalGapMs = maxOf(largestArrivalGapMs, gap)
             // A stopped prompt/session is not network jitter. Bursts (gap=0) also cannot make the
             // estimate shrink: TCP retransmissions deliver several messages at the same instant.
             if (gap in 1..999) {
@@ -76,6 +79,7 @@ internal class AdaptiveJitterPolicy(
 
     fun resetArrival() {
         previousArrivalMs = -1L; previousFrames = 0
+        largestArrivalGapMs = 0L
         chunkEpochs.fill(-1L); chunkMaxima.fill(0); largestChunkFrames = 0
     }
     private fun maxMarginMs() = (ceilingMs - largestChunkFrames * 1000L / sampleRate - 10).coerceAtLeast(15L)

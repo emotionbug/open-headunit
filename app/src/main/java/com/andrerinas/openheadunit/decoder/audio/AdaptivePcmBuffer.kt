@@ -41,6 +41,7 @@ internal class AdaptivePcmBuffer(
     }
     @Synchronized fun finish() { ended = true; recovery.reset() }
     @Synchronized fun targetFrames(): Int = policy.targetFrames
+    @Synchronized fun maxArrivalGapMs(): Long = policy.largestArrivalGapMs
     @Synchronized fun depthFrames(): Int = count / channels
     @Synchronized fun isIdle(): Boolean = count == 0 && (ended || firstDataMs < 0) && !started
 

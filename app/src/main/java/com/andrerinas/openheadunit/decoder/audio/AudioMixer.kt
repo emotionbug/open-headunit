@@ -222,6 +222,7 @@ class AudioMixer(
                 for ((id, state) in channels) {
                     AppLog.i("AudioMixer: channel=$id target=${state.buffer.targetFrames() * 1000L / OUTPUT_SAMPLE_RATE}ms " +
                         "depth=${state.buffer.depthFrames() * 1000L / OUTPUT_SAMPLE_RATE}ms " +
+                        "arrivalGapMax=${state.buffer.maxArrivalGapMs()}ms " +
                         "concealedFrames=${state.buffer.concealedFrames} staleFrames=${state.buffer.droppedFrames} " +
                         "compressedFrames=${state.buffer.compressedFrames}")
                 }
