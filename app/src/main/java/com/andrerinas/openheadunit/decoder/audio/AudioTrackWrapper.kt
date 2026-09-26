@@ -212,7 +212,7 @@ class AudioTrackWrapper(
         }
 
         if (mixer != null) {
-            mixer.registerChannel(channelId, sampleRateInHz, channelCount, audioLatencyMultiplier)
+            mixer.registerChannel(channelId, sampleRateInHz, channelCount, audioLatencyMultiplier, isMediaSink)
             mixer.setChannelGain(channelId, gain)
             if (directPcm) AppLog.i("AudioTrackWrapper: ${channelName()} PCM goes directly to the mixer bank")
         } else {

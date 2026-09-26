@@ -30,8 +30,8 @@ class AudioMixer(
         private val nextDiagnosticId = AtomicInteger()
     }
 
-    private class Channel(val rate: Int, val channels: Int, multiplier: Int) {
-        val buffer = AdaptivePcmBuffer(latencyMultiplier = multiplier)
+    private class Channel(val rate: Int, val channels: Int, multiplier: Int, isMediaSink: Boolean) {
+        val buffer = AdaptivePcmBuffer(latencyMultiplier = multiplier, isMediaSink = isMediaSink)
         @Volatile var gain = 1f
         @Volatile var warmupUntilMs = 0L
         @Volatile var preparedMs = -1L
@@ -85,8 +85,8 @@ class AudioMixer(
     }
 
     fun registerChannel(channel: Int, sampleRate: Int, channelCount: Int,
-                        latencyMultiplier: Int = audioLatencyMultiplier) {
-        channels[channel] = Channel(sampleRate, channelCount, latencyMultiplier)
+                        latencyMultiplier: Int = audioLatencyMultiplier, isMediaSink: Boolean = false) {
+        channels[channel] = Channel(sampleRate, channelCount, latencyMultiplier, isMediaSink)
     }
     fun unregisterChannel(channel: Int) { channels.remove(channel) }
     fun prepareChannel(channel: Int) {
@@ -164,6 +164,12 @@ class AudioMixer(
         }
     }
 
+    private fun renderBurstFrames(device: PcmOutput): Int {
+        // AAudio exposes its producer queue; AudioTrack only exposes its effective write budget.
+        val staging = device.stagingBufferFrames
+        return maxOf(device.burstFrames, if (staging > 0) staging else device.bufferFrames)
+    }
+
     private fun mixLoop() {
         Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO)
         val device = output ?: return
@@ -175,6 +181,7 @@ class AudioMixer(
         policy.update(SystemClock.elapsedRealtime(), previousOutputXruns)
         var requestedFrames = policy.targetFrames
         device.setBufferFrames(requestedFrames)
+        var renderBurst = renderBurstFrames(device)
         recordDiagnostic(SystemClock.elapsedRealtime(), "opened ${device.name}, stream=$stream, capacity=${device.capacityFrames} frames, " +
             "effective=${device.bufferFrames} frames, staging=${device.stagingBufferFrames}, " +
             "burst=${device.burstFrames}, minimum=$tuningMinimum, maximum=${policy.maximumFrames}, cycle=${MIX_INTERVAL_MS}ms")
@@ -223,13 +230,14 @@ class AudioMixer(
             var activeChannels = 0
             var boosted = false
             for ((id, state) in channels) {
-                val active = state.buffer.render(channelBuffer, now)
+                val active = state.buffer.render(channelBuffer, now, renderBurst)
                 if (active && !state.startupReported && state.firstPcmMs >= 0) {
                     state.startupReported = true
                     val readyMs = SystemClock.elapsedRealtime()
                     val requestWait = if (state.preparedMs >= 0) state.firstPcmMs - state.preparedMs else -1L
                     recordDiagnostic(readyMs, "first PCM channel=$id requestToPcm=${requestWait}ms " +
-                        "pcmToRender=${readyMs - state.firstPcmMs}ms outputBudget=${device.bufferFrames} frames")
+                        "pcmToRender=${readyMs - state.firstPcmMs}ms target=${state.buffer.targetFrames()} " +
+                        "depth=${state.buffer.depthFrames()} outputBudget=${device.bufferFrames} frames")
                 }
                 if (active) activeChannels++
                 val gain = state.gain
@@ -267,6 +275,7 @@ class AudioMixer(
                         "xruns=$xruns producerUnderruns=${device.producerUnderruns}",
                         warning = xruns > previousOutputXruns)
                 }
+                renderBurst = renderBurstFrames(device)
                 previousOutputXruns = xruns
                 nextTuneMs = now + 100
             }
