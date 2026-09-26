@@ -1193,6 +1193,10 @@ class Settings(private val context: Context) {
         get() = prefs.getBoolean("use-aac-audio", false)
         set(value) { prefs.edit().putBoolean("use-aac-audio", value).apply() }
 
+    var useAAudioOutput: Boolean
+        get() = prefs.getBoolean("use-aaudio-output", true)
+        set(value) { prefs.edit().putBoolean("use-aaudio-output", value).apply() }
+
     var micEchoCanceler: Boolean
         get() = prefs.getBoolean("mic-echo-canceler", false)
         set(value) { prefs.edit().putBoolean("mic-echo-canceler", value).apply() }

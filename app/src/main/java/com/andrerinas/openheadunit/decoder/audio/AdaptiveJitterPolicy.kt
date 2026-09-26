@@ -30,7 +30,7 @@ internal class AdaptiveJitterPolicy(
             if (gap in 1..999) {
                 val excess = (gap - previousFrames * 1000L / sampleRate).coerceAtLeast(0)
                 if (excess + 10 > marginMs) {
-                    marginMs = maxOf(marginMs + 20, excess + 10).coerceAtMost(ceilingMs)
+                    marginMs = maxOf(marginMs + 20, excess + 10).coerceAtMost(maxMarginMs())
                     lastAdjustmentMs = nowMs
                 }
             }
@@ -41,7 +41,7 @@ internal class AdaptiveJitterPolicy(
     }
 
     fun onUnderrun(nowMs: Long) {
-        marginMs = (marginMs + 20).coerceAtMost(ceilingMs)
+        marginMs = (marginMs + 20).coerceAtMost(maxMarginMs())
         lastAdjustmentMs = nowMs
     }
 
@@ -54,5 +54,6 @@ internal class AdaptiveJitterPolicy(
     }
 
     fun resetArrival() { previousArrivalMs = -1L; previousFrames = 0 }
+    private fun maxMarginMs() = (ceilingMs - largestChunkFrames * 1000L / sampleRate - 10).coerceAtLeast(15L)
     private fun frames(ms: Long) = (sampleRate * ms / 1000).toInt()
 }

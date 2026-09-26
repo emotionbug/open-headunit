@@ -13,6 +13,7 @@ internal class AdaptivePcmBuffer(
     private val lastGood = ShortArray(cycleSamples)
     private val previousOutput = ShortArray(cycleSamples)
     private val policy = AdaptiveJitterPolicy(sampleRate, latencyMultiplier)
+    private val prerollDeadlineMs = maxOf(100L, AudioJitterBufferPolicy.targetMsFor(latencyMultiplier) + 50)
     private var head = 0
     private var count = 0
     private var started = false
@@ -37,6 +38,7 @@ internal class AdaptivePcmBuffer(
     @Synchronized fun finish() { ended = true }
     @Synchronized fun targetFrames(): Int = policy.targetFrames
     @Synchronized fun depthFrames(): Int = count / channels
+    @Synchronized fun isIdle(): Boolean = count == 0 && (ended || firstDataMs < 0) && !started
 
     @Synchronized fun write(data: ShortArray, length: Int, nowMs: Long) {
         val aligned = length.coerceAtMost(data.size) / channels * channels
@@ -60,8 +62,9 @@ internal class AdaptivePcmBuffer(
         val target = policy.targetFrames
         if (!started) {
             // A short navigation prompt must play even if it can never fill the network target.
-            if (count == 0 || (!ended && count / channels < target && nowMs - firstDataMs < 100)) return false
+            if (count == 0 || (!ended && count / channels < target && nowMs - firstDataMs < prerollDeadlineMs)) return false
             started = true
+            needsFade = true
         }
 
         // Leave room for the normal packet-sized sawtooth; do not mistake it for stale audio.
@@ -91,7 +94,12 @@ internal class AdaptivePcmBuffer(
             for (frame in real / channels until cycleFrames) {
                 val missingFrame = gapFrames + frame - real / channels
                 val block = missingFrame / cycleFrames
-                val gain = when (block) { 0 -> 0.7f; 1 -> 0.4f; 2 -> 0.15f; else -> 0f }
+                var gain = when (block) { 0 -> 0.7f; 1 -> 0.4f; 2 -> 0.15f; else -> 0f }
+                if (block == 2) {
+                    // End the final concealed block at zero instead of stepping from 0.15 to silence.
+                    val tail = missingFrame % cycleFrames - cycleFrames / 2 + 1
+                    if (tail > 0) gain *= 1f - tail.toFloat() / (cycleFrames / 2)
+                }
                 for (ch in 0 until channels) {
                     out[frame * channels + ch] = (lastGood[(missingFrame % cycleFrames) * channels + ch] * gain).toInt().toShort()
                 }
@@ -115,7 +123,9 @@ internal class AdaptivePcmBuffer(
                 val mix = (frame + 1).toFloat() / fadeFrames
                 for (ch in 0 until channels) {
                     val index = frame * channels + ch
-                    val old = previousOutput[(cycleFrames - fadeFrames + frame) * channels + ch]
+                    // Anchor to the last sample actually emitted. Replaying an earlier tail
+                    // would introduce a phase jump at the very first sample of the crossfade.
+                    val old = previousOutput[cycleSamples - channels + ch]
                     out[index] = (old * (1f - mix) + out[index] * mix).toInt().toShort()
                 }
             }

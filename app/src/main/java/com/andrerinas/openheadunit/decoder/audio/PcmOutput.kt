@@ -15,6 +15,7 @@ internal interface PcmOutput {
     val underruns: Int
     fun setBufferFrames(frames: Int): Int
     fun start()
+    fun pause()
     fun write(data: ShortArray, offset: Int, count: Int): Int
     fun close()
 }
@@ -68,6 +69,7 @@ internal class AudioTrackPcmOutput(stream: Int, attachHwDsp: Boolean) : PcmOutpu
         if (Build.VERSION.SDK_INT >= 31) track.setStartThresholdInFrames(bufferFrames)
         track.play()
     }
+    override fun pause() { track.pause(); track.flush() }
     override fun write(data: ShortArray, offset: Int, count: Int): Int =
         if (Build.VERSION.SDK_INT >= 23) track.write(data, offset, count, AudioTrack.WRITE_NON_BLOCKING)
         else track.write(data, offset, count)
