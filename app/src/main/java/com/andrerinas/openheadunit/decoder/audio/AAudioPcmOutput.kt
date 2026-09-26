@@ -4,12 +4,20 @@ package com.andrerinas.openheadunit.decoder.audio
  * routes keep AudioTrack's legacy stream mapping. No JNI calls are made on unsupported Android. */
 internal class AAudioPcmOutput : PcmOutput {
     private var handle = NativeAAudio.open().also { check(it != 0L) { "AAudio open failed" } }
-    override val name = "AAudio"
+    override val name = "AAudio callback"
     override val capacityFrames: Int get() = NativeAAudio.stat(handle, 0)
-    override val bufferFrames: Int get() = NativeAAudio.stat(handle, 1)
-    override val burstFrames: Int get() = NativeAAudio.stat(handle, 2)
-    override val underruns: Int get() = NativeAAudio.stat(handle, 3).coerceAtLeast(0)
-    override fun setBufferFrames(frames: Int): Int = NativeAAudio.setBufferFrames(handle, frames)
+    override val bufferFrames: Int get() = NativeAAudio.stat(handle, 1) + stagingBufferFrames
+    override val burstFrames: Int = NativeAAudio.stat(handle, 2)
+    override val stagingBufferFrames: Int get() = NativeAAudio.stat(handle, 4)
+    override val producerUnderruns: Int get() = NativeAAudio.stat(handle, 5).coerceAtLeast(0)
+    override val underruns: Int get() = (NativeAAudio.stat(handle, 3).coerceAtLeast(0).toLong() +
+        producerUnderruns).coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
+    override fun setBufferFrames(frames: Int): Int {
+        val device = NativeAAudio.setBufferFrames(handle, CallbackBufferSizing.deviceFrames(frames, burstFrames))
+        if (device < 0) return device
+        val queue = NativeAAudio.setQueueFrames(handle, CallbackBufferSizing.queueFrames(frames, device, burstFrames))
+        return if (queue < 0) queue else device + queue
+    }
     override fun start() { check(NativeAAudio.start(handle) >= 0) { "AAudio start failed" } }
     override fun pause() { check(NativeAAudio.pause(handle) >= 0) { "AAudio pause failed" } }
     override fun write(data: ShortArray, offset: Int, count: Int): Int = NativeAAudio.write(handle, data, offset, count)
@@ -27,6 +35,7 @@ internal object NativeAAudio {
     external fun pause(handle: Long): Int
     external fun write(handle: Long, data: ShortArray, offset: Int, count: Int): Int
     external fun setBufferFrames(handle: Long, frames: Int): Int
+    external fun setQueueFrames(handle: Long, frames: Int): Int
     external fun stat(handle: Long, kind: Int): Int
     external fun close(handle: Long)
 }

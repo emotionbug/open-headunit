@@ -10,9 +10,11 @@ import android.os.Build
 internal interface PcmOutput {
     val name: String
     val capacityFrames: Int
-    val bufferFrames: Int
+    val bufferFrames: Int // effective device + any callback staging; used for drain deadlines
     val burstFrames: Int
     val underruns: Int
+    val stagingBufferFrames: Int get() = 0
+    val producerUnderruns: Int get() = 0
     fun setBufferFrames(frames: Int): Int
     fun start()
     fun pause()

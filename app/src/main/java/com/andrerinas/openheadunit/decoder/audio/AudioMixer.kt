@@ -147,7 +147,8 @@ class AudioMixer(
         var requestedFrames = policy.targetFrames
         device.setBufferFrames(requestedFrames)
         AppLog.i("AudioMixer: ${device.name}, stream=$stream, capacity=${device.capacityFrames} frames, " +
-            "effective=${device.bufferFrames} frames, burst=${device.burstFrames}, cycle=${MIX_INTERVAL_MS}ms")
+            "effective=${device.bufferFrames} frames, staging=${device.stagingBufferFrames}, " +
+            "burst=${device.burstFrames}, cycle=${MIX_INTERVAL_MS}ms")
         var deviceStarted = false
         var idleSinceMs = -1L
         var nextReportMs = SystemClock.elapsedRealtime() + 10_000L
@@ -197,7 +198,9 @@ class AudioMixer(
                 nextTuneMs = now + 100
             }
             if (now >= nextReportMs) {
-                AppLog.i("AudioMixer: ${device.name} effective=${device.bufferFrames} frames, xruns=${device.underruns}")
+                AppLog.i("AudioMixer: ${device.name} effective=${device.bufferFrames} frames, " +
+                    "staging=${device.stagingBufferFrames}, xruns=${device.underruns}, " +
+                    "producerUnderruns=${device.producerUnderruns}")
                 for ((id, state) in channels) {
                     AppLog.i("AudioMixer: channel=$id target=${state.buffer.targetFrames() * 1000L / OUTPUT_SAMPLE_RATE}ms " +
                         "depth=${state.buffer.depthFrames() * 1000L / OUTPUT_SAMPLE_RATE}ms " +

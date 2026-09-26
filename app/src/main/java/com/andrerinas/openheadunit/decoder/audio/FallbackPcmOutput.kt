@@ -16,6 +16,8 @@ internal class FallbackPcmOutput(
     override val bufferFrames: Int get() = delegate.bufferFrames
     override val burstFrames: Int get() = delegate.burstFrames
     override val underruns: Int get() = delegate.underruns
+    override val stagingBufferFrames: Int get() = delegate.stagingBufferFrames
+    override val producerUnderruns: Int get() = delegate.producerUnderruns
 
     override fun setBufferFrames(frames: Int): Int {
         requestedFrames = frames
