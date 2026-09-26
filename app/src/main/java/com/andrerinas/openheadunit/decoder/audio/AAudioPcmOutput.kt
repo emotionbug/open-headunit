@@ -8,14 +8,19 @@ internal class AAudioPcmOutput : PcmOutput {
     override val capacityFrames: Int get() = NativeAAudio.stat(handle, 0)
     override val bufferFrames: Int get() = NativeAAudio.stat(handle, 1) + stagingBufferFrames
     override val burstFrames: Int = NativeAAudio.stat(handle, 2)
+    private val devicePolicy = CallbackDeviceBufferPolicy(burstFrames)
     override val stagingBufferFrames: Int get() = NativeAAudio.stat(handle, 4)
     override val producerUnderruns: Int get() = NativeAAudio.stat(handle, 5).coerceAtLeast(0)
+    override val minimumBufferFrames: Int get() =
+        CallbackBufferSizing.minimumFrames(burstFrames, NativeAAudio.stat(handle, 7))
     override val underruns: Int get() = (NativeAAudio.stat(handle, 3).coerceAtLeast(0).toLong() +
         producerUnderruns).coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
     override fun setBufferFrames(frames: Int): Int {
-        val device = NativeAAudio.setBufferFrames(handle, CallbackBufferSizing.deviceFrames(frames, burstFrames))
+        val callback = NativeAAudio.stat(handle, 7)
+        val device = NativeAAudio.setBufferFrames(handle,
+            devicePolicy.request(frames, callback, NativeAAudio.stat(handle, 3).coerceAtLeast(0)))
         if (device < 0) return device
-        val queue = NativeAAudio.setQueueFrames(handle, CallbackBufferSizing.queueFrames(frames, device, burstFrames))
+        val queue = NativeAAudio.setQueueFrames(handle, CallbackBufferSizing.queueFrames(frames, device, burstFrames, callback))
         return if (queue < 0) queue else device + queue
     }
     override fun start() { check(NativeAAudio.start(handle) >= 0) { "AAudio start failed" } }

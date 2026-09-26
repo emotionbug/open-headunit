@@ -8,8 +8,11 @@ class PcmOutputRecoveryTest {
         override val name = "fake"
         override val capacityFrames = 19200
         override var bufferFrames = 960
-        override val burstFrames = 192
+        override var burstFrames = 192
         override val underruns = 0
+        override var minimumBufferFrames = 960
+        override var stagingBufferFrames = 0
+        override var producerUnderruns = 0
         var starts = 0
         var closes = 0
         var pauses = 0
@@ -101,5 +104,24 @@ class PcmOutputRecoveryTest {
         for (stream in intArrayOf(0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 99)) {
             assertFalse(AudioOutputPolicy.useAAudio(33, stream, false, true))
         }
+    }
+
+    @Test fun `fallback publishes the replacement burst floor and staging diagnostics`() {
+        val native = FakeOutput(mutableListOf(-899)).also {
+            it.minimumBufferFrames = 576; it.stagingBufferFrames = 192; it.producerUnderruns = 3
+        }
+        val legacy = FakeOutput().also { it.burstFrames = 480 }
+        val output = FallbackPcmOutput(native, { legacy }, {})
+        assertEquals(576, output.minimumBufferFrames)
+        assertEquals(192, output.stagingBufferFrames)
+        assertEquals(3, output.producerUnderruns)
+        output.setBufferFrames(576)
+        output.start()
+        output.write(ShortArray(960), 0, 960)
+        assertEquals(480, output.burstFrames)
+        assertEquals(960, output.minimumBufferFrames)
+        assertEquals(960, legacy.bufferFrames) // enforce the new floor before its first write
+        assertEquals(0, output.stagingBufferFrames)
+        assertEquals(0, output.producerUnderruns)
     }
 }

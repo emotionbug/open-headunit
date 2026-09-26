@@ -15,6 +15,7 @@ internal interface PcmOutput {
     val underruns: Int
     val stagingBufferFrames: Int get() = 0
     val producerUnderruns: Int get() = 0
+    val minimumBufferFrames: Int get() = 960 // AudioTrack producer retains its 20ms safety floor
     fun setBufferFrames(frames: Int): Int
     fun start()
     fun pause()

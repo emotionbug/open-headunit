@@ -143,7 +143,12 @@ class AudioMixer(
     private fun mixLoop() {
         Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO)
         val device = output ?: return
-        val policy = OutputBufferPolicy(OUTPUT_SAMPLE_RATE, device.burstFrames)
+        var tuningBurst = device.burstFrames
+        var tuningMinimum = device.minimumBufferFrames
+        var tuningBackend = device.name
+        var policy = OutputBufferPolicy(OUTPUT_SAMPLE_RATE, tuningBurst, tuningMinimum)
+        var previousOutputXruns = device.underruns
+        policy.update(SystemClock.elapsedRealtime(), previousOutputXruns)
         var requestedFrames = policy.targetFrames
         device.setBufferFrames(requestedFrames)
         AppLog.i("AudioMixer: ${device.name}, stream=$stream, capacity=${device.capacityFrames} frames, " +
@@ -190,11 +195,24 @@ class AudioMixer(
                 { offset, remaining -> device.write(outputBuffer, offset, remaining) }, {}, { Thread.sleep(1) })
             check(result >= 0) { "${device.name} write failed: $result" }
             if (now >= nextTuneMs) {
-                val target = policy.update(now, device.underruns)
-                if (target != requestedFrames) {
+                val burst = device.burstFrames
+                val minimum = device.minimumBufferFrames
+                if (burst != tuningBurst || minimum != tuningMinimum || device.name != tuningBackend) {
+                    // AAudio can grant a different callback size; fallback can replace the device.
+                    // Rebase both the burst quantum and the xrun baseline on the current output.
+                    tuningBurst = burst
+                    tuningMinimum = minimum
+                    tuningBackend = device.name
+                    policy = OutputBufferPolicy(OUTPUT_SAMPLE_RATE, burst, minimum)
+                    requestedFrames = -1
+                }
+                val xruns = device.underruns
+                val target = policy.update(now, xruns)
+                if (target != requestedFrames || xruns != previousOutputXruns) {
                     requestedFrames = target
                     device.setBufferFrames(target)
                 }
+                previousOutputXruns = xruns
                 nextTuneMs = now + 100
             }
             if (now >= nextReportMs) {

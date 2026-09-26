@@ -76,6 +76,7 @@ static Output* output(jlong handle) { return reinterpret_cast<Output*>(static_ca
 static aaudio_data_callback_result_t render(AAudioStream*, void* context, void* data, int32_t frames) {
     auto* sink = static_cast<Output*>(context);
     if (frames < 0 || !sink->buffer.render(static_cast<int16_t*>(data), static_cast<uint32_t>(frames))) {
+        if (frames > 0) std::memset(data, 0, static_cast<size_t>(frames) * 2 * sizeof(int16_t));
         sink->error.store(AAUDIO_ERROR_OUT_OF_RANGE, std::memory_order_relaxed);
         return AAUDIO_CALLBACK_RESULT_STOP;
     }
@@ -224,6 +225,7 @@ Java_com_andrerinas_openheadunit_decoder_audio_NativeAAudio_stat(JNIEnv*, jobjec
         case 4: return static_cast<jint>(sink->effectiveQueueLimit());
         case 5: return static_cast<jint>(sink->buffer.starvationEvents());
         case 6: return static_cast<jint>(sink->buffer.available());
+        case 7: return static_cast<jint>(sink->buffer.callbackFrames());
         default: return AAUDIO_ERROR_ILLEGAL_ARGUMENT;
     }
 }

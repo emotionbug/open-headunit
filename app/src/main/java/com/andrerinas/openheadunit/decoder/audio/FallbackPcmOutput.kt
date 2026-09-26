@@ -18,10 +18,11 @@ internal class FallbackPcmOutput(
     override val underruns: Int get() = delegate.underruns
     override val stagingBufferFrames: Int get() = delegate.stagingBufferFrames
     override val producerUnderruns: Int get() = delegate.producerUnderruns
+    override val minimumBufferFrames: Int get() = delegate.minimumBufferFrames
 
     override fun setBufferFrames(frames: Int): Int {
         requestedFrames = frames
-        val result = delegate.setBufferFrames(frames)
+        val result = delegate.setBufferFrames(maxOf(frames, delegate.minimumBufferFrames))
         if (result < 0 && canFallback) {
             replace("buffer configuration: $result")
             return delegate.bufferFrames
@@ -57,7 +58,7 @@ internal class FallbackPcmOutput(
         report("AAudio -> AudioTrack ($reason)")
         delegate.close()
         delegate = fallback()
-        delegate.setBufferFrames(requestedFrames)
+        delegate.setBufferFrames(maxOf(requestedFrames, delegate.minimumBufferFrames))
         if (started) delegate.start()
         stalledSinceNs = -1L
     }

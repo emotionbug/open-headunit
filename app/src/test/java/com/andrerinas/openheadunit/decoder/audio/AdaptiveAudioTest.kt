@@ -205,9 +205,9 @@ class AdaptiveAudioTest {
     @Test fun `device buffer grows separately and returns to twenty milliseconds after stability`() {
         val policy = OutputBufferPolicy(48000, 192)
         assertEquals(960, policy.update(0, 0))
-        assertEquals(1440, policy.update(100, 1))
-        assertEquals(1440, policy.update(10099, 1))
-        assertEquals(1200, policy.update(10100, 1))
+        assertEquals(1152, policy.update(100, 1))
+        assertEquals(1152, policy.update(10099, 1))
+        assertEquals(960, policy.update(10100, 1))
         assertEquals(960, policy.update(20100, 1))
         repeat(20) { policy.update(20200L + it, it + 2) }
         assertEquals(2880, policy.targetFrames)
