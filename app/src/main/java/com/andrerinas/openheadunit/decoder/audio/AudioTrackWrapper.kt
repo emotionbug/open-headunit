@@ -1148,6 +1148,8 @@ class AudioTrackWrapper(
         }
     }
 
+    fun preparePlayback() { mixer?.prepareChannel(channelId) }
+
     /**
      * Park a sink the phone has stopped, keeping the track and any AAC decoder built.
      *
