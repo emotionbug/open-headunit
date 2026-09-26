@@ -5,6 +5,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.os.SystemClock
 import android.widget.Toast
 import android.util.Log
 import androidx.core.content.FileProvider
@@ -16,6 +17,7 @@ import com.andrerinas.openheadunit.connection.wifi.direct.StationStandDownMode
 import com.andrerinas.openheadunit.connection.wifi.direct.WifiBandCapability
 import com.andrerinas.openheadunit.connection.wifi.modes.nativeaa.NativeAaHandshakeManager
 import com.andrerinas.openheadunit.decoder.video.VideoFaultInjector
+import com.andrerinas.openheadunit.decoder.audio.AudioDiagnostics
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -345,9 +347,8 @@ object LogExporter {
             return@withContext null
         }
 
-        // Before every path below, because this is the only one that reaches AppLog's own file.
-        // The two logcat paths do not trust it to arrive and append it themselves - see
-        // appendBanner. A second copy in a capture file costs a line and is worth it.
+        // Emit the banner to live logging too. Every export path also appends it directly
+        // with retained audio events, without waiting for the asynchronous log writer.
         AppLog.w(sessionBanner(context))
 
         val settings = Settings(context)
@@ -355,6 +356,7 @@ object LogExporter {
         if (AppLog.logSource == Settings.LogSource.APPLOG_FILE) {
             return@withContext (AppLog.currentLogFile ?: AppLog.lastLogFile)
                 ?.takeIf { it.exists() && it.length() > 0 }
+                ?.also { appendBanner(it, context) }
         }
 
         val logDir = LogFilesHelper.resolveLogDirectory(context, settings, allowInternalFallback = false)
@@ -401,7 +403,8 @@ object LogExporter {
     private fun appendBanner(file: File, context: Context) {
         try {
             FileOutputStream(file, true).use {
-                it.write("\n${sessionBanner(context)}\n".toByteArray())
+                it.write(("\n${sessionBanner(context)}\n" +
+                    AudioDiagnostics.snapshot(SystemClock.elapsedRealtime()) + "\n").toByteArray())
             }
         } catch (e: Exception) {
             AppLog.w("LogExporter: could not write the session banner into ${file.name}: ${e.message}")
