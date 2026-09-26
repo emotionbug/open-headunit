@@ -11,6 +11,9 @@ internal class AdaptiveJitterPolicy(
     private var previousArrivalMs = -1L
     private var previousFrames = 0
     private var lastAdjustmentMs = -1L
+    // Ten one-second buckets age out unusual packet sizes without allocating per arrival.
+    private val chunkEpochs = LongArray(10) { -1L }
+    private val chunkMaxima = IntArray(10)
     var largestChunkFrames = 0
         private set
 
@@ -22,7 +25,19 @@ internal class AdaptiveJitterPolicy(
 
     fun onArrival(nowMs: Long, chunkFrames: Int) {
         if (chunkFrames <= 0) return
-        largestChunkFrames = maxOf(largestChunkFrames, chunkFrames)
+        val epoch = nowMs / 1000
+        val slot = (epoch % chunkEpochs.size).toInt()
+        if (chunkEpochs[slot] != epoch) {
+            chunkEpochs[slot] = epoch
+            chunkMaxima[slot] = 0
+        }
+        chunkMaxima[slot] = maxOf(chunkMaxima[slot], chunkFrames)
+        largestChunkFrames = chunkFrames
+        for (i in chunkEpochs.indices) {
+            if (epoch - chunkEpochs[i] in 0 until chunkEpochs.size.toLong()) {
+                largestChunkFrames = maxOf(largestChunkFrames, chunkMaxima[i])
+            }
+        }
         if (previousArrivalMs >= 0) {
             val gap = nowMs - previousArrivalMs
             // A stopped prompt/session is not network jitter. Bursts (gap=0) also cannot make the
@@ -53,7 +68,10 @@ internal class AdaptiveJitterPolicy(
         }
     }
 
-    fun resetArrival() { previousArrivalMs = -1L; previousFrames = 0 }
+    fun resetArrival() {
+        previousArrivalMs = -1L; previousFrames = 0
+        chunkEpochs.fill(-1L); chunkMaxima.fill(0); largestChunkFrames = 0
+    }
     private fun maxMarginMs() = (ceilingMs - largestChunkFrames * 1000L / sampleRate - 10).coerceAtLeast(15L)
     private fun frames(ms: Long) = (sampleRate * ms / 1000).toInt()
 }

@@ -20,6 +20,7 @@ class AdaptiveAudioTest {
         assertEquals(0L, buffer.rebanks)
         assertEquals(0L, buffer.concealedFrames)
         assertEquals(0L, buffer.droppedFrames)
+        assertEquals(0L, buffer.compressedFrames)
         assertTrue(buffer.targetFrames() in 2880..3840) // 60-80ms network target
         assertTrue(buffer.depthFrames() < 4800)
     }
@@ -163,6 +164,42 @@ class AdaptiveAudioTest {
         assertTrue(raised > original)
         repeat(30) { policy.onArrival(5100, 2048) }
         assertEquals(raised, policy.targetFrames)
+    }
+
+    @Test fun `an unusual packet ages out after ten seconds of ordinary packets`() {
+        val policy = AdaptiveJitterPolicy(48000)
+        policy.onArrival(0, 9600)
+        assertEquals(10080, policy.targetFrames)
+        for (now in 200L..9999L step 43) policy.onArrival(now, 2048)
+        assertEquals(9600, policy.largestChunkFrames)
+        policy.onArrival(10004, 2048)
+        assertEquals(2048, policy.largestChunkFrames)
+        assertTrue(policy.targetFrames <= 7200)
+        policy.resetArrival()
+        policy.onArrival(20000, 480)
+        assertEquals(480, policy.largestChunkFrames)
+    }
+
+    @Test fun `stable playback repays reduced targets without another rebuffer`() {
+        val buffer = AdaptivePcmBuffer()
+        val packet = ShortArray(4096) { 12000 }
+        val out = ShortArray(960)
+        var packetIndex = 0
+        var afterRecoveryRebanks = 0L
+        for (now in 0L..180_000L) {
+            while (now >= packetIndex * 2048L * 1000L / 48000) {
+                if (now in 400L..699L) break
+                buffer.noteArrival(now, 2048)
+                buffer.write(packet, packet.size, now)
+                packetIndex++
+            }
+            if (now % 10 == 0L) buffer.render(out, now)
+            if (now == 2000L) afterRecoveryRebanks = buffer.rebanks
+        }
+        assertTrue(buffer.compressedFrames > 0)
+        assertEquals(afterRecoveryRebanks, buffer.rebanks)
+        assertTrue(buffer.targetFrames() < 3840)
+        assertTrue(buffer.depthFrames() < buffer.targetFrames() + 480)
     }
 
     @Test fun `device buffer grows separately and returns to twenty milliseconds after stability`() {
