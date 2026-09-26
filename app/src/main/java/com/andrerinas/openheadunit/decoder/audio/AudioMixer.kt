@@ -16,7 +16,7 @@ class AudioMixer(
     private val stream: Int = AudioManager.STREAM_MUSIC,
     private val attachHwDspEqualizer: Boolean = false,
     private val audioLatencyMultiplier: Int = AudioJitterBufferPolicy.DEFAULT_MULTIPLIER,
-    private val preferAAudio: Boolean = true,
+    private val preferAAudio: Boolean = false,
     private val keepOutputActive: Boolean = false
 ) {
     companion object {

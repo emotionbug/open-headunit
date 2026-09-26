@@ -1193,8 +1193,9 @@ class Settings(private val context: Context) {
         get() = prefs.getBoolean("use-aac-audio", false)
         set(value) { prefs.edit().putBoolean("use-aac-audio", value).apply() }
 
+    // Experimental backend: keep AudioTrack unless the user explicitly opts in.
     var useAAudioOutput: Boolean
-        get() = prefs.getBoolean("use-aaudio-output", true)
+        get() = prefs.getBoolean("use-aaudio-output", false)
         set(value) { prefs.edit().putBoolean("use-aaudio-output", value).apply() }
 
     var micEchoCanceler: Boolean

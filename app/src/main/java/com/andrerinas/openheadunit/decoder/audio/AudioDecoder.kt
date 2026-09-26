@@ -68,7 +68,7 @@ class AudioDecoder {
      *   from it rather than from whichever channel happened to build the mixer, which was always
      *   the first Media Sink Setup to arrive and so usually a capped one.
      */
-    fun start(channel: Int, stream: Int, sampleRate: Int, numberOfBits: Int, numberOfChannels: Int, isAac: Boolean = false, gain: Float = 1.0f, audioLatencyMultiplier: Int = AudioJitterBufferPolicy.DEFAULT_MULTIPLIER, audioQueueCapacity: Int = 0, staticAudioFocus: Boolean = false, attachHwDspEqualizer: Boolean = false, mixerLatencyMultiplier: Int = audioLatencyMultiplier, preferAAudio: Boolean = true) {
+    fun start(channel: Int, stream: Int, sampleRate: Int, numberOfBits: Int, numberOfChannels: Int, isAac: Boolean = false, gain: Float = 1.0f, audioLatencyMultiplier: Int = AudioJitterBufferPolicy.DEFAULT_MULTIPLIER, audioQueueCapacity: Int = 0, staticAudioFocus: Boolean = false, attachHwDspEqualizer: Boolean = false, mixerLatencyMultiplier: Int = audioLatencyMultiplier, preferAAudio: Boolean = false) {
         if (staticAudioFocus) {
             synchronized(this) {
                 if (mixer == null) {
