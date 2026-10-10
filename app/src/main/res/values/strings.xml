@@ -1331,17 +1331,17 @@
     <string name="audio_settings_reconnect">Audio settings saved. Reconnect Android Auto to apply them.</string>
     <!-- Optional Shizuku Wi-Fi scan control -->
     <string name="wifi_scan_title">Pause automatic Wi-Fi searches (Shizuku)</string>
-    <string name="wifi_scan_explanation">Pause automatic Wi-Fi searches during a Native wireless Android Auto connection. Release this control when the connection ends. Requires Shizuku. Changes apply immediately.</string>
-    <string name="wifi_scan_legacy">Android 8–12L Wi-Fi Direct uses an internal control without a current-state getter. After disconnection or disabling this option, searches are enabled again—even if they were disabled beforehand. Command acceptance does not confirm that every scan stopped. Hotspot mode requires ordinary Wi-Fi to be off and restores its recorded scan setting.</string>
+    <string name="wifi_scan_explanation">Pause automatic Wi-Fi searches during a Native wireless connection. Release control when the connection ends.\n\nRequires Shizuku. Setting changes apply immediately.</string>
+    <string name="wifi_scan_legacy">Android 8–12L\n• Wi-Fi Direct: the previous search state cannot be read. Disconnecting or disabling this option enables searches, even if they were previously off.\n• Hotspot: ordinary Wi-Fi must be off. The previous scan setting is restored afterward.\n\nAn accepted command does not confirm that every scan stopped.</string>
     <string name="wifi_scan_enable">Pause during wireless connections</string>
     <string name="wifi_scan_off">Off</string>
     <string name="wifi_scan_prepare">Set up Shizuku</string>
-    <string name="wifi_scan_adb_wireless">Android 11 or newer: install and open Shizuku, then follow its wireless debugging pairing and start steps. Return here to allow access. Some devices require a Wi-Fi network for pairing; finish setup before connecting Android Auto. If wireless debugging is unavailable, use the USB startup instructions in Shizuku.</string>
-    <string name="wifi_scan_adb_usb">Android 8–10: open Shizuku and follow its computer/USB startup instructions. Return here to allow access. A supported FYT device can also use the setup button below.</string>
+    <string name="wifi_scan_adb_wireless">Android 11 or newer\n1. Open Shizuku and follow its wireless debugging pairing and startup steps.\n2. Return here and allow Open Headunit.\n\nPairing may require a Wi-Fi connection; finish setup before connecting Android Auto. If wireless debugging is unavailable, follow the computer/USB instructions in Shizuku.</string>
+    <string name="wifi_scan_adb_usb">Android 8–10\n1. Follow the computer/USB startup instructions in Shizuku.\n2. Return here and allow Open Headunit.\n\nSupported FYT devices can also use Start Shizuku on this FYT device above.</string>
     <string name="wifi_scan_developer_settings">Open debugging settings</string>
     <string name="wifi_scan_open_shizuku">Open Shizuku</string>
     <string name="wifi_scan_fyt_start">Start Shizuku on this FYT device</string>
-    <string name="wifi_scan_fyt_confirm">This enables network ADB to start Shizuku and keeps it open until you tap Close wireless ADB. Accept the Android debugging authorization prompt if shown. Only ADB opened by this app can be closed here; existing ADB settings are left alone. Use a trusted network. When this option stays enabled, a previously configured FYT start is attempted once per Native wireless connection if Shizuku is not running. Android may ask for debugging authorization again.</string>
+    <string name="wifi_scan_fyt_confirm">Start Shizuku on this FYT device.\n\n• Opens wireless ADB until you tap Close wireless ADB.\n• Accept the debugging authorization prompt if shown.\n• Only ADB opened by Open Headunit is closed here. Existing ADB settings are left alone. Use a trusted network.\n\nAfter setup, if this option is enabled and Shizuku is stopped, startup is attempted once per Native wireless connection. Android may request debugging authorization again.</string>
     <string name="wifi_scan_continue">Continue</string>
     <string name="wifi_scan_fyt_authorize">Starting… Accept the debugging authorization prompt on this device if shown.</string>
     <string name="wifi_scan_wifi_settings">Open Wi-Fi settings</string>
@@ -1372,7 +1372,7 @@
     <string name="wifi_scan_status_working">Updating…</string>
     <string name="wifi_scan_summary_install">Shizuku not installed</string>
     <string name="wifi_scan_status_enabled">Enabled</string>
-    <string name="wifi_scan_permission_explanation">Shizuku approval lets Open Headunit use system access to pause searches and release that pause after use. This is separate from Android location and nearby-device permissions. Tap Allow Open Headunit and approve in Shizuku. If no prompt appears after a previous denial, allow Open Headunit in the Shizuku app.</string>
+    <string name="wifi_scan_permission_explanation">Shizuku approval allows searches to be paused and released after use. It is separate from Android location and nearby-device permissions.\n\nTap Allow Open Headunit and approve in Shizuku.\nIf a previous denial prevents the prompt, allow access in the Shizuku app.</string>
     <string name="wifi_scan_step">%1$d. %2$s</string>
     <string name="wifi_scan_step_done">%1$d. %2$s · Done</string>
     <string name="wifi_scan_step_install">Install Shizuku</string>
@@ -1402,15 +1402,15 @@
     <string name="wifi_scan_fyt_stage_start">Running the Shizuku starter</string>
     <string name="wifi_scan_fyt_stage_wait">Waiting for the Shizuku service</string>
     <string name="wifi_scan_fyt_stage_restore">Closing ADB and restoring its settings</string>
-    <string name="wifi_scan_fyt_close_help">Restores paused Wi-Fi searches before closing ADB opened by Open Headunit. If restoration fails, ADB stays open so you can retry recovery. Shizuku may stop and USB debugging connections may disconnect. The button remains disabled when this app has no ADB session to close. Closing also disables automatic FYT startup on connection. Use the FYT start button to enable it again.</string>
+    <string name="wifi_scan_fyt_close_help">Closing wireless ADB\n• Restores Wi-Fi searches first. If restoration fails, ADB stays open for recovery.\n• May stop Shizuku or disconnect USB debugging.\n• Disables automatic FYT startup on connection. Use the FYT start button to enable it again.\n\nThe button is disabled when this app has no ADB session to close.</string>
     <string name="wifi_scan_fyt_adb_owned">Wireless ADB: managed by Open Headunit · close with the button below</string>
     <string name="wifi_scan_fyt_adb_unowned">Wireless ADB: no session managed by Open Headunit</string>
     <string name="wifi_scan_section_common">Common setup</string>
-    <string name="wifi_scan_common_help">Install Shizuku on every device. After starting its service using one of the methods below, allow Open Headunit here.</string>
+    <string name="wifi_scan_common_help">1. Install Shizuku.\n2. Start its service using the FYT or general-device method below.\n3. Allow Open Headunit on this screen.</string>
     <string name="wifi_scan_section_fyt">On FYT devices</string>
-    <string name="wifi_scan_fyt_help">Supported FYT devices can start Shizuku directly here. Keep wireless ADB open while using it, and close it with the button below when needed.</string>
+    <string name="wifi_scan_fyt_help">Supported FYT devices can start Shizuku directly here.\nKeep wireless ADB open while using it, and close it with the button below when needed.</string>
     <string name="wifi_scan_section_other">On other devices</string>
-    <string name="wifi_scan_other_help">Use wireless debugging or a computer to start Shizuku. This method also works when FYT startup is unavailable.</string>
+    <string name="wifi_scan_other_help">If FYT startup is unavailable, use the method below to start Shizuku.</string>
     <string name="wifi_scan_fyt_restore_scans">Wi-Fi search settings could not be restored, so wireless ADB was left open. Keep Shizuku running and allow Open Headunit, then try again. You can also use the Wi-Fi recovery action above.</string>
-    <string name="wifi_scan_legacy_limit">On Android 8–10, the pause is requested when a connection starts and then every five minutes while connected. Changes in Android network requests can turn searches back on between requests. The longer interval limits repeated Wi-Fi cleanup work; it cannot keep every scan stopped. If re-enabling searches fails, leave Shizuku running and retry; restarting the device resets this temporary control.</string>
+    <string name="wifi_scan_legacy_limit">Renewal on Android 8–10\n• Request a pause on connection, then every five minutes while connected.\n• Android may enable searches between requests. The interval limits repeated cleanup work; it cannot keep every scan stopped.\n\nIf enabling searches fails, keep Shizuku running and retry. Rebooting resets this temporary control.</string>
 </resources>
