@@ -1330,7 +1330,7 @@
     <string name="copied_to_clipboard">Copied to clipboard</string>
     <string name="audio_settings_reconnect">Audio settings saved. Reconnect Android Auto to apply them.</string>
     <!-- Optional Shizuku Wi-Fi scan control -->
-    <string name="wifi_scan_title">Pause automatic Wi-Fi searches</string>
+    <string name="wifi_scan_title">Pause automatic Wi-Fi searches (Shizuku)</string>
     <string name="wifi_scan_explanation">While wireless Android Auto runs in Native mode, pause Android’s automatic Wi-Fi searches and restore the previous setting when the connection ends. Requires Shizuku. Changes apply immediately.</string>
     <string name="wifi_scan_legacy">On Android 8–12, use Native Hotspot with regular Wi-Fi turned off while using the hotspot. This option cannot pause Wi-Fi Direct searches on these versions.</string>
     <string name="wifi_scan_enable">Pause during wireless connections</string>
