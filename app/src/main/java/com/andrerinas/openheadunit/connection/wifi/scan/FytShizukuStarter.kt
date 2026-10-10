@@ -3,6 +3,8 @@ package com.andrerinas.openheadunit.connection.wifi.scan
 import android.content.*
 import android.os.*
 import com.andrerinas.openheadunit.connection.carkey.fyt.RemoteToolkit
+import com.andrerinas.openheadunit.utils.AppLog
+import com.andrerinas.openheadunit.connection.wifi.scan.FytSetupStep.Stage
 import com.andrerinas.openheadunit.utils.SystemProperties
 import com.andrerinas.openheadunit.utils.adb.AdbConnection
 import com.andrerinas.openheadunit.utils.adb.AdbCrypto
@@ -25,6 +27,14 @@ internal object FytShizukuStarter {
     private val mutex = kotlinx.coroutines.sync.Mutex()
     private fun boot(context: Context) = android.provider.Settings.Global.getInt(
         context.contentResolver, android.provider.Settings.Global.BOOT_COUNT, -1)
+    private fun steps() = FytSetupStep { AppLog.i("FYT Shizuku: $it") }
+    private fun logState(context: Context, event: String) {
+        // Only diagnostic flags/properties: never log ADB keys or starter shell output.
+        AppLog.i("FYT Shizuku: $event; usbDebugging=" +
+            android.provider.Settings.Global.getInt(context.contentResolver, android.provider.Settings.Global.ADB_ENABLED, 0) +
+            " daemon=${SystemProperties.get("init.svc.adbd")} servicePort=${SystemProperties.get("service.adb.tcp.port")}" +
+            " persistentPort=${SystemProperties.get("persist.adb.tcp.port")} binder=${isShizukuRunning()}")
+    }
     fun needsRecovery(context: Context) = FytAdbPortJournal(context).exists()
 
     // A crash before Shizuku starts cannot have a shell death watcher. Persist first and retry
@@ -36,22 +46,37 @@ internal object FytShizukuStarter {
             val currentBoot = boot(context)
             check(currentBoot >= 0)
             if (record.boot != currentBoot) journal.clear() // service.* does not survive reboot
-            else withModule(context) { restore(context, it, journal, record) }
+            else {
+                val trace = steps()
+                withModule(context, trace) { module ->
+                    trace.run(Stage.RESTORE_ADB) { restore(context, module, journal, record) }
+                }
+            }
             true
+        }.onFailure {
+            if (it is CancellationException) throw it
+            logState(context, "ADB recovery failed")
+            AppLog.e("FYT Shizuku: ADB recovery failed", it)
         }.getOrDefault(false)
     }
 
     suspend fun start(context: Context) = locked {
         val app = context.applicationContext
-        check(!needsRecovery(app)) { "Restore the previous temporary ADB port first" }
+        val trace = steps()
+        logState(app, "setup requested")
+        trace.run(Stage.PREPARE) {
+            check(!needsRecovery(app)) { "Restore the previous temporary ADB port first" }
+        }
         if (isShizukuRunning()) return@locked
         // FYT main command 161 can start TCP adbd independently of the Android USB
-        // debugging toggle. Try that path first; firmware may still require the user to
-        // enable debugging for RSA authorization. Never change adb_enabled or bypass auth.
-        val info = app.packageManager.getApplicationInfo(SHIZUKU, 0)
-        val starter = File(info.nativeLibraryDir, "libshizuku.so")
-        check(starter.isFile) { "Open Shizuku and use its USB startup instructions" }
-        withModule(app) { module ->
+        // debugging toggle. Firmware may still require USB debugging for RSA authorization.
+        val (info, starter) = trace.run(Stage.PREPARE) {
+            val info = app.packageManager.getApplicationInfo(SHIZUKU, 0)
+            val starter = File(info.nativeLibraryDir, "libshizuku.so")
+            check(starter.isFile) { "Open Shizuku and use its USB startup instructions" }
+            info to starter
+        }
+        withModule(app, trace) { module ->
             val current = SystemProperties.get("service.adb.tcp.port")
             val persistent = SystemProperties.get("persist.adb.tcp.port")
             check(FytAdbPortPolicy.valid(current) && FytAdbPortPolicy.valid(persistent))
@@ -74,32 +99,44 @@ internal object FytShizukuStarter {
                     val snapshot = FytAdbPortJournal.Record(current.ifEmpty { "-1" }, currentBoot, daemon, port)
                     journal.write(snapshot)
                     record = snapshot
-                    property(module, "service.adb.tcp.port", port.toString())
-                    awaitProperty("service.adb.tcp.port", port.toString())
-                    property(module, if (daemon == "running") "ctl.restart" else "ctl.start", "adbd")
-                    awaitProperty("init.svc.adbd", "running")
-                    awaitListener(port, true)
+                    trace.run(Stage.OPEN_ADB) {
+                        property(module, "service.adb.tcp.port", port.toString())
+                        awaitProperty("service.adb.tcp.port", port.toString())
+                        property(module, if (daemon == "running") "ctl.restart" else "ctl.start", "adbd")
+                        awaitProperty("init.svc.adbd", "running")
+                        awaitListener(port, true)
+                    }
                 }
                 // This ADB client's normal shell EOF is an IOException, and a short-lived
                 // starter may close before open() returns. The Shizuku Binder, not shell EOF,
                 // proves startup. A broken transport without that Binder still fails below.
                 var transportFailure: java.io.IOException? = null
-                try { runStarter(app, port, starter.absolutePath, info.sourceDir) }
-                catch (e: java.io.IOException) { transportFailure = e }
-                val started = withTimeoutOrNull(10_000) {
-                    while (!isShizukuRunning()) delay(200)
-                    true
-                } == true
-                check(started) { transportFailure?.message ?: "Shizuku did not start" }
+                try { runStarter(app, port, starter.absolutePath, info.sourceDir, trace) }
+                catch (e: java.io.IOException) {
+                    transportFailure = if (e is FytSetupStep.Failure) e else FytSetupStep.Failure(Stage.START_SHIZUKU, e)
+                    AppLog.i("FYT Shizuku: starter transport ended (${e.javaClass.simpleName}); checking Binder")
+                }
+                trace.run(Stage.WAIT_SHIZUKU) {
+                    val started = withTimeoutOrNull(10_000) {
+                        while (!isShizukuRunning()) delay(200)
+                        true
+                    } == true
+                    if (!started) throw (transportFailure ?: java.io.IOException("Shizuku did not start"))
+                }
+                logState(app, "Binder available before ADB recovery")
             } finally {
                 withContext(NonCancellable) {
-                    record?.let { restore(app, module, journal, it) }
+                    record?.let { trace.run(Stage.RESTORE_ADB) { restore(app, module, journal, it) } }
+                    logState(app, "after ADB recovery")
                 }
             }
         }
         // Some OEM init scripts kill shell descendants with adbd. Do not claim setup succeeded
         // if closing the temporary listener also stopped Shizuku on that firmware.
-        check(isShizukuRunning()) { "Shizuku stopped when temporary ADB closed" }
+        trace.run(Stage.VERIFY_SHIZUKU) {
+            check(isShizukuRunning()) { "Shizuku stopped when temporary ADB closed" }
+        }
+        AppLog.i("FYT Shizuku: setup complete")
     }
 
     private suspend fun <T> locked(block: suspend () -> T): T = withContext(Dispatchers.IO) {
@@ -107,7 +144,7 @@ internal object FytShizukuStarter {
         try { block() } finally { mutex.unlock() }
     }
 
-    private suspend fun <T> withModule(context: Context, block: suspend (IBinder) -> T): T {
+    private suspend fun <T> withModule(context: Context, trace: FytSetupStep, block: suspend (IBinder) -> T): T {
         val app = context.applicationContext
         val ready = CompletableDeferred<IBinder>()
         val connection = object : ServiceConnection {
@@ -118,11 +155,13 @@ internal object FytShizukuStarter {
         }
         var bound = false
         try {
-            withContext(Dispatchers.Main) { bound = app.bindService(intent(), connection, Context.BIND_AUTO_CREATE) }
-            check(bound)
-            val module = RemoteToolkit.Stub.asInterface(withTimeout(5_000) { ready.await() })
-                .getRemoteModule(0)?.asBinder()
-            return block(checkNotNull(module))
+            val module = trace.run(Stage.VENDOR_SERVICE) {
+                withContext(Dispatchers.Main) { bound = app.bindService(intent(), connection, Context.BIND_AUTO_CREATE) }
+                check(bound) { "FYT vendor service could not be bound" }
+                checkNotNull(RemoteToolkit.Stub.asInterface(withTimeout(5_000) { ready.await() })
+                    .getRemoteModule(0)?.asBinder()) { "FYT main module unavailable" }
+            }
+            return block(module)
         } finally {
             withContext(NonCancellable + Dispatchers.Main) { if (bound) runCatching { app.unbindService(connection) } }
         }
@@ -191,7 +230,7 @@ internal object FytShizukuStarter {
     }
 
     private fun quote(value: String) = "'" + value.replace("'", "'\"'\"'") + "'"
-    private fun runStarter(context: Context, port: Int, starter: String, apk: String) {
+    private suspend fun runStarter(context: Context, port: Int, starter: String, apk: String, trace: FytSetupStep) {
         val socket = Socket()
         val timer = Executors.newSingleThreadScheduledExecutor()
         var adb: AdbConnection? = null
@@ -199,17 +238,22 @@ internal object FytShizukuStarter {
             // Close the socket to bound BOTH authentication and stream reads. Coroutine timeout
             // alone cannot interrupt the blocking wait inside the existing ADB client.
             timer.schedule({ runCatching { socket.close() } }, 45, TimeUnit.SECONDS)
-            socket.connect(InetSocketAddress("127.0.0.1", port), 3_000)
-            val privateKey = File(context.noBackupFilesDir, "shizuku-adb-private")
-            val publicKey = File(context.noBackupFilesDir, "shizuku-adb-public")
-            val crypto = if (privateKey.exists() && publicKey.exists())
-                AdbCrypto.loadAdbKeyPair(privateKey, publicKey)
-            else AdbCrypto.generateAdbKeyPair().also { it.saveAdbKeyPair(privateKey, publicKey) }
-            adb = AdbConnection.create(socket, crypto)
-            adb.connect(30_000)
+            trace.run(Stage.CONNECT_ADB) {
+                socket.connect(InetSocketAddress("127.0.0.1", port), 3_000)
+                val privateKey = File(context.noBackupFilesDir, "shizuku-adb-private")
+                val publicKey = File(context.noBackupFilesDir, "shizuku-adb-public")
+                val crypto = if (privateKey.exists() && publicKey.exists())
+                    AdbCrypto.loadAdbKeyPair(privateKey, publicKey)
+                else AdbCrypto.generateAdbKeyPair().also { it.saveAdbKeyPair(privateKey, publicKey) }
+                adb = AdbConnection.create(socket, crypto)
+                adb!!.connect(30_000)
+            }
             // Same native starter and --apk argument as Shizuku's own Starter.kt. Paths come
             // solely from the installed package; no editable command or shell input is accepted.
-            adb.open("shell:${quote(starter)} --apk=${quote(apk)}").use { stream ->
+            // A normal short-lived shell can close before open() returns. Its IOException
+            // is interpreted by the Binder check above rather than logged as startup failure.
+            AppLog.i("FYT Shizuku: START_SHIZUKU: submitting starter")
+            adb!!.open("shell:${quote(starter)} --apk=${quote(apk)}").use { stream ->
                 while (!stream.isClosed) stream.read()
             }
         } finally {
