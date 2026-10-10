@@ -28,6 +28,23 @@ class WppMessagesTest {
     }
 
     @Test
+    fun `the version request carries field 4 only when a channel list is given`() {
+        val with = Wireless.WifiVersionRequest.parseFrom(
+            WppMessages.versionRequest(carInfo, null, null, listOf(5180)).toByteArray()
+        )
+        assertEquals(listOf(5180), with.supportedWifiChannelsList)
+
+        val without = Wireless.WifiVersionRequest.parseFrom(
+            WppMessages.versionRequest(carInfo, null, null, emptyList()).toByteArray()
+        )
+        assertEquals(0, without.supportedWifiChannelsCount)
+        assertEquals(
+            WppMessages.versionRequest(carInfo, null).toByteArray().toList(),
+            WppMessages.versionRequest(carInfo, null, null, emptyList()).toByteArray().toList()
+        )
+    }
+
+    @Test
     fun `the TCP endpoint rides on field 6 of the version request`() {
         val request = WppMessages.versionRequest(carInfo, WppMessages.endpoint("192.168.49.1", 5299))
         val parsed = Wireless.WifiVersionRequest.parseFrom(request.toByteArray())

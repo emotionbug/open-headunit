@@ -226,6 +226,8 @@ class WppHandshakeSession(
             // everywhere, so it never reaches the per-stage logic below and never changes stage.
             if (event.type == WppMessageType.PING_REQUEST) return listOf(WppAction.SendPingResponse)
             if (event.type == WppMessageType.PING_RESPONSE) return emptyList()
+            // Answering a phone's type 1 makes it send type 2, which is credentials onto a live session.
+            if (event.type == WppMessageType.START_REQUEST) return emptyList()
         }
 
         return when (stage) {

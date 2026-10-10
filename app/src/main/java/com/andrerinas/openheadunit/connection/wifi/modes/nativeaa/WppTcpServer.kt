@@ -395,7 +395,9 @@ class WppTcpServer(
                     }
                     AppLog.i("WppTcpServer: [TX] WifiVersionRequest (Type 4) v${WppHandshakeSession.WPP_VERSION_MAJOR}.${WppHandshakeSession.WPP_VERSION_MINOR}")
                     val channelType = WppChannelTypePolicy.forHeadUnit(WifiBandCapability.supports5Ghz(context))
-                    send(output, WppMessages.versionRequest(callbacks.carInfo(), endpoint, channelType).toByteArray(), WppMessageType.VERSION_REQUEST)
+                    val channels = WppChannelListPolicy.forGroup(WifiBandCapability.sessionFrequencyMhz())
+                    AppLog.i("WppTcpServer: [TX] version request channel type=$channelType channels=$channels")
+                    send(output, WppMessages.versionRequest(callbacks.carInfo(), endpoint, channelType, channels).toByteArray(), WppMessageType.VERSION_REQUEST)
                 }
                 WppAction.SendStartRequest -> {
                     val endpoint = callbacks.projectionEndpoint()
