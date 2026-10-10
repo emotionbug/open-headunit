@@ -33,6 +33,50 @@ object HeadUnitScreenConfig {
     var isResolutionLocked: Boolean = false
         private set
 
+    /** A second size we offered, and the margins that go with it. Swapped whole, never edited. */
+    private class Fallback(
+        val type: Control.Service.MediaSinkService.VideoConfiguration.VideoCodecResolutionType,
+        val widthMargin: Int,
+        val heightMargin: Int,
+    )
+
+    // Written under the object's lock; read by touch, layout and the sender without one.
+    @Volatile private var offeredFallback: Fallback? = null
+    @Volatile private var adoptedFallback: Fallback? = null
+
+    /** Raised after the phone picks the fallback, so the view can be laid out again. */
+    var onFallbackAdopted: (() -> Unit)? = null
+
+    fun hasOfferedFallback(): Boolean = offeredFallback != null
+
+    /** What service discovery offered, or nothing; either way any earlier adoption ends. */
+    fun recordAnnouncedFallback(
+        type: Control.Service.MediaSinkService.VideoConfiguration.VideoCodecResolutionType?,
+        widthMargin: Int,
+        heightMargin: Int,
+    ) = synchronized(this) {
+        adoptedFallback = null
+        offeredFallback = type?.let { Fallback(it, widthMargin, heightMargin) }
+    }
+
+    /**
+     * The phone chose the fallback: size and margins change together, then the view is laid out
+     * again. The margins on the wire become the fallback's, so no drift is reported.
+     */
+    fun adoptFallback(): Boolean {
+        val adopted = synchronized(this) {
+            val offered = offeredFallback ?: return false
+            if (adoptedFallback != null) return false
+            announcedWidthMargin = offered.widthMargin
+            announcedHeightMargin = offered.heightMargin
+            adoptedFallback = offered
+            offered
+        }
+        AppLog.i("HeadUnitScreenConfig: Video: the phone chose the ${adopted.type} fallback (index 1), margins ${adopted.widthMargin}x${adopted.heightMargin}")
+        onFallbackAdopted?.invoke()
+        return true
+    }
+
     private lateinit var currentSettings: Settings // Store settings instance
 
     /** Application context, so [recalculate] can ask the radio what band it has. Never an Activity. */
@@ -80,8 +124,8 @@ object HeadUnitScreenConfig {
     // What ServiceDiscoveryResponse actually put on the wire. init() re-reads the display metrics
     // on every scale update, so the live margins can move under a session that already announced
     // its own; this is what the drift is measured against.
-    private var announcedWidthMargin: Int = MarginAnnouncementPolicy.NOT_ANNOUNCED
-    private var announcedHeightMargin: Int = MarginAnnouncementPolicy.NOT_ANNOUNCED
+    @Volatile private var announcedWidthMargin: Int = MarginAnnouncementPolicy.NOT_ANNOUNCED
+    @Volatile private var announcedHeightMargin: Int = MarginAnnouncementPolicy.NOT_ANNOUNCED
 
     /**
      * Raised when the live margins leave the announced ones. The listener records what it sends;
@@ -239,7 +283,7 @@ object HeadUnitScreenConfig {
         // If settings changed (e.g. orientation swap), unlock resolution before recalculating
         if (isInitialized && lastSettingsHash != 0 && lastSettingsHash != currentHash) {
             AppLog.i("[UI_DEBUG] HeadUnitScreenConfig: Settings changed ($lastSettingsHash -> $currentHash). Unlocking resolution.")
-            unlockResolution()
+            unlockResolution(keepFallback = true)
         }
 
         isInitialized = true
@@ -476,7 +520,7 @@ object HeadUnitScreenConfig {
             val isPortraitRes = getNegotiatedHeight() > getNegotiatedWidth()
             if (isPortraitRes != isPortraitDisplay) {
                 AppLog.i("[UI_DEBUG] CarScreen: Orientation mismatch detected (Res: ${if(isPortraitRes) "P" else "L"}, Display: ${if(isPortraitDisplay) "P" else "L"}). DROPPING LOCK.")
-                unlockResolution()
+                unlockResolution(keepFallback = true)
             } else {
                 AppLog.i("[UI_DEBUG] CarScreen: RESOLUTION LOCKED to $negotiatedResolutionType. Usable area is ${screenWidthPx}x${screenHeightPx}. Skipping re-negotiation.")
             }
@@ -588,14 +632,13 @@ object HeadUnitScreenConfig {
     fun getCoverHeight(): Int =
         ProjectionGeometryPolicy.coverHeight(screenWidthPx, screenHeightPx, getNegotiatedWidth(), getNegotiatedHeight())
 
-    fun getNegotiatedHeight(): Int {
-        val resString = negotiatedResolutionType.toString().replace("_", "")
-        return try {
-            resString.split("x")[1].toInt()
-        } catch (e: Exception) {
-            480
-        }
-    }
+    private fun primarySize(): Pair<Int, Int> = VideoFallbackPolicy.sizeOf(negotiatedResolutionType)
+
+    /** The size the phone is sending: the fallback's once it has chosen it. */
+    private fun activeSize(): Pair<Int, Int> =
+        VideoFallbackPolicy.sizeOf(adoptedFallback?.type ?: negotiatedResolutionType)
+
+    fun getNegotiatedHeight(): Int = activeSize().second
 
     private fun canNegotiateHevcHighResolution(): Boolean {
         if (VideoDecoder.isHevcSupported()) return true
@@ -606,14 +649,7 @@ object HeadUnitScreenConfig {
         }
     }
 
-    fun getNegotiatedWidth(): Int {
-        val resString = negotiatedResolutionType.toString().replace("_", "")
-        return try {
-            resString.split("x")[0].toInt()
-        } catch (e: Exception) {
-            800
-        }
-    }
+    fun getNegotiatedWidth(): Int = activeSize().first
 
     // A stored resolution above the panel's rows used to hide a third of the frame behind a margin
     // the touch mapper never saw. In FILL a wider panel describes itself by pixel shape instead.
@@ -621,13 +657,32 @@ object HeadUnitScreenConfig {
         videoFitMode, screenWidthPx, screenHeightPx, getNegotiatedWidth(), getNegotiatedHeight()
     )
 
-    fun getHeightMargin(): Int =
-        if (marginStrategy() == MarginStrategyPolicy.Strategy.PAR) 0
-        else ProjectionGeometryPolicy.heightMargin(getNegotiatedHeight(), screenHeightPx, scaleFactor)
+    fun getHeightMargin(): Int {
+        val fallback = adoptedFallback ?: return if (marginStrategy() == MarginStrategyPolicy.Strategy.PAR) 0
+            else ProjectionGeometryPolicy.heightMargin(getNegotiatedHeight(), screenHeightPx, scaleFactor)
+        return scaledFallbackMargins(fallback).height
+    }
 
-    fun getWidthMargin(): Int =
-        if (marginStrategy() == MarginStrategyPolicy.Strategy.PAR) 0
-        else ProjectionGeometryPolicy.widthMargin(getNegotiatedWidth(), screenWidthPx, scaleFactor)
+    fun getWidthMargin(): Int {
+        val fallback = adoptedFallback ?: return if (marginStrategy() == MarginStrategyPolicy.Strategy.PAR) 0
+            else ProjectionGeometryPolicy.widthMargin(getNegotiatedWidth(), screenWidthPx, scaleFactor)
+        return scaledFallbackMargins(fallback).width
+    }
+
+    // The primary's margins for the panel as it is now, scaled to the fallback, so a bar that
+    // settles after the announcement is still re-announced.
+    private fun scaledFallbackMargins(fallback: Fallback): VideoFallbackPolicy.Margins {
+        val (pw, ph) = primarySize()
+        val strategy = MarginStrategyPolicy.select(videoFitMode, screenWidthPx, screenHeightPx, pw, ph)
+        if (strategy == MarginStrategyPolicy.Strategy.PAR) return VideoFallbackPolicy.Margins(0, 0)
+        val primaryScale = ProjectionGeometryPolicy.fit(screenWidthPx, screenHeightPx, pw, ph).scaleFactor
+        return VideoFallbackPolicy.scaledMargins(
+            pw, ph,
+            ProjectionGeometryPolicy.widthMargin(pw, screenWidthPx, primaryScale),
+            ProjectionGeometryPolicy.heightMargin(ph, screenHeightPx, primaryScale),
+            fallback.type
+        )
+    }
 
     fun getScaleX(): Float = ProjectionGeometryPolicy.scaleX(
         videoFitMode, forcedScale,
@@ -692,7 +747,10 @@ object HeadUnitScreenConfig {
             return false
         }
 
-        if( (diffW > 0 && getNegotiatedWidth() == finalSurfaceW) || (diffH > 0 && getNegotiatedHeight() == finalSurfaceH)) {
+        val primary = primarySize()
+        val active = activeSize()
+        if ((diffW > 0 && (active.first == finalSurfaceW || primary.first == finalSurfaceW)) ||
+            (diffH > 0 && (active.second == finalSurfaceH || primary.second == finalSurfaceH))) {
             AppLog.i("[UI_DEBUG_FIX] Surface mismatch detected but matches negotiated resolution. Usable: ${screenWidthPx}x${screenHeightPx}, Actual surface: ${finalSurfaceW}x${finalSurfaceH}. Ignoring.")
             return false
         }
@@ -737,7 +795,13 @@ object HeadUnitScreenConfig {
         }
     }
 
-    fun unlockResolution() {
+    // The phone keeps the fallback until the session ends, so only the session-end callers clear it;
+    // a mid-session settings or orientation unlock must not send touch back to the primary size.
+    fun unlockResolution(keepFallback: Boolean = false) {
+        if (!keepFallback) synchronized(this) {
+            adoptedFallback = null
+            offeredFallback = null
+        }
         if (isResolutionLocked) {
             AppLog.i("[UI_DEBUG] HeadUnitScreenConfig: Unlocking resolution (was $negotiatedResolutionType)")
             isResolutionLocked = false

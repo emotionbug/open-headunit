@@ -1104,6 +1104,7 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
                             // Lock the resolution so that orientation changes don't cause re-negotiation
                             HeadUnitScreenConfig.lockResolution()
                             HeadUnitScreenConfig.onMarginsDiverged = ::onMarginsDiverged
+                            HeadUnitScreenConfig.onFallbackAdopted = ::onFallbackAdopted
                             applyOrientationSettings()
 
                             // Handshake done. If the surface is already ready (e.g. reconnect
@@ -2178,6 +2179,14 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
         return reannounced
     }
 
+    /** Called from the receive thread; the layout belongs to the UI thread. */
+    private fun onFallbackAdopted() {
+        runOnUiThread {
+            val view = projectionView as? View ?: return@runOnUiThread
+            ProjectionViewScaler.updateScale(view, videoDecoder.videoWidth, videoDecoder.videoHeight)
+        }
+    }
+
     private fun sendTouchEvent(event: MotionEvent) {
         val action = TouchEvent.motionEventToAction(event) ?: return
         val ts = SystemClock.elapsedRealtime()
@@ -2319,6 +2328,7 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
         autoStartOfferTimer?.cancel()
         autoStartOfferTimer = null
         HeadUnitScreenConfig.onMarginsDiverged = null
+        HeadUnitScreenConfig.onFallbackAdopted = null
         HeadUnitScreenConfig.clearAnnouncedMargins()
         closeCallRaiseEpisode("the projection is going away")
         unregisterAudioModeListener()
