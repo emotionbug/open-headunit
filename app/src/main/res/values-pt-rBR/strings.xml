@@ -1026,8 +1026,6 @@
     <string name="preflight_open_location">Localização</string>
     <string name="preflight_later">Mais tarde</string>
     <string name="preflight_invalid_bssid">Endereço WiFi inválido. Insira seis pares hexadecimais (ex: 02:1A:11:FF:3C:4D).</string>
-    <string name="announce_connection_configuration">Pedir um tempo limite de conexão maior</string>
-    <string name="announce_connection_configuration_description">Diz ao Android Auto para esperar 15 segundos em vez de 3 antes de considerar a conexão morta, e para usar buffers de socket maiores. Isso é voltado para um rádio que sai do canal por alguns segundos no meio da sessão e leva a conexão junto. Não foi medido se o seu telefone respeita algo disso.</string>
     <string name="native_aa_ignore_external_bt">Ignorar a verificação de compatibilidade Bluetooth</string>
     <string name="native_aa_ignore_external_bt_description">Esta unidade parece manter o Bluetooth em um módulo separado que o Android não alcança, por isso o Android Auto sem fio é desativado automaticamente. Desativado por padrão. Ative apenas se achar que isso está errado: quando a detecção está certa, a conexão falha silenciosamente e o registro parece normal.</string>
     <string name="native_aa_setup_qr_title">Configurar por código QR</string>

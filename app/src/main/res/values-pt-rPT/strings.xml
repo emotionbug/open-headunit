@@ -1110,8 +1110,6 @@
     <string name="native_aa_wake_verdict_destructive">Retido nesta unidade</string>
     <string name="native_aa_wake_remeasure_confirm">O Android Auto só inicia a ligação sem fios quando deteta uma alteração na ligação Bluetooth.</string>
     <string name="native_aa_wake_remeasure_done">O despertar por Bluetooth será medido novamente na próxima ligação.</string>
-    <string name="announce_connection_configuration">Pedir um tempo limite de ligação mais longo</string>
-    <string name="announce_connection_configuration_description">Diz ao Android Auto para aguardar 15 segundos em vez de 3 antes de considerar a ligação perdida e utilizar buffers maiores.</string>
     <string name="native_aa_ignore_external_bt">Ignorar verificação de compatibilidade Bluetooth</string>
     <string name="native_aa_ignore_external_bt_description">Esta unidade parece ter o Bluetooth num módulo separado ao qual o Android não tem acesso. Desativado por predefinição.</string>
 

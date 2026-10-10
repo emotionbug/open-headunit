@@ -1072,8 +1072,6 @@
     <string name="preflight_open_location">Localisation</string>
     <string name="preflight_later">Plus tard</string>
     <string name="preflight_invalid_bssid">Adresse Wi-Fi non valide. Entrez 6 paires de caractères hexadécimaux (ex. 02:1A:11:FF:3C:4D).</string>
-    <string name="announce_connection_configuration">Demander un délai de liaison plus long</string>
-    <string name="announce_connection_configuration_description">Indique à Android Auto d\'attendre 15 secondes au lieu de 3 avant de considérer la liaison comme morte, et d\'utiliser des tampons de socket plus grands. Cela vise une radio qui quitte son canal pendant quelques secondes en cours de session et qui emporte la connexion avec elle. On n\'a pas mesuré si votre téléphone en tient compte.</string>
     <string name="native_aa_ignore_external_bt">Ignorer la vérification de compatibilité Bluetooth</string>
     <string name="native_aa_ignore_external_bt_description">Cet appareil semble gérer le Bluetooth via un module séparé qu\'Android ne peut pas atteindre, Android Auto sans fil est donc désactivé automatiquement. Désactivé par défaut. Ne l\'activez que si vous pensez que c\'est faux : si la détection est correcte, la connexion échoue sans rien signaler et le journal paraît normal.</string>
     <string name="native_aa_setup_qr_title">Configurer par QR code</string>

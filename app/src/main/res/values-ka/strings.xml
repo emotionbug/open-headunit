@@ -1006,8 +1006,6 @@
     <string name="preflight_open_location">მდებარეობა</string>
     <string name="preflight_later">მოგვიანებით</string>
     <string name="preflight_invalid_bssid">არასწორი WiFi მისამართი (მაგ: 02:1A:11:FF:3C:4D).</string>
-    <string name="announce_connection_configuration">უფრო გრძელი კავშირის ტაიმაუთის მოთხოვნა</string>
-    <string name="announce_connection_configuration_description">სთხოვს Android Auto-ს, დაელოდოს 15 წამი 3-ის ნაცვლად, სანამ კავშირს მკვდრად ჩათვლის, და გამოიყენოს უფრო დიდი სოკეტის ბუფერები. ეს მიმართულია რადიოსკენ, რომელიც სესიის შუაში რამდენიმე წამით ტოვებს არხს და კავშირს თან ითრევს. არ არის გაზომილი, ითვალისწინებს თუ არა ამას თქვენი ტელეფონი.</string>
     <string name="native_aa_ignore_external_bt">Bluetooth-თავსებადობის შემოწმების იგნორირება</string>
     <string name="native_aa_ignore_external_bt_description">როგორც ჩანს, ეს მოწყობილობა Bluetooth-ს ცალკე მოდულზე ინახავს, რომელსაც Android ვერ წვდება, ამიტომ უსადენო Android Auto ავტომატურად ითიშება. ნაგულისხმევად გამორთულია. ჩართეთ მხოლოდ მაშინ, თუ ფიქრობთ, რომ ეს არასწორია: თუ ამოცნობა სწორია, კავშირი უხმაუროდ ჩაიშლება და ჟურნალი გამართული გამოჩნდება.</string>
     <string name="native_aa_setup_qr_title">დაყენება QR კოდით</string>

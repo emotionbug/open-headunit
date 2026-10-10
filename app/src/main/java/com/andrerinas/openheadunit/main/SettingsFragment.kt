@@ -209,7 +209,6 @@ class SettingsFragment : Fragment() {
     private var pendingNativeAaIgnoreExternalBt: Boolean? = null
     private var pendingExternalBtZbtTransport: Boolean? = null
     private var pendingExternalBtBlinkTransport: Boolean? = null
-    private var pendingAnnounceConnectionConfiguration: Boolean? = null
 
     // The probe's verdict is not a pending setting: it changes nothing and there is nothing to
     // save. It lives in the companion object with the job that produces it. This one is
@@ -409,7 +408,6 @@ class SettingsFragment : Fragment() {
         pendingNativeAaIgnoreExternalBt = settings.nativeAaIgnoreExternalBt
         pendingExternalBtZbtTransport = settings.externalBtZbtTransport
         pendingExternalBtBlinkTransport = settings.externalBtBlinkTransport
-        pendingAnnounceConnectionConfiguration = settings.announceConnectionConfiguration
         pendingNativeApTransport = settings.nativeApStrategy
         pendingNativeDriverSelectionMode = settings.nativeDriverSelectionMode
         pendingNativeDriverSelectionTimeout = settings.nativeDriverSelectionTimeoutSec
@@ -547,7 +545,6 @@ class SettingsFragment : Fragment() {
         pendingNativeAaIgnoreExternalBt = settings.nativeAaIgnoreExternalBt
         pendingExternalBtZbtTransport = settings.externalBtZbtTransport
         pendingExternalBtBlinkTransport = settings.externalBtBlinkTransport
-        pendingAnnounceConnectionConfiguration = settings.announceConnectionConfiguration
         pendingNativeApTransport = settings.nativeApStrategy
         pendingNativeDriverSelectionMode = NativeDriverSelectionPolicy.Mode.AUTO
         pendingNativeDriverSelectionTimeout = NativeDriverSelectionPolicy.DEFAULT_TIMEOUT_SEC
@@ -802,7 +799,6 @@ class SettingsFragment : Fragment() {
         pendingNativeAaIgnoreExternalBt?.let { if (it != settings.nativeAaIgnoreExternalBt) settings.nativeAaIgnoreExternalBt = it }
         pendingExternalBtZbtTransport?.let { if (it != settings.externalBtZbtTransport) settings.externalBtZbtTransport = it }
         pendingExternalBtBlinkTransport?.let { if (it != settings.externalBtBlinkTransport) settings.externalBtBlinkTransport = it }
-        pendingAnnounceConnectionConfiguration?.let { if (it != settings.announceConnectionConfiguration) settings.announceConnectionConfiguration = it }
         pendingNativeApTransport?.let { if (it != settings.nativeApStrategy) settings.nativeApStrategy = it }
         pendingNativeDriverSelectionMode?.let { if (it != settings.nativeDriverSelectionMode) settings.nativeDriverSelectionMode = it }
         pendingNativeDriverSelectionTimeout?.let { if (it != settings.nativeDriverSelectionTimeoutSec) settings.nativeDriverSelectionTimeoutSec = it }
@@ -949,7 +945,6 @@ class SettingsFragment : Fragment() {
                         pendingNativeAaIgnoreExternalBt != settings.nativeAaIgnoreExternalBt ||
                         pendingExternalBtZbtTransport != settings.externalBtZbtTransport ||
                         pendingExternalBtBlinkTransport != settings.externalBtBlinkTransport ||
-                        pendingAnnounceConnectionConfiguration != settings.announceConnectionConfiguration ||
                         pendingNativeApTransport != settings.nativeApStrategy ||
                         pendingNativeDriverSelectionMode != settings.nativeDriverSelectionMode ||
                         pendingNativeDriverSelectionTimeout != settings.nativeDriverSelectionTimeoutSec ||
@@ -1779,21 +1774,6 @@ class SettingsFragment : Fragment() {
                         updateSettingsList()
                     }
                 )
-            }
-        ))
-
-        // Ungated like the address above: ServiceDiscoveryResponse carries these parameters on
-        // every transport, so a mode gate would hide the row from the connection it was asked for.
-        items.add(SettingItem.ToggleSettingEntry(
-            stableId = "announceConnectionConfiguration",
-            nameResId = R.string.announce_connection_configuration,
-            descriptionResId = R.string.announce_connection_configuration_description,
-            isChecked = pendingAnnounceConnectionConfiguration ?: settings.announceConnectionConfiguration,
-            searchKeywords = "ping timeout socket buffer link drop session stall scan connection",
-            onCheckedChanged = { isChecked ->
-                pendingAnnounceConnectionConfiguration = isChecked
-                checkChanges()
-                updateSettingsList()
             }
         ))
 

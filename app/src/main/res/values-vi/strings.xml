@@ -1028,8 +1028,6 @@
     <string name="preflight_open_location">Vị trí</string>
     <string name="preflight_later">Để sau</string>
     <string name="preflight_invalid_bssid">Địa chỉ WiFi không hợp lệ. Nhập 6 cặp ký tự thập lục phân (vd: 02:1A:11:FF:3C:4D).</string>
-    <string name="announce_connection_configuration">Yêu cầu thời gian chờ liên kết dài hơn</string>
-    <string name="announce_connection_configuration_description">Yêu cầu Android Auto đợi 15 giây thay vì 3 giây trước khi coi liên kết là đã chết, và sử dụng vùng đệm socket lớn hơn. Tính năng này nhắm đến trường hợp radio rời kênh trong vài giây giữa phiên và kéo theo cả kết nối. Chưa đo được liệu điện thoại của bạn có tuân theo điều này hay không.</string>
     <string name="native_aa_ignore_external_bt">Bỏ qua kiểm tra tương thích Bluetooth</string>
     <string name="native_aa_ignore_external_bt_description">Thiết bị này có vẻ giữ Bluetooth trên một mô-đun riêng mà Android không tiếp cận được, nên Android Auto không dây bị tắt tự động. Tắt theo mặc định. Chỉ bật nếu bạn cho rằng điều đó là sai: nếu phát hiện đúng, kết nối sẽ thất bại trong im lặng và nhật ký trông vẫn bình thường.</string>
     <string name="native_aa_setup_qr_title">Thiết lập bằng mã QR</string>

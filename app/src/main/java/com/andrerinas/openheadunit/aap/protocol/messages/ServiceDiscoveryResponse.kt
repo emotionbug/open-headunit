@@ -3,7 +3,6 @@ package com.andrerinas.openheadunit.aap.protocol.messages
 import android.content.Context
 import com.andrerinas.openheadunit.App
 import com.andrerinas.openheadunit.aap.AapMessage
-import com.andrerinas.openheadunit.aap.ConnectionConfigPolicy
 import com.andrerinas.openheadunit.aap.NarrowBandProfilePolicy
 import com.andrerinas.openheadunit.aap.VehicleIdentityPolicy
 import com.andrerinas.openheadunit.aap.VehicleTypePolicy
@@ -335,12 +334,6 @@ internal class ServiceDiscoveryResponse(context: Context, audioConfig: AudioSess
                     // user's choice here.
                     setVehicleType(vehicleType)
                 }.build())
-
-                ConnectionConfigPolicy.announce(settings.announceConnectionConfiguration)?.let {
-                    setConnectionConfiguration(it)
-                    AppLog.i("[ServiceDiscovery] Asking for ping timeout ${it.pingConfiguration.timeoutMs}ms " +
-                            "and ${it.wirelessTcpConfiguration.socketReceiveBufferSize}B socket buffers")
-                }
 
                 addAllServices(services)
             }.build()

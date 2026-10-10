@@ -1030,8 +1030,6 @@
     <string name="preflight_open_location">位置情報</string>
     <string name="preflight_later">後で</string>
     <string name="preflight_invalid_bssid">無効なWiFiアドレスです。6組の16進数を入力してください（例：02:1A:11:FF:3C:4D）。</string>
-    <string name="announce_connection_configuration">より長いリンクタイムアウトを要求</string>
-    <string name="announce_connection_configuration_description">Android Autoに対し、リンクが切断されたと判断するまでの待機時間を3秒ではなく15秒にし、より大きなソケットバッファーを使うよう指示します。これは、セッションの途中で数秒間チャンネルを離れ、接続を道連れにしてしまう無線機を対象としています。お使いのスマートフォンがこれに従うかどうかは測定されていません。</string>
     <string name="native_aa_ignore_external_bt">Bluetooth互換性チェックを無視する</string>
     <string name="native_aa_ignore_external_bt_description">この機器はAndroidから到達できない別モジュールでBluetoothを扱っているようなので、ワイヤレスAndroid Autoは自動的に無効化されます。既定でオフ。判定が誤っていると思う場合のみオンにしてください。判定が正しい場合、接続は何も告げずに失敗し、ログは正常に見えます。</string>
     <string name="native_aa_setup_qr_title">QRコードで設定</string>
