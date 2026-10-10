@@ -529,6 +529,115 @@ public final class Wireless {
     // @@protoc_insertion_point(enum_scope:com.andrerinas.openheadunit.aap.protocol.proto.ConnectionRejectionReason)
   }
 
+  /**
+   * <pre>
+   * Why the head unit asks the phone to start. We send 0.
+   * </pre>
+   *
+   * Protobuf enum {@code com.andrerinas.openheadunit.aap.protocol.proto.StartRequestReason}
+   */
+  public enum StartRequestReason
+      implements com.google.protobuf.ProtocolMessageEnum {
+    /**
+     * <code>START_REQUEST_REASON_USER_REQUEST = 0;</code>
+     */
+    START_REQUEST_REASON_USER_REQUEST(0),
+    /**
+     * <code>START_REQUEST_REASON_AUTO_LAUNCH = 1;</code>
+     */
+    START_REQUEST_REASON_AUTO_LAUNCH(1),
+    /**
+     * <code>START_REQUEST_REASON_AUTOMATIC_RESTART = 2;</code>
+     */
+    START_REQUEST_REASON_AUTOMATIC_RESTART(2),
+    ;
+
+    /**
+     * <code>START_REQUEST_REASON_USER_REQUEST = 0;</code>
+     */
+    public static final int START_REQUEST_REASON_USER_REQUEST_VALUE = 0;
+    /**
+     * <code>START_REQUEST_REASON_AUTO_LAUNCH = 1;</code>
+     */
+    public static final int START_REQUEST_REASON_AUTO_LAUNCH_VALUE = 1;
+    /**
+     * <code>START_REQUEST_REASON_AUTOMATIC_RESTART = 2;</code>
+     */
+    public static final int START_REQUEST_REASON_AUTOMATIC_RESTART_VALUE = 2;
+
+
+    public final int getNumber() {
+      return value;
+    }
+
+    /**
+     * @param value The numeric wire value of the corresponding enum entry.
+     * @return The enum associated with the given numeric wire value.
+     * @deprecated Use {@link #forNumber(int)} instead.
+     */
+    @java.lang.Deprecated
+    public static StartRequestReason valueOf(int value) {
+      return forNumber(value);
+    }
+
+    /**
+     * @param value The numeric wire value of the corresponding enum entry.
+     * @return The enum associated with the given numeric wire value.
+     */
+    public static StartRequestReason forNumber(int value) {
+      switch (value) {
+        case 0: return START_REQUEST_REASON_USER_REQUEST;
+        case 1: return START_REQUEST_REASON_AUTO_LAUNCH;
+        case 2: return START_REQUEST_REASON_AUTOMATIC_RESTART;
+        default: return null;
+      }
+    }
+
+    public static com.google.protobuf.Internal.EnumLiteMap<StartRequestReason>
+        internalGetValueMap() {
+      return internalValueMap;
+    }
+    private static final com.google.protobuf.Internal.EnumLiteMap<
+        StartRequestReason> internalValueMap =
+          new com.google.protobuf.Internal.EnumLiteMap<StartRequestReason>() {
+            public StartRequestReason findValueByNumber(int number) {
+              return StartRequestReason.forNumber(number);
+            }
+          };
+
+    public final com.google.protobuf.Descriptors.EnumValueDescriptor
+        getValueDescriptor() {
+      return getDescriptor().getValues().get(ordinal());
+    }
+    public final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptorForType() {
+      return getDescriptor();
+    }
+    public static final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptor() {
+      return com.andrerinas.openheadunit.aap.protocol.proto.Wireless.getDescriptor().getEnumTypes().get(4);
+    }
+
+    private static final StartRequestReason[] VALUES = values();
+
+    public static StartRequestReason valueOf(
+        com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+      if (desc.getType() != getDescriptor()) {
+        throw new java.lang.IllegalArgumentException(
+          "EnumValueDescriptor is not for this type.");
+      }
+      return VALUES[desc.getIndex()];
+    }
+
+    private final int value;
+
+    private StartRequestReason(int value) {
+      this.value = value;
+    }
+
+    // @@protoc_insertion_point(enum_scope:com.andrerinas.openheadunit.aap.protocol.proto.StartRequestReason)
+  }
+
   public interface WifiStartRequestOrBuilder extends
       // @@protoc_insertion_point(interface_extends:com.andrerinas.openheadunit.aap.protocol.proto.WifiStartRequest)
       com.google.protobuf.MessageOrBuilder {
@@ -562,15 +671,15 @@ public final class Wireless {
     int getPort();
 
     /**
-     * <code>optional int32 status = 3;</code>
-     * @return Whether the status field is set.
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.StartRequestReason start_request_reason = 3;</code>
+     * @return Whether the startRequestReason field is set.
      */
-    boolean hasStatus();
+    boolean hasStartRequestReason();
     /**
-     * <code>optional int32 status = 3;</code>
-     * @return The status.
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.StartRequestReason start_request_reason = 3;</code>
+     * @return The startRequestReason.
      */
-    int getStatus();
+    com.andrerinas.openheadunit.aap.protocol.proto.Wireless.StartRequestReason getStartRequestReason();
   }
   /**
    * <pre>
@@ -590,6 +699,7 @@ public final class Wireless {
     }
     private WifiStartRequest() {
       ipAddress_ = "";
+      startRequestReason_ = 0;
     }
 
     @java.lang.Override
@@ -681,23 +791,22 @@ public final class Wireless {
       return port_;
     }
 
-    public static final int STATUS_FIELD_NUMBER = 3;
-    private int status_ = 0;
+    public static final int START_REQUEST_REASON_FIELD_NUMBER = 3;
+    private int startRequestReason_ = 0;
     /**
-     * <code>optional int32 status = 3;</code>
-     * @return Whether the status field is set.
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.StartRequestReason start_request_reason = 3;</code>
+     * @return Whether the startRequestReason field is set.
      */
-    @java.lang.Override
-    public boolean hasStatus() {
+    @java.lang.Override public boolean hasStartRequestReason() {
       return ((bitField0_ & 0x00000004) != 0);
     }
     /**
-     * <code>optional int32 status = 3;</code>
-     * @return The status.
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.StartRequestReason start_request_reason = 3;</code>
+     * @return The startRequestReason.
      */
-    @java.lang.Override
-    public int getStatus() {
-      return status_;
+    @java.lang.Override public com.andrerinas.openheadunit.aap.protocol.proto.Wireless.StartRequestReason getStartRequestReason() {
+      com.andrerinas.openheadunit.aap.protocol.proto.Wireless.StartRequestReason result = com.andrerinas.openheadunit.aap.protocol.proto.Wireless.StartRequestReason.forNumber(startRequestReason_);
+      return result == null ? com.andrerinas.openheadunit.aap.protocol.proto.Wireless.StartRequestReason.START_REQUEST_REASON_USER_REQUEST : result;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -729,7 +838,7 @@ public final class Wireless {
         output.writeInt32(2, port_);
       }
       if (((bitField0_ & 0x00000004) != 0)) {
-        output.writeInt32(3, status_);
+        output.writeEnum(3, startRequestReason_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -749,7 +858,7 @@ public final class Wireless {
       }
       if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(3, status_);
+          .computeEnumSize(3, startRequestReason_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
@@ -776,10 +885,9 @@ public final class Wireless {
         if (getPort()
             != other.getPort()) return false;
       }
-      if (hasStatus() != other.hasStatus()) return false;
-      if (hasStatus()) {
-        if (getStatus()
-            != other.getStatus()) return false;
+      if (hasStartRequestReason() != other.hasStartRequestReason()) return false;
+      if (hasStartRequestReason()) {
+        if (startRequestReason_ != other.startRequestReason_) return false;
       }
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
@@ -800,9 +908,9 @@ public final class Wireless {
         hash = (37 * hash) + PORT_FIELD_NUMBER;
         hash = (53 * hash) + getPort();
       }
-      if (hasStatus()) {
-        hash = (37 * hash) + STATUS_FIELD_NUMBER;
-        hash = (53 * hash) + getStatus();
+      if (hasStartRequestReason()) {
+        hash = (37 * hash) + START_REQUEST_REASON_FIELD_NUMBER;
+        hash = (53 * hash) + startRequestReason_;
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -941,7 +1049,7 @@ public final class Wireless {
         bitField0_ = 0;
         ipAddress_ = "";
         port_ = 0;
-        status_ = 0;
+        startRequestReason_ = 0;
         return this;
       }
 
@@ -985,7 +1093,7 @@ public final class Wireless {
           to_bitField0_ |= 0x00000002;
         }
         if (((from_bitField0_ & 0x00000004) != 0)) {
-          result.status_ = status_;
+          result.startRequestReason_ = startRequestReason_;
           to_bitField0_ |= 0x00000004;
         }
         result.bitField0_ |= to_bitField0_;
@@ -1043,8 +1151,8 @@ public final class Wireless {
         if (other.hasPort()) {
           setPort(other.getPort());
         }
-        if (other.hasStatus()) {
-          setStatus(other.getStatus());
+        if (other.hasStartRequestReason()) {
+          setStartRequestReason(other.getStartRequestReason());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
@@ -1089,8 +1197,15 @@ public final class Wireless {
                 break;
               } // case 16
               case 24: {
-                status_ = input.readInt32();
-                bitField0_ |= 0x00000004;
+                int tmpRaw = input.readEnum();
+                com.andrerinas.openheadunit.aap.protocol.proto.Wireless.StartRequestReason tmpValue =
+                    com.andrerinas.openheadunit.aap.protocol.proto.Wireless.StartRequestReason.forNumber(tmpRaw);
+                if (tmpValue == null) {
+                  mergeUnknownVarintField(3, tmpRaw);
+                } else {
+                  startRequestReason_ = tmpRaw;
+                  bitField0_ |= 0x00000004;
+                }
                 break;
               } // case 24
               default: {
@@ -1230,42 +1345,44 @@ public final class Wireless {
         return this;
       }
 
-      private int status_ ;
+      private int startRequestReason_ = 0;
       /**
-       * <code>optional int32 status = 3;</code>
-       * @return Whether the status field is set.
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.StartRequestReason start_request_reason = 3;</code>
+       * @return Whether the startRequestReason field is set.
        */
-      @java.lang.Override
-      public boolean hasStatus() {
+      @java.lang.Override public boolean hasStartRequestReason() {
         return ((bitField0_ & 0x00000004) != 0);
       }
       /**
-       * <code>optional int32 status = 3;</code>
-       * @return The status.
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.StartRequestReason start_request_reason = 3;</code>
+       * @return The startRequestReason.
        */
       @java.lang.Override
-      public int getStatus() {
-        return status_;
+      public com.andrerinas.openheadunit.aap.protocol.proto.Wireless.StartRequestReason getStartRequestReason() {
+        com.andrerinas.openheadunit.aap.protocol.proto.Wireless.StartRequestReason result = com.andrerinas.openheadunit.aap.protocol.proto.Wireless.StartRequestReason.forNumber(startRequestReason_);
+        return result == null ? com.andrerinas.openheadunit.aap.protocol.proto.Wireless.StartRequestReason.START_REQUEST_REASON_USER_REQUEST : result;
       }
       /**
-       * <code>optional int32 status = 3;</code>
-       * @param value The status to set.
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.StartRequestReason start_request_reason = 3;</code>
+       * @param value The startRequestReason to set.
        * @return This builder for chaining.
        */
-      public Builder setStatus(int value) {
-
-        status_ = value;
+      public Builder setStartRequestReason(com.andrerinas.openheadunit.aap.protocol.proto.Wireless.StartRequestReason value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
         bitField0_ |= 0x00000004;
+        startRequestReason_ = value.getNumber();
         onChanged();
         return this;
       }
       /**
-       * <code>optional int32 status = 3;</code>
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.StartRequestReason start_request_reason = 3;</code>
        * @return This builder for chaining.
        */
-      public Builder clearStatus() {
+      public Builder clearStartRequestReason() {
         bitField0_ = (bitField0_ & ~0x00000004);
-        status_ = 0;
+        startRequestReason_ = 0;
         onChanged();
         return this;
       }
@@ -7036,24 +7153,22 @@ public final class Wireless {
 
     /**
      * <pre>
-     * Present in Android Auto 17.5 and 17.8, absent from every schema we had. Contents unknown;
-     * modelled so a session can log it.
+     * The token from WifiSetupInfo (type 11) field 3. We never send type 11, so it stays empty.
      * </pre>
      *
-     * <code>optional bytes unknown_blob_7 = 7;</code>
-     * @return Whether the unknownBlob7 field is set.
+     * <code>optional bytes setup_token = 7;</code>
+     * @return Whether the setupToken field is set.
      */
-    boolean hasUnknownBlob7();
+    boolean hasSetupToken();
     /**
      * <pre>
-     * Present in Android Auto 17.5 and 17.8, absent from every schema we had. Contents unknown;
-     * modelled so a session can log it.
+     * The token from WifiSetupInfo (type 11) field 3. We never send type 11, so it stays empty.
      * </pre>
      *
-     * <code>optional bytes unknown_blob_7 = 7;</code>
-     * @return The unknownBlob7.
+     * <code>optional bytes setup_token = 7;</code>
+     * @return The setupToken.
      */
-    com.google.protobuf.ByteString getUnknownBlob7();
+    com.google.protobuf.ByteString getSetupToken();
   }
   /**
    * <pre>
@@ -7074,7 +7189,7 @@ public final class Wireless {
     }
     private WifiVersionResponse() {
       deviceSerial_ = "";
-      unknownBlob7_ = com.google.protobuf.ByteString.EMPTY;
+      setupToken_ = com.google.protobuf.ByteString.EMPTY;
     }
 
     @java.lang.Override
@@ -7249,33 +7364,31 @@ public final class Wireless {
       return deviceInfo_ == null ? com.andrerinas.openheadunit.aap.protocol.proto.Wireless.WppWifiDeviceInfo.getDefaultInstance() : deviceInfo_;
     }
 
-    public static final int UNKNOWN_BLOB_7_FIELD_NUMBER = 7;
-    private com.google.protobuf.ByteString unknownBlob7_ = com.google.protobuf.ByteString.EMPTY;
+    public static final int SETUP_TOKEN_FIELD_NUMBER = 7;
+    private com.google.protobuf.ByteString setupToken_ = com.google.protobuf.ByteString.EMPTY;
     /**
      * <pre>
-     * Present in Android Auto 17.5 and 17.8, absent from every schema we had. Contents unknown;
-     * modelled so a session can log it.
+     * The token from WifiSetupInfo (type 11) field 3. We never send type 11, so it stays empty.
      * </pre>
      *
-     * <code>optional bytes unknown_blob_7 = 7;</code>
-     * @return Whether the unknownBlob7 field is set.
+     * <code>optional bytes setup_token = 7;</code>
+     * @return Whether the setupToken field is set.
      */
     @java.lang.Override
-    public boolean hasUnknownBlob7() {
+    public boolean hasSetupToken() {
       return ((bitField0_ & 0x00000040) != 0);
     }
     /**
      * <pre>
-     * Present in Android Auto 17.5 and 17.8, absent from every schema we had. Contents unknown;
-     * modelled so a session can log it.
+     * The token from WifiSetupInfo (type 11) field 3. We never send type 11, so it stays empty.
      * </pre>
      *
-     * <code>optional bytes unknown_blob_7 = 7;</code>
-     * @return The unknownBlob7.
+     * <code>optional bytes setup_token = 7;</code>
+     * @return The setupToken.
      */
     @java.lang.Override
-    public com.google.protobuf.ByteString getUnknownBlob7() {
-      return unknownBlob7_;
+    public com.google.protobuf.ByteString getSetupToken() {
+      return setupToken_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -7311,7 +7424,7 @@ public final class Wireless {
         output.writeMessage(6, getDeviceInfo());
       }
       if (((bitField0_ & 0x00000040) != 0)) {
-        output.writeBytes(7, unknownBlob7_);
+        output.writeBytes(7, setupToken_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -7347,7 +7460,7 @@ public final class Wireless {
       }
       if (((bitField0_ & 0x00000040) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(7, unknownBlob7_);
+          .computeBytesSize(7, setupToken_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
@@ -7394,10 +7507,10 @@ public final class Wireless {
         if (!getDeviceInfo()
             .equals(other.getDeviceInfo())) return false;
       }
-      if (hasUnknownBlob7() != other.hasUnknownBlob7()) return false;
-      if (hasUnknownBlob7()) {
-        if (!getUnknownBlob7()
-            .equals(other.getUnknownBlob7())) return false;
+      if (hasSetupToken() != other.hasSetupToken()) return false;
+      if (hasSetupToken()) {
+        if (!getSetupToken()
+            .equals(other.getSetupToken())) return false;
       }
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
@@ -7434,9 +7547,9 @@ public final class Wireless {
         hash = (37 * hash) + DEVICE_INFO_FIELD_NUMBER;
         hash = (53 * hash) + getDeviceInfo().hashCode();
       }
-      if (hasUnknownBlob7()) {
-        hash = (37 * hash) + UNKNOWN_BLOB_7_FIELD_NUMBER;
-        hash = (53 * hash) + getUnknownBlob7().hashCode();
+      if (hasSetupToken()) {
+        hash = (37 * hash) + SETUP_TOKEN_FIELD_NUMBER;
+        hash = (53 * hash) + getSetupToken().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -7590,7 +7703,7 @@ public final class Wireless {
           deviceInfoBuilder_.dispose();
           deviceInfoBuilder_ = null;
         }
-        unknownBlob7_ = com.google.protobuf.ByteString.EMPTY;
+        setupToken_ = com.google.protobuf.ByteString.EMPTY;
         return this;
       }
 
@@ -7652,7 +7765,7 @@ public final class Wireless {
           to_bitField0_ |= 0x00000020;
         }
         if (((from_bitField0_ & 0x00000040) != 0)) {
-          result.unknownBlob7_ = unknownBlob7_;
+          result.setupToken_ = setupToken_;
           to_bitField0_ |= 0x00000040;
         }
         result.bitField0_ |= to_bitField0_;
@@ -7722,8 +7835,8 @@ public final class Wireless {
         if (other.hasDeviceInfo()) {
           mergeDeviceInfo(other.getDeviceInfo());
         }
-        if (other.hasUnknownBlob7()) {
-          setUnknownBlob7(other.getUnknownBlob7());
+        if (other.hasSetupToken()) {
+          setSetupToken(other.getSetupToken());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
@@ -7784,7 +7897,7 @@ public final class Wireless {
                 break;
               } // case 50
               case 58: {
-                unknownBlob7_ = input.readBytes();
+                setupToken_ = input.readBytes();
                 bitField0_ |= 0x00000040;
                 break;
               } // case 58
@@ -8166,62 +8279,58 @@ public final class Wireless {
         return deviceInfoBuilder_;
       }
 
-      private com.google.protobuf.ByteString unknownBlob7_ = com.google.protobuf.ByteString.EMPTY;
+      private com.google.protobuf.ByteString setupToken_ = com.google.protobuf.ByteString.EMPTY;
       /**
        * <pre>
-       * Present in Android Auto 17.5 and 17.8, absent from every schema we had. Contents unknown;
-       * modelled so a session can log it.
+       * The token from WifiSetupInfo (type 11) field 3. We never send type 11, so it stays empty.
        * </pre>
        *
-       * <code>optional bytes unknown_blob_7 = 7;</code>
-       * @return Whether the unknownBlob7 field is set.
+       * <code>optional bytes setup_token = 7;</code>
+       * @return Whether the setupToken field is set.
        */
       @java.lang.Override
-      public boolean hasUnknownBlob7() {
+      public boolean hasSetupToken() {
         return ((bitField0_ & 0x00000040) != 0);
       }
       /**
        * <pre>
-       * Present in Android Auto 17.5 and 17.8, absent from every schema we had. Contents unknown;
-       * modelled so a session can log it.
+       * The token from WifiSetupInfo (type 11) field 3. We never send type 11, so it stays empty.
        * </pre>
        *
-       * <code>optional bytes unknown_blob_7 = 7;</code>
-       * @return The unknownBlob7.
+       * <code>optional bytes setup_token = 7;</code>
+       * @return The setupToken.
        */
       @java.lang.Override
-      public com.google.protobuf.ByteString getUnknownBlob7() {
-        return unknownBlob7_;
+      public com.google.protobuf.ByteString getSetupToken() {
+        return setupToken_;
       }
       /**
        * <pre>
-       * Present in Android Auto 17.5 and 17.8, absent from every schema we had. Contents unknown;
-       * modelled so a session can log it.
+       * The token from WifiSetupInfo (type 11) field 3. We never send type 11, so it stays empty.
        * </pre>
        *
-       * <code>optional bytes unknown_blob_7 = 7;</code>
-       * @param value The unknownBlob7 to set.
+       * <code>optional bytes setup_token = 7;</code>
+       * @param value The setupToken to set.
        * @return This builder for chaining.
        */
-      public Builder setUnknownBlob7(com.google.protobuf.ByteString value) {
+      public Builder setSetupToken(com.google.protobuf.ByteString value) {
         if (value == null) { throw new NullPointerException(); }
-        unknownBlob7_ = value;
+        setupToken_ = value;
         bitField0_ |= 0x00000040;
         onChanged();
         return this;
       }
       /**
        * <pre>
-       * Present in Android Auto 17.5 and 17.8, absent from every schema we had. Contents unknown;
-       * modelled so a session can log it.
+       * The token from WifiSetupInfo (type 11) field 3. We never send type 11, so it stays empty.
        * </pre>
        *
-       * <code>optional bytes unknown_blob_7 = 7;</code>
+       * <code>optional bytes setup_token = 7;</code>
        * @return This builder for chaining.
        */
-      public Builder clearUnknownBlob7() {
+      public Builder clearSetupToken() {
         bitField0_ = (bitField0_ & ~0x00000040);
-        unknownBlob7_ = getDefaultInstance().getUnknownBlob7();
+        setupToken_ = getDefaultInstance().getSetupToken();
         onChanged();
         return this;
       }
@@ -8328,53 +8437,38 @@ public final class Wireless {
         getConnectivityLifetimeIdBytes();
 
     /**
-     * <pre>
-     * Two more strings the phone declares and this had never modelled. Logged so a capture can
-     * name them; what they carry is unrecovered.
-     * </pre>
-     *
-     * <code>optional string unknown_string_3 = 3;</code>
-     * @return Whether the unknownString3 field is set.
+     * <code>optional string device_name = 3;</code>
+     * @return Whether the deviceName field is set.
      */
-    boolean hasUnknownString3();
+    boolean hasDeviceName();
     /**
-     * <pre>
-     * Two more strings the phone declares and this had never modelled. Logged so a capture can
-     * name them; what they carry is unrecovered.
-     * </pre>
-     *
-     * <code>optional string unknown_string_3 = 3;</code>
-     * @return The unknownString3.
+     * <code>optional string device_name = 3;</code>
+     * @return The deviceName.
      */
-    java.lang.String getUnknownString3();
+    java.lang.String getDeviceName();
     /**
-     * <pre>
-     * Two more strings the phone declares and this had never modelled. Logged so a capture can
-     * name them; what they carry is unrecovered.
-     * </pre>
-     *
-     * <code>optional string unknown_string_3 = 3;</code>
-     * @return The bytes for unknownString3.
+     * <code>optional string device_name = 3;</code>
+     * @return The bytes for deviceName.
      */
     com.google.protobuf.ByteString
-        getUnknownString3Bytes();
+        getDeviceNameBytes();
 
     /**
-     * <code>optional string unknown_string_4 = 4;</code>
-     * @return Whether the unknownString4 field is set.
+     * <code>optional string bluetooth_address = 4;</code>
+     * @return Whether the bluetoothAddress field is set.
      */
-    boolean hasUnknownString4();
+    boolean hasBluetoothAddress();
     /**
-     * <code>optional string unknown_string_4 = 4;</code>
-     * @return The unknownString4.
+     * <code>optional string bluetooth_address = 4;</code>
+     * @return The bluetoothAddress.
      */
-    java.lang.String getUnknownString4();
+    java.lang.String getBluetoothAddress();
     /**
-     * <code>optional string unknown_string_4 = 4;</code>
-     * @return The bytes for unknownString4.
+     * <code>optional string bluetooth_address = 4;</code>
+     * @return The bytes for bluetoothAddress.
      */
     com.google.protobuf.ByteString
-        getUnknownString4Bytes();
+        getBluetoothAddressBytes();
   }
   /**
    * <pre>
@@ -8396,8 +8490,8 @@ public final class Wireless {
     private WppWifiDeviceInfo() {
       deviceId_ = "";
       connectivityLifetimeId_ = "";
-      unknownString3_ = "";
-      unknownString4_ = "";
+      deviceName_ = "";
+      bluetoothAddress_ = "";
     }
 
     @java.lang.Override
@@ -8519,34 +8613,24 @@ public final class Wireless {
       }
     }
 
-    public static final int UNKNOWN_STRING_3_FIELD_NUMBER = 3;
+    public static final int DEVICE_NAME_FIELD_NUMBER = 3;
     @SuppressWarnings("serial")
-    private volatile java.lang.Object unknownString3_ = "";
+    private volatile java.lang.Object deviceName_ = "";
     /**
-     * <pre>
-     * Two more strings the phone declares and this had never modelled. Logged so a capture can
-     * name them; what they carry is unrecovered.
-     * </pre>
-     *
-     * <code>optional string unknown_string_3 = 3;</code>
-     * @return Whether the unknownString3 field is set.
+     * <code>optional string device_name = 3;</code>
+     * @return Whether the deviceName field is set.
      */
     @java.lang.Override
-    public boolean hasUnknownString3() {
+    public boolean hasDeviceName() {
       return ((bitField0_ & 0x00000004) != 0);
     }
     /**
-     * <pre>
-     * Two more strings the phone declares and this had never modelled. Logged so a capture can
-     * name them; what they carry is unrecovered.
-     * </pre>
-     *
-     * <code>optional string unknown_string_3 = 3;</code>
-     * @return The unknownString3.
+     * <code>optional string device_name = 3;</code>
+     * @return The deviceName.
      */
     @java.lang.Override
-    public java.lang.String getUnknownString3() {
-      java.lang.Object ref = unknownString3_;
+    public java.lang.String getDeviceName() {
+      java.lang.Object ref = deviceName_;
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
@@ -8554,53 +8638,48 @@ public final class Wireless {
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
-          unknownString3_ = s;
+          deviceName_ = s;
         }
         return s;
       }
     }
     /**
-     * <pre>
-     * Two more strings the phone declares and this had never modelled. Logged so a capture can
-     * name them; what they carry is unrecovered.
-     * </pre>
-     *
-     * <code>optional string unknown_string_3 = 3;</code>
-     * @return The bytes for unknownString3.
+     * <code>optional string device_name = 3;</code>
+     * @return The bytes for deviceName.
      */
     @java.lang.Override
     public com.google.protobuf.ByteString
-        getUnknownString3Bytes() {
-      java.lang.Object ref = unknownString3_;
+        getDeviceNameBytes() {
+      java.lang.Object ref = deviceName_;
       if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        unknownString3_ = b;
+        deviceName_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
       }
     }
 
-    public static final int UNKNOWN_STRING_4_FIELD_NUMBER = 4;
+    public static final int BLUETOOTH_ADDRESS_FIELD_NUMBER = 4;
     @SuppressWarnings("serial")
-    private volatile java.lang.Object unknownString4_ = "";
+    private volatile java.lang.Object bluetoothAddress_ = "";
     /**
-     * <code>optional string unknown_string_4 = 4;</code>
-     * @return Whether the unknownString4 field is set.
+     * <code>optional string bluetooth_address = 4;</code>
+     * @return Whether the bluetoothAddress field is set.
      */
     @java.lang.Override
-    public boolean hasUnknownString4() {
+    public boolean hasBluetoothAddress() {
       return ((bitField0_ & 0x00000008) != 0);
     }
     /**
-     * <code>optional string unknown_string_4 = 4;</code>
-     * @return The unknownString4.
+     * <code>optional string bluetooth_address = 4;</code>
+     * @return The bluetoothAddress.
      */
     @java.lang.Override
-    public java.lang.String getUnknownString4() {
-      java.lang.Object ref = unknownString4_;
+    public java.lang.String getBluetoothAddress() {
+      java.lang.Object ref = bluetoothAddress_;
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
@@ -8608,24 +8687,24 @@ public final class Wireless {
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
-          unknownString4_ = s;
+          bluetoothAddress_ = s;
         }
         return s;
       }
     }
     /**
-     * <code>optional string unknown_string_4 = 4;</code>
-     * @return The bytes for unknownString4.
+     * <code>optional string bluetooth_address = 4;</code>
+     * @return The bytes for bluetoothAddress.
      */
     @java.lang.Override
     public com.google.protobuf.ByteString
-        getUnknownString4Bytes() {
-      java.lang.Object ref = unknownString4_;
+        getBluetoothAddressBytes() {
+      java.lang.Object ref = bluetoothAddress_;
       if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        unknownString4_ = b;
+        bluetoothAddress_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
@@ -8653,10 +8732,10 @@ public final class Wireless {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, connectivityLifetimeId_);
       }
       if (((bitField0_ & 0x00000004) != 0)) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 3, unknownString3_);
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 3, deviceName_);
       }
       if (((bitField0_ & 0x00000008) != 0)) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 4, unknownString4_);
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 4, bluetoothAddress_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -8674,10 +8753,10 @@ public final class Wireless {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, connectivityLifetimeId_);
       }
       if (((bitField0_ & 0x00000004) != 0)) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, unknownString3_);
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, deviceName_);
       }
       if (((bitField0_ & 0x00000008) != 0)) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, unknownString4_);
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, bluetoothAddress_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
@@ -8704,15 +8783,15 @@ public final class Wireless {
         if (!getConnectivityLifetimeId()
             .equals(other.getConnectivityLifetimeId())) return false;
       }
-      if (hasUnknownString3() != other.hasUnknownString3()) return false;
-      if (hasUnknownString3()) {
-        if (!getUnknownString3()
-            .equals(other.getUnknownString3())) return false;
+      if (hasDeviceName() != other.hasDeviceName()) return false;
+      if (hasDeviceName()) {
+        if (!getDeviceName()
+            .equals(other.getDeviceName())) return false;
       }
-      if (hasUnknownString4() != other.hasUnknownString4()) return false;
-      if (hasUnknownString4()) {
-        if (!getUnknownString4()
-            .equals(other.getUnknownString4())) return false;
+      if (hasBluetoothAddress() != other.hasBluetoothAddress()) return false;
+      if (hasBluetoothAddress()) {
+        if (!getBluetoothAddress()
+            .equals(other.getBluetoothAddress())) return false;
       }
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
@@ -8733,13 +8812,13 @@ public final class Wireless {
         hash = (37 * hash) + CONNECTIVITY_LIFETIME_ID_FIELD_NUMBER;
         hash = (53 * hash) + getConnectivityLifetimeId().hashCode();
       }
-      if (hasUnknownString3()) {
-        hash = (37 * hash) + UNKNOWN_STRING_3_FIELD_NUMBER;
-        hash = (53 * hash) + getUnknownString3().hashCode();
+      if (hasDeviceName()) {
+        hash = (37 * hash) + DEVICE_NAME_FIELD_NUMBER;
+        hash = (53 * hash) + getDeviceName().hashCode();
       }
-      if (hasUnknownString4()) {
-        hash = (37 * hash) + UNKNOWN_STRING_4_FIELD_NUMBER;
-        hash = (53 * hash) + getUnknownString4().hashCode();
+      if (hasBluetoothAddress()) {
+        hash = (37 * hash) + BLUETOOTH_ADDRESS_FIELD_NUMBER;
+        hash = (53 * hash) + getBluetoothAddress().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -8879,8 +8958,8 @@ public final class Wireless {
         bitField0_ = 0;
         deviceId_ = "";
         connectivityLifetimeId_ = "";
-        unknownString3_ = "";
-        unknownString4_ = "";
+        deviceName_ = "";
+        bluetoothAddress_ = "";
         return this;
       }
 
@@ -8924,11 +9003,11 @@ public final class Wireless {
           to_bitField0_ |= 0x00000002;
         }
         if (((from_bitField0_ & 0x00000004) != 0)) {
-          result.unknownString3_ = unknownString3_;
+          result.deviceName_ = deviceName_;
           to_bitField0_ |= 0x00000004;
         }
         if (((from_bitField0_ & 0x00000008) != 0)) {
-          result.unknownString4_ = unknownString4_;
+          result.bluetoothAddress_ = bluetoothAddress_;
           to_bitField0_ |= 0x00000008;
         }
         result.bitField0_ |= to_bitField0_;
@@ -8988,13 +9067,13 @@ public final class Wireless {
           bitField0_ |= 0x00000002;
           onChanged();
         }
-        if (other.hasUnknownString3()) {
-          unknownString3_ = other.unknownString3_;
+        if (other.hasDeviceName()) {
+          deviceName_ = other.deviceName_;
           bitField0_ |= 0x00000004;
           onChanged();
         }
-        if (other.hasUnknownString4()) {
-          unknownString4_ = other.unknownString4_;
+        if (other.hasBluetoothAddress()) {
+          bluetoothAddress_ = other.bluetoothAddress_;
           bitField0_ |= 0x00000008;
           onChanged();
         }
@@ -9035,12 +9114,12 @@ public final class Wireless {
                 break;
               } // case 18
               case 26: {
-                unknownString3_ = input.readBytes();
+                deviceName_ = input.readBytes();
                 bitField0_ |= 0x00000004;
                 break;
               } // case 26
               case 34: {
-                unknownString4_ = input.readBytes();
+                bluetoothAddress_ = input.readBytes();
                 bitField0_ |= 0x00000008;
                 break;
               } // case 34
@@ -9221,36 +9300,26 @@ public final class Wireless {
         return this;
       }
 
-      private java.lang.Object unknownString3_ = "";
+      private java.lang.Object deviceName_ = "";
       /**
-       * <pre>
-       * Two more strings the phone declares and this had never modelled. Logged so a capture can
-       * name them; what they carry is unrecovered.
-       * </pre>
-       *
-       * <code>optional string unknown_string_3 = 3;</code>
-       * @return Whether the unknownString3 field is set.
+       * <code>optional string device_name = 3;</code>
+       * @return Whether the deviceName field is set.
        */
-      public boolean hasUnknownString3() {
+      public boolean hasDeviceName() {
         return ((bitField0_ & 0x00000004) != 0);
       }
       /**
-       * <pre>
-       * Two more strings the phone declares and this had never modelled. Logged so a capture can
-       * name them; what they carry is unrecovered.
-       * </pre>
-       *
-       * <code>optional string unknown_string_3 = 3;</code>
-       * @return The unknownString3.
+       * <code>optional string device_name = 3;</code>
+       * @return The deviceName.
        */
-      public java.lang.String getUnknownString3() {
-        java.lang.Object ref = unknownString3_;
+      public java.lang.String getDeviceName() {
+        java.lang.Object ref = deviceName_;
         if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
           if (bs.isValidUtf8()) {
-            unknownString3_ = s;
+            deviceName_ = s;
           }
           return s;
         } else {
@@ -9258,99 +9327,79 @@ public final class Wireless {
         }
       }
       /**
-       * <pre>
-       * Two more strings the phone declares and this had never modelled. Logged so a capture can
-       * name them; what they carry is unrecovered.
-       * </pre>
-       *
-       * <code>optional string unknown_string_3 = 3;</code>
-       * @return The bytes for unknownString3.
+       * <code>optional string device_name = 3;</code>
+       * @return The bytes for deviceName.
        */
       public com.google.protobuf.ByteString
-          getUnknownString3Bytes() {
-        java.lang.Object ref = unknownString3_;
+          getDeviceNameBytes() {
+        java.lang.Object ref = deviceName_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
-          unknownString3_ = b;
+          deviceName_ = b;
           return b;
         } else {
           return (com.google.protobuf.ByteString) ref;
         }
       }
       /**
-       * <pre>
-       * Two more strings the phone declares and this had never modelled. Logged so a capture can
-       * name them; what they carry is unrecovered.
-       * </pre>
-       *
-       * <code>optional string unknown_string_3 = 3;</code>
-       * @param value The unknownString3 to set.
+       * <code>optional string device_name = 3;</code>
+       * @param value The deviceName to set.
        * @return This builder for chaining.
        */
-      public Builder setUnknownString3(
+      public Builder setDeviceName(
           java.lang.String value) {
         if (value == null) { throw new NullPointerException(); }
-        unknownString3_ = value;
+        deviceName_ = value;
         bitField0_ |= 0x00000004;
         onChanged();
         return this;
       }
       /**
-       * <pre>
-       * Two more strings the phone declares and this had never modelled. Logged so a capture can
-       * name them; what they carry is unrecovered.
-       * </pre>
-       *
-       * <code>optional string unknown_string_3 = 3;</code>
+       * <code>optional string device_name = 3;</code>
        * @return This builder for chaining.
        */
-      public Builder clearUnknownString3() {
-        unknownString3_ = getDefaultInstance().getUnknownString3();
+      public Builder clearDeviceName() {
+        deviceName_ = getDefaultInstance().getDeviceName();
         bitField0_ = (bitField0_ & ~0x00000004);
         onChanged();
         return this;
       }
       /**
-       * <pre>
-       * Two more strings the phone declares and this had never modelled. Logged so a capture can
-       * name them; what they carry is unrecovered.
-       * </pre>
-       *
-       * <code>optional string unknown_string_3 = 3;</code>
-       * @param value The bytes for unknownString3 to set.
+       * <code>optional string device_name = 3;</code>
+       * @param value The bytes for deviceName to set.
        * @return This builder for chaining.
        */
-      public Builder setUnknownString3Bytes(
+      public Builder setDeviceNameBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) { throw new NullPointerException(); }
-        unknownString3_ = value;
+        deviceName_ = value;
         bitField0_ |= 0x00000004;
         onChanged();
         return this;
       }
 
-      private java.lang.Object unknownString4_ = "";
+      private java.lang.Object bluetoothAddress_ = "";
       /**
-       * <code>optional string unknown_string_4 = 4;</code>
-       * @return Whether the unknownString4 field is set.
+       * <code>optional string bluetooth_address = 4;</code>
+       * @return Whether the bluetoothAddress field is set.
        */
-      public boolean hasUnknownString4() {
+      public boolean hasBluetoothAddress() {
         return ((bitField0_ & 0x00000008) != 0);
       }
       /**
-       * <code>optional string unknown_string_4 = 4;</code>
-       * @return The unknownString4.
+       * <code>optional string bluetooth_address = 4;</code>
+       * @return The bluetoothAddress.
        */
-      public java.lang.String getUnknownString4() {
-        java.lang.Object ref = unknownString4_;
+      public java.lang.String getBluetoothAddress() {
+        java.lang.Object ref = bluetoothAddress_;
         if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
           if (bs.isValidUtf8()) {
-            unknownString4_ = s;
+            bluetoothAddress_ = s;
           }
           return s;
         } else {
@@ -9358,54 +9407,54 @@ public final class Wireless {
         }
       }
       /**
-       * <code>optional string unknown_string_4 = 4;</code>
-       * @return The bytes for unknownString4.
+       * <code>optional string bluetooth_address = 4;</code>
+       * @return The bytes for bluetoothAddress.
        */
       public com.google.protobuf.ByteString
-          getUnknownString4Bytes() {
-        java.lang.Object ref = unknownString4_;
+          getBluetoothAddressBytes() {
+        java.lang.Object ref = bluetoothAddress_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
-          unknownString4_ = b;
+          bluetoothAddress_ = b;
           return b;
         } else {
           return (com.google.protobuf.ByteString) ref;
         }
       }
       /**
-       * <code>optional string unknown_string_4 = 4;</code>
-       * @param value The unknownString4 to set.
+       * <code>optional string bluetooth_address = 4;</code>
+       * @param value The bluetoothAddress to set.
        * @return This builder for chaining.
        */
-      public Builder setUnknownString4(
+      public Builder setBluetoothAddress(
           java.lang.String value) {
         if (value == null) { throw new NullPointerException(); }
-        unknownString4_ = value;
+        bluetoothAddress_ = value;
         bitField0_ |= 0x00000008;
         onChanged();
         return this;
       }
       /**
-       * <code>optional string unknown_string_4 = 4;</code>
+       * <code>optional string bluetooth_address = 4;</code>
        * @return This builder for chaining.
        */
-      public Builder clearUnknownString4() {
-        unknownString4_ = getDefaultInstance().getUnknownString4();
+      public Builder clearBluetoothAddress() {
+        bluetoothAddress_ = getDefaultInstance().getBluetoothAddress();
         bitField0_ = (bitField0_ & ~0x00000008);
         onChanged();
         return this;
       }
       /**
-       * <code>optional string unknown_string_4 = 4;</code>
-       * @param value The bytes for unknownString4 to set.
+       * <code>optional string bluetooth_address = 4;</code>
+       * @param value The bytes for bluetoothAddress to set.
        * @return This builder for chaining.
        */
-      public Builder setUnknownString4Bytes(
+      public Builder setBluetoothAddressBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) { throw new NullPointerException(); }
-        unknownString4_ = value;
+        bluetoothAddress_ = value;
         bitField0_ |= 0x00000008;
         onChanged();
         return this;
@@ -11046,6 +11095,7 @@ public final class Wireless {
    * <pre>
    * Types 8 and 9: a keepalive the phone may interject anywhere. We answer type 8 by echoing its
    * raw payload as a type 9 without parsing, so these are for reading captures, not for the reply.
+   * The phone's ping carries only the timestamp.
    * </pre>
    *
    * Protobuf type {@code com.andrerinas.openheadunit.aap.protocol.proto.WifiPingRequest}
@@ -11269,6 +11319,7 @@ public final class Wireless {
      * <pre>
      * Types 8 and 9: a keepalive the phone may interject anywhere. We answer type 8 by echoing its
      * raw payload as a type 9 without parsing, so these are for reading captures, not for the reply.
+     * The phone's ping carries only the timestamp.
      * </pre>
      *
      * Protobuf type {@code com.andrerinas.openheadunit.aap.protocol.proto.WifiPingRequest}
@@ -12069,10 +12120,8 @@ public final class Wireless {
   /**
    * <pre>
    * Type 10, head unit -&gt; phone, and only over TCP: the phone throws on one that arrives over
-   * RFCOMM, and on an unknown reason whatever the transport. Both sendable reasons reach the phone's
-   * own clear path, which is the only candidate for sending a phone that already holds an endpoint
-   * back to the RFCOMM handshake. That the path deletes the record was read on 17.5 and not
-   * reproduced on 17.8, so it is measured on hardware rather than assumed.
+   * RFCOMM, and on an unknown reason whatever the transport. Both sendable reasons clear the
+   * endpoint the phone holds, which sends it back to the RFCOMM handshake.
    * </pre>
    *
    * Protobuf type {@code com.andrerinas.openheadunit.aap.protocol.proto.WifiConnectionRejection}
@@ -12293,10 +12342,8 @@ public final class Wireless {
     /**
      * <pre>
      * Type 10, head unit -&gt; phone, and only over TCP: the phone throws on one that arrives over
-     * RFCOMM, and on an unknown reason whatever the transport. Both sendable reasons reach the phone's
-     * own clear path, which is the only candidate for sending a phone that already holds an endpoint
-     * back to the RFCOMM handshake. That the path deletes the record was read on 17.5 and not
-     * reproduced on 17.8, so it is measured on hardware rather than assumed.
+     * RFCOMM, and on an unknown reason whatever the transport. Both sendable reasons clear the
+     * endpoint the phone holds, which sends it back to the RFCOMM handshake.
      * </pre>
      *
      * Protobuf type {@code com.andrerinas.openheadunit.aap.protocol.proto.WifiConnectionRejection}
@@ -16572,81 +16619,87 @@ public final class Wireless {
   static {
     java.lang.String[] descriptorData = {
       "\n\016wireless.proto\022.com.andrerinas.openhea" +
-      "dunit.aap.protocol.proto\"D\n\020WifiStartReq" +
-      "uest\022\022\n\nip_address\030\001 \002(\t\022\014\n\004port\030\002 \002(\005\022\016" +
-      "\n\006status\030\003 \001(\005\"\021\n\017WifiInfoRequest\"\355\001\n\020Wi" +
-      "fiInfoResponse\022\014\n\004ssid\030\001 \002(\t\022\013\n\003key\030\002 \002(" +
-      "\t\022\r\n\005bssid\030\003 \001(\t\022S\n\rsecurity_mode\030\004 \001(\0162" +
-      "<.com.andrerinas.openheadunit.aap.protoc" +
-      "ol.proto.SecurityMode\022Z\n\021access_point_ty" +
-      "pe\030\005 \001(\0162?.com.andrerinas.openheadunit.a" +
-      "ap.protocol.proto.AccessPointType\">\n\032Wif" +
-      "iProjectionProtocolInfo\022\022\n\nip_address\030\001 " +
-      "\001(\t\022\014\n\004port\030\002 \001(\005\"\333\001\n\nWppCarInfo\022\014\n\004make" +
-      "\030\001 \001(\t\022\r\n\005model\030\002 \001(\t\022\022\n\nmodel_year\030\003 \001(" +
-      "\t\022\022\n\nvehicle_id\030\004 \001(\t\022\026\n\016head_unit_make\030" +
-      "\005 \001(\t\022\027\n\017head_unit_model\030\006 \001(\t\022 \n\030head_u" +
-      "nit_software_build\030\007 \001(\t\022\"\n\032head_unit_so" +
-      "ftware_version\030\010 \001(\t\022\021\n\tbody_type\030\t \001(\005\"" +
-      "\351\002\n\022WifiVersionRequest\022\r\n\005major\030\001 \001(\005\022\r\n" +
-      "\005minor\030\002 \001(\005\022d\n\033supported_wifi_channel_t" +
-      "ype\030\003 \001(\0162?.com.andrerinas.openheadunit." +
-      "aap.protocol.proto.WifiChannelType\022#\n\027su" +
-      "pported_wifi_channels\030\004 \003(\005B\002\020\001\022L\n\010car_i" +
-      "nfo\030\005 \001(\0132:.com.andrerinas.openheadunit." +
-      "aap.protocol.proto.WppCarInfo\022\\\n\010wpp_inf" +
-      "o\030\006 \001(\0132J.com.andrerinas.openheadunit.aa" +
+      "dunit.aap.protocol.proto\"\226\001\n\020WifiStartRe" +
+      "quest\022\022\n\nip_address\030\001 \002(\t\022\014\n\004port\030\002 \002(\005\022" +
+      "`\n\024start_request_reason\030\003 \001(\0162B.com.andr" +
+      "erinas.openheadunit.aap.protocol.proto.S" +
+      "tartRequestReason\"\021\n\017WifiInfoRequest\"\355\001\n" +
+      "\020WifiInfoResponse\022\014\n\004ssid\030\001 \002(\t\022\013\n\003key\030\002" +
+      " \002(\t\022\r\n\005bssid\030\003 \001(\t\022S\n\rsecurity_mode\030\004 \001" +
+      "(\0162<.com.andrerinas.openheadunit.aap.pro" +
+      "tocol.proto.SecurityMode\022Z\n\021access_point" +
+      "_type\030\005 \001(\0162?.com.andrerinas.openheaduni" +
+      "t.aap.protocol.proto.AccessPointType\">\n\032" +
+      "WifiProjectionProtocolInfo\022\022\n\nip_address" +
+      "\030\001 \001(\t\022\014\n\004port\030\002 \001(\005\"\333\001\n\nWppCarInfo\022\014\n\004m" +
+      "ake\030\001 \001(\t\022\r\n\005model\030\002 \001(\t\022\022\n\nmodel_year\030\003" +
+      " \001(\t\022\022\n\nvehicle_id\030\004 \001(\t\022\026\n\016head_unit_ma" +
+      "ke\030\005 \001(\t\022\027\n\017head_unit_model\030\006 \001(\t\022 \n\030hea" +
+      "d_unit_software_build\030\007 \001(\t\022\"\n\032head_unit" +
+      "_software_version\030\010 \001(\t\022\021\n\tbody_type\030\t \001" +
+      "(\005\"\351\002\n\022WifiVersionRequest\022\r\n\005major\030\001 \001(\005" +
+      "\022\r\n\005minor\030\002 \001(\005\022d\n\033supported_wifi_channe" +
+      "l_type\030\003 \001(\0162?.com.andrerinas.openheadun" +
+      "it.aap.protocol.proto.WifiChannelType\022#\n" +
+      "\027supported_wifi_channels\030\004 \003(\005B\002\020\001\022L\n\010ca" +
+      "r_info\030\005 \001(\0132:.com.andrerinas.openheadun" +
+      "it.aap.protocol.proto.WppCarInfo\022\\\n\010wpp_" +
+      "info\030\006 \001(\0132J.com.andrerinas.openheadunit" +
+      ".aap.protocol.proto.WifiProjectionProtoc" +
+      "olInfo\"\353\001\n\023WifiVersionResponse\022\r\n\005major\030" +
+      "\001 \001(\005\022\r\n\005minor\030\002 \001(\005\022\025\n\rdevice_serial\030\003 " +
+      "\001(\t\022\016\n\006status\030\004 \001(\005\022\"\n\032selected_wifi_cha" +
+      "nnel_type\030\005 \001(\005\022V\n\013device_info\030\006 \001(\0132A.c" +
+      "om.andrerinas.openheadunit.aap.protocol." +
+      "proto.WppWifiDeviceInfo\022\023\n\013setup_token\030\007" +
+      " \001(\014\"x\n\021WppWifiDeviceInfo\022\021\n\tdevice_id\030\001" +
+      " \001(\t\022 \n\030connectivity_lifetime_id\030\002 \001(\t\022\023" +
+      "\n\013device_name\030\003 \001(\t\022\031\n\021bluetooth_address" +
+      "\030\004 \001(\t\"?\n\021WifiConnectStatus\022\016\n\006status\030\001 " +
+      "\001(\005\022\032\n\022error_message_hint\030\002 \001(\t\"E\n\021WifiS" +
+      "tartResponse\022\022\n\nip_address\030\001 \001(\t\022\014\n\004port" +
+      "\030\002 \001(\005\022\016\n\006status\030\003 \001(\005\"$\n\017WifiPingReques" +
+      "t\022\021\n\ttimestamp\030\001 \001(\003\"%\n\020WifiPingResponse" +
+      "\022\021\n\ttimestamp\030\001 \001(\003\"t\n\027WifiConnectionRej" +
+      "ection\022Y\n\006reason\030\001 \001(\0162I.com.andrerinas." +
+      "openheadunit.aap.protocol.proto.Connecti" +
+      "onRejectionReason\"\331\001\n\017AccessPointInfo\022\030\n" +
+      "\020unknown_string_1\030\001 \001(\t\022\030\n\020unknown_strin" +
+      "g_2\030\002 \001(\t\022\030\n\020unknown_string_3\030\003 \001(\t\022S\n\rs" +
+      "ecurity_mode\030\004 \001(\0162<.com.andrerinas.open" +
+      "headunit.aap.protocol.proto.SecurityMode" +
+      "\022#\n\027supported_wifi_channels\030\006 \003(\005B\002\020\001\"\377\001" +
+      "\n\rWifiSetupInfo\022\r\n\005major\030\001 \001(\005\022\r\n\005minor\030" +
+      "\002 \001(\005\022\026\n\016unknown_blob_3\030\003 \001(\014\022\\\n\010wpp_inf" +
+      "o\030\004 \001(\0132J.com.andrerinas.openheadunit.aa" +
       "p.protocol.proto.WifiProjectionProtocolI" +
-      "nfo\"\356\001\n\023WifiVersionResponse\022\r\n\005major\030\001 \001" +
-      "(\005\022\r\n\005minor\030\002 \001(\005\022\025\n\rdevice_serial\030\003 \001(\t" +
-      "\022\016\n\006status\030\004 \001(\005\022\"\n\032selected_wifi_channe" +
-      "l_type\030\005 \001(\005\022V\n\013device_info\030\006 \001(\0132A.com." +
-      "andrerinas.openheadunit.aap.protocol.pro" +
-      "to.WppWifiDeviceInfo\022\026\n\016unknown_blob_7\030\007" +
-      " \001(\014\"|\n\021WppWifiDeviceInfo\022\021\n\tdevice_id\030\001" +
-      " \001(\t\022 \n\030connectivity_lifetime_id\030\002 \001(\t\022\030" +
-      "\n\020unknown_string_3\030\003 \001(\t\022\030\n\020unknown_stri" +
-      "ng_4\030\004 \001(\t\"?\n\021WifiConnectStatus\022\016\n\006statu" +
-      "s\030\001 \001(\005\022\032\n\022error_message_hint\030\002 \001(\t\"E\n\021W" +
-      "ifiStartResponse\022\022\n\nip_address\030\001 \001(\t\022\014\n\004" +
-      "port\030\002 \001(\005\022\016\n\006status\030\003 \001(\005\"$\n\017WifiPingRe" +
-      "quest\022\021\n\ttimestamp\030\001 \001(\003\"%\n\020WifiPingResp" +
-      "onse\022\021\n\ttimestamp\030\001 \001(\003\"t\n\027WifiConnectio" +
-      "nRejection\022Y\n\006reason\030\001 \001(\0162I.com.andreri" +
-      "nas.openheadunit.aap.protocol.proto.Conn" +
-      "ectionRejectionReason\"\331\001\n\017AccessPointInf" +
-      "o\022\030\n\020unknown_string_1\030\001 \001(\t\022\030\n\020unknown_s" +
-      "tring_2\030\002 \001(\t\022\030\n\020unknown_string_3\030\003 \001(\t\022" +
-      "S\n\rsecurity_mode\030\004 \001(\0162<.com.andrerinas." +
-      "openheadunit.aap.protocol.proto.Security" +
-      "Mode\022#\n\027supported_wifi_channels\030\006 \003(\005B\002\020" +
-      "\001\"\377\001\n\rWifiSetupInfo\022\r\n\005major\030\001 \001(\005\022\r\n\005mi" +
-      "nor\030\002 \001(\005\022\026\n\016unknown_blob_3\030\003 \001(\014\022\\\n\010wpp" +
-      "_info\030\004 \001(\0132J.com.andrerinas.openheaduni" +
-      "t.aap.protocol.proto.WifiProjectionProto" +
-      "colInfo\022Z\n\021access_point_info\030\005 \001(\0132?.com" +
-      ".andrerinas.openheadunit.aap.protocol.pr" +
-      "oto.AccessPointInfo\"\334\001\n\026ProjectionDeepLi" +
-      "nkData\022\014\n\004ssid\030\001 \001(\t\022\r\n\005bssid\030\002 \001(\t\022\017\n\007p" +
-      "asskey\030\003 \001(\t\022\022\n\nwpp_tcp_ip\030\004 \001(\t\022\024\n\014wpp_" +
-      "tcp_port\030\005 \001(\005\022\025\n\rbluetooth_mac\030\006 \001(\t\022S\n" +
-      "\rsecurity_mode\030\007 \001(\0162<.com.andrerinas.op" +
-      "enheadunit.aap.protocol.proto.SecurityMo" +
-      "de**\n\017AccessPointType\022\n\n\006STATIC\020\000\022\013\n\007DYN" +
-      "AMIC\020\001*u\n\017WifiChannelType\022\026\n\022CHANNELS_5G" +
-      "HZ_ONLY\020\000\022\027\n\023CHANNELS_24GHZ_ONLY\020\001\022\026\n\022CH" +
-      "ANNELS_DUAL_BAND\020\002\022\031\n\025NO_CHANNELS_SUPPOR" +
-      "TED\020\003*\365\001\n\014SecurityMode\022\031\n\025UNKNOWN_SECURI" +
-      "TY_MODE\020\000\022\010\n\004OPEN\020\001\022\n\n\006WEP_64\020\002\022\013\n\007WEP_1" +
-      "28\020\003\022\020\n\014WPA_PERSONAL\020\004\022\021\n\rWPA2_PERSONAL\020" +
-      "\010\022\025\n\021WPA_WPA2_PERSONAL\020\014\022\022\n\016WPA_ENTERPRI" +
-      "SE\020\024\022\023\n\017WPA2_ENTERPRISE\020\030\022\027\n\023WPA_WPA2_EN" +
-      "TERPRISE\020\034\022\021\n\rWPA3_PERSONAL\020 \022\026\n\022WPA2_WP" +
-      "A3_PERSONAL\020(*\265\001\n\031ConnectionRejectionRea" +
-      "son\022\'\n#CONNECTION_REJECTION_REASON_UNKNO" +
-      "WN\020\000\022:\n6CONNECTION_REJECTION_REASON_MOBI" +
-      "LE_DEVICE_ID_NOT_FOUND\020\001\0223\n/CONNECTION_R" +
-      "EJECTION_REASON_INVALID_SETUP_TOKEN\020\002"
+      "nfo\022Z\n\021access_point_info\030\005 \001(\0132?.com.and" +
+      "rerinas.openheadunit.aap.protocol.proto." +
+      "AccessPointInfo\"\334\001\n\026ProjectionDeepLinkDa" +
+      "ta\022\014\n\004ssid\030\001 \001(\t\022\r\n\005bssid\030\002 \001(\t\022\017\n\007passk" +
+      "ey\030\003 \001(\t\022\022\n\nwpp_tcp_ip\030\004 \001(\t\022\024\n\014wpp_tcp_" +
+      "port\030\005 \001(\005\022\025\n\rbluetooth_mac\030\006 \001(\t\022S\n\rsec" +
+      "urity_mode\030\007 \001(\0162<.com.andrerinas.openhe" +
+      "adunit.aap.protocol.proto.SecurityMode**" +
+      "\n\017AccessPointType\022\n\n\006STATIC\020\000\022\013\n\007DYNAMIC" +
+      "\020\001*u\n\017WifiChannelType\022\026\n\022CHANNELS_5GHZ_O" +
+      "NLY\020\000\022\027\n\023CHANNELS_24GHZ_ONLY\020\001\022\026\n\022CHANNE" +
+      "LS_DUAL_BAND\020\002\022\031\n\025NO_CHANNELS_SUPPORTED\020" +
+      "\003*\365\001\n\014SecurityMode\022\031\n\025UNKNOWN_SECURITY_M" +
+      "ODE\020\000\022\010\n\004OPEN\020\001\022\n\n\006WEP_64\020\002\022\013\n\007WEP_128\020\003" +
+      "\022\020\n\014WPA_PERSONAL\020\004\022\021\n\rWPA2_PERSONAL\020\010\022\025\n" +
+      "\021WPA_WPA2_PERSONAL\020\014\022\022\n\016WPA_ENTERPRISE\020\024" +
+      "\022\023\n\017WPA2_ENTERPRISE\020\030\022\027\n\023WPA_WPA2_ENTERP" +
+      "RISE\020\034\022\021\n\rWPA3_PERSONAL\020 \022\026\n\022WPA2_WPA3_P" +
+      "ERSONAL\020(*\265\001\n\031ConnectionRejectionReason\022" +
+      "\'\n#CONNECTION_REJECTION_REASON_UNKNOWN\020\000" +
+      "\022:\n6CONNECTION_REJECTION_REASON_MOBILE_D" +
+      "EVICE_ID_NOT_FOUND\020\001\0223\n/CONNECTION_REJEC" +
+      "TION_REASON_INVALID_SETUP_TOKEN\020\002*\215\001\n\022St" +
+      "artRequestReason\022%\n!START_REQUEST_REASON" +
+      "_USER_REQUEST\020\000\022$\n START_REQUEST_REASON_" +
+      "AUTO_LAUNCH\020\001\022*\n&START_REQUEST_REASON_AU" +
+      "TOMATIC_RESTART\020\002"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -16657,7 +16710,7 @@ public final class Wireless {
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_WifiStartRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_com_andrerinas_openheadunit_aap_protocol_proto_WifiStartRequest_descriptor,
-        new java.lang.String[] { "IpAddress", "Port", "Status", });
+        new java.lang.String[] { "IpAddress", "Port", "StartRequestReason", });
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_WifiInfoRequest_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_WifiInfoRequest_fieldAccessorTable = new
@@ -16693,13 +16746,13 @@ public final class Wireless {
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_WifiVersionResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_com_andrerinas_openheadunit_aap_protocol_proto_WifiVersionResponse_descriptor,
-        new java.lang.String[] { "Major", "Minor", "DeviceSerial", "Status", "SelectedWifiChannelType", "DeviceInfo", "UnknownBlob7", });
+        new java.lang.String[] { "Major", "Minor", "DeviceSerial", "Status", "SelectedWifiChannelType", "DeviceInfo", "SetupToken", });
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_WppWifiDeviceInfo_descriptor =
       getDescriptor().getMessageTypes().get(7);
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_WppWifiDeviceInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_com_andrerinas_openheadunit_aap_protocol_proto_WppWifiDeviceInfo_descriptor,
-        new java.lang.String[] { "DeviceId", "ConnectivityLifetimeId", "UnknownString3", "UnknownString4", });
+        new java.lang.String[] { "DeviceId", "ConnectivityLifetimeId", "DeviceName", "BluetoothAddress", });
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_WifiConnectStatus_descriptor =
       getDescriptor().getMessageTypes().get(8);
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_WifiConnectStatus_fieldAccessorTable = new

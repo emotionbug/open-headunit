@@ -1033,8 +1033,6 @@
     <string name="preflight_open_location">위치</string>
     <string name="preflight_later">나중에</string>
     <string name="preflight_invalid_bssid">유효하지 않은 WiFi 주소입니다. 6쌍의 16진수(예: 02:1A:11:FF:3C:4D)를 입력하세요.</string>
-    <string name="announce_connection_configuration">더 긴 연결 시간 제한 요청</string>
-    <string name="announce_connection_configuration_description">Android Auto에게 연결을 끊긴 것으로 판단하기 전에 3초 대신 15초를 기다리고, 더 큰 소켓 버퍼를 사용하도록 지시합니다. 이는 세션 도중 몇 초간 채널을 벗어나면서 연결을 함께 끊어버리는 무선 장치를 위한 것입니다. 휴대전화가 이를 실제로 따르는지는 측정되지 않았습니다.</string>
     <string name="native_aa_ignore_external_bt">Bluetooth 호환성 검사 무시</string>
     <string name="native_aa_ignore_external_bt_description">이 기기는 Android가 접근할 수 없는 별도 모듈에 Bluetooth를 두고 있는 것으로 보여 무선 Android Auto가 자동으로 꺼집니다. 기본값은 꺼짐입니다. 그 판단이 틀렸다고 생각할 때만 켜세요. 판단이 맞다면 연결은 아무 표시 없이 실패하고 로그는 정상으로 보입니다.</string>
     <string name="native_aa_setup_qr_title">QR 코드로 설정</string>

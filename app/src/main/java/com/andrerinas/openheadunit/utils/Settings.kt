@@ -2260,16 +2260,6 @@ class Settings(private val context: Context) {
         get() = NativeStrategy.byIdOrDefault(prefs.getInt("native-ap-transport", -1))
         set(value) = prefs.edit().putInt("native-ap-transport", value.id).apply()
 
-    // Whether ServiceDiscoveryResponse carries a ConnectionConfiguration: the ping and TCP
-    // parameters Android Auto lets a head unit ask for.
-    //
-    // Off by default. It is aimed at the link outages that kill a session mid-drive, where the
-    // protocol's own 3 s ping timeout fires long before the link is actually gone, but whether the
-    // phone honours any of it is unmeasured. See ConnectionConfigPolicy for the values.
-    var announceConnectionConfiguration: Boolean
-        get() = prefs.getBoolean("announce-connection-configuration", false)
-        set(value) = prefs.edit().putBoolean("announce-connection-configuration", value).apply()
-
     var nativeDriverSelectionMode: NativeDriverSelectionPolicy.Mode
         get() = NativeDriverSelectionPolicy.Mode.fromId(
             prefs.getInt("native-driver-selection-mode", NativeDriverSelectionPolicy.Mode.AUTO.id)

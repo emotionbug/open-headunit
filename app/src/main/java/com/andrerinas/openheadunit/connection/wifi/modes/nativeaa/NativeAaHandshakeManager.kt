@@ -3548,11 +3548,10 @@ class NativeAaHandshakeManager(
                 WppMessageType.VERSION_RESPONSE -> {
                     val v = Wireless.WifiVersionResponse.parseFrom(msg.payload)
                     val device = if (v.hasDeviceInfo()) {
-                        // Fields 3 and 4 are two strings the phone declares and nothing here knows
-                        // the meaning of. Printed only when present, so a capture can name them.
+                        // The phone's name and Bluetooth address, printed only when present.
                         val extra = listOfNotNull(
-                            v.deviceInfo.unknownString3.takeIf { v.deviceInfo.hasUnknownString3() && it.isNotEmpty() },
-                            v.deviceInfo.unknownString4.takeIf { v.deviceInfo.hasUnknownString4() && it.isNotEmpty() },
+                            v.deviceInfo.deviceName.takeIf { v.deviceInfo.hasDeviceName() && it.isNotEmpty() },
+                            v.deviceInfo.bluetoothAddress.takeIf { v.deviceInfo.hasBluetoothAddress() && it.isNotEmpty() },
                         ).joinToString(" ") { "unknown=$it" }
                         " device=${v.deviceInfo.deviceId} lifetime=${v.deviceInfo.connectivityLifetimeId}" +
                             if (extra.isNotEmpty()) " $extra" else ""
@@ -3574,6 +3573,8 @@ class NativeAaHandshakeManager(
                 // these with an exception rather than a reply. Named so a capture says so.
                 WppMessageType.CONNECTION_REJECTION ->
                     AppLog.w("NativeAA: [RX] WifiConnectionRejection, which the phone should never send")
+                WppMessageType.START_REQUEST ->
+                    AppLog.i("NativeAA: [RX] WifiStartRequest from the phone, ignored on purpose")
                 WppMessageType.START_RESPONSE -> {
                     val r = Wireless.WifiStartResponse.parseFrom(msg.payload)
                     val port = if (r.hasPort()) ":${r.port}" else ""
@@ -3618,7 +3619,9 @@ class NativeAaHandshakeManager(
                 }
         }
         val channelType = WppChannelTypePolicy.forHeadUnit(WifiBandCapability.supports5Ghz(context))
-        val request = WppMessages.versionRequest(carInfo(), endpoint, channelType)
+        val channels = WppChannelListPolicy.forGroup(WifiBandCapability.sessionFrequencyMhz())
+        AppLog.i("NativeAA: [TX] version request channel type=$channelType channels=$channels")
+        val request = WppMessages.versionRequest(carInfo(), endpoint, channelType, channels)
         sendProtobuf(output, request.toByteArray(), WppMessageType.VERSION_REQUEST)
     }
 

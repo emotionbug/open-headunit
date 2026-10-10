@@ -559,4 +559,22 @@ class WppHandshakeSessionTest {
         assertEquals(WppStage.DONE, s.stage)
         assertTrue(s.isTerminal())
     }
+
+    @Test
+    fun `a phone-sent start request is ignored in every stage and moves nothing`() {
+        // Answering it would make the phone send type 2, which is credentials onto a live session.
+        val sessions = listOf(
+            session(),
+            session().also { it.on(WppEvent.SocketReady) },
+            openedSession(),
+            openedSession().also { it.on(WppEvent.CredentialsReady) },
+            settledSession(),
+            heldSession(),
+        )
+        for (s in sessions) {
+            val before = s.stage
+            assertEquals(emptyList<WppAction>(), s.on(msg(WppMessageType.START_REQUEST)))
+            assertEquals(before, s.stage)
+        }
+    }
 }

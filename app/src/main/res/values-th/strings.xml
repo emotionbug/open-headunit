@@ -1110,8 +1110,6 @@
     <string name="native_aa_wake_verdict_destructive">ถูกระงับไว้ในยูนิตนี้</string>
     <string name="native_aa_wake_remeasure_confirm">Android Auto จะเริ่มระบบไร้สายเมื่อเห็นการเชื่อมต่อบลูทูธเปลี่ยนไปเท่านั้น</string>
     <string name="native_aa_wake_remeasure_done">การปลุกบลูทูธจะถูกวัดใหม่อีกครั้งในการเชื่อมต่อครั้งถัดไป</string>
-    <string name="announce_connection_configuration">ขอขยายเวลาการหมดเวลาของลิงก์</string>
-    <string name="announce_connection_configuration_description">บอกให้ Android Auto รอ 15 วินาทีแทนที่จะเป็น 3 วินาทีก่อนถือว่าลิงก์ตาย และใช้บัฟเฟอร์ซ็อกเก็ตที่ใหญ่ขึ้น</string>
     <string name="native_aa_ignore_external_bt">ละเว้นการตรวจสอบความเข้ากันได้ของบลูทูธ</string>
     <string name="native_aa_ignore_external_bt_description">ยูนิตนี้ดูเหมือนจะเก็บบลูทูธไว้ในโมดูลแยกต่างหาก ปิดไว้เป็นค่าเริ่มต้น</string>
 

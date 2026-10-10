@@ -54,11 +54,18 @@ enum ConnectionRejectionReason {
     CONNECTION_REJECTION_REASON_INVALID_SETUP_TOKEN = 2;
 }
 
+// Why the head unit asks the phone to start. We send 0.
+enum StartRequestReason {
+    START_REQUEST_REASON_USER_REQUEST = 0;
+    START_REQUEST_REASON_AUTO_LAUNCH = 1;
+    START_REQUEST_REASON_AUTOMATIC_RESTART = 2;
+}
+
 // Type 1, head unit -> phone. Where to open the projection session once associated.
 message WifiStartRequest {
     required string ip_address = 1;
     required int32 port = 2;
-    optional int32 status = 3;
+    optional StartRequestReason start_request_reason = 3;
 }
 
 // Type 2, phone -> head unit. Empty: the phone asking for the network credentials. Modelled so
@@ -143,9 +150,8 @@ message WifiVersionResponse {
     optional int32 status = 4;
     optional int32 selected_wifi_channel_type = 5;
     optional WppWifiDeviceInfo device_info = 6;
-    // Present in Android Auto 17.5 and 17.8, absent from every schema we had. Contents unknown;
-    // modelled so a session can log it.
-    optional bytes unknown_blob_7 = 7;
+    // The token from WifiSetupInfo (type 11) field 3. We never send type 11, so it stays empty.
+    optional bytes setup_token = 7;
 }
 
 // Field 6 of WifiVersionResponse. Named from the schema's own descriptor rather than guessed at.
@@ -153,10 +159,8 @@ message WifiVersionResponse {
 message WppWifiDeviceInfo {
     optional string device_id = 1;
     optional string connectivity_lifetime_id = 2;
-    // Two more strings the phone declares and this had never modelled. Logged so a capture can
-    // name them; what they carry is unrecovered.
-    optional string unknown_string_3 = 3;
-    optional string unknown_string_4 = 4;
+    optional string device_name = 3;
+    optional string bluetooth_address = 4;
 }
 
 // Type 6, phone -> head unit: did it get onto our network. The only join feedback that works on
@@ -182,6 +186,7 @@ message WifiStartResponse {
 
 // Types 8 and 9: a keepalive the phone may interject anywhere. We answer type 8 by echoing its
 // raw payload as a type 9 without parsing, so these are for reading captures, not for the reply.
+// The phone's ping carries only the timestamp.
 message WifiPingRequest {
     optional int64 timestamp = 1;
 }
@@ -191,10 +196,8 @@ message WifiPingResponse {
 }
 
 // Type 10, head unit -> phone, and only over TCP: the phone throws on one that arrives over
-// RFCOMM, and on an unknown reason whatever the transport. Both sendable reasons reach the phone's
-// own clear path, which is the only candidate for sending a phone that already holds an endpoint
-// back to the RFCOMM handshake. That the path deletes the record was read on 17.5 and not
-// reproduced on 17.8, so it is measured on hardware rather than assumed.
+// RFCOMM, and on an unknown reason whatever the transport. Both sendable reasons clear the
+// endpoint the phone holds, which sends it back to the RFCOMM handshake.
 message WifiConnectionRejection {
     optional ConnectionRejectionReason reason = 1;
 }

@@ -468,6 +468,8 @@ class WifiDirectManager(private val context: Context) : WifiP2pManager.Connectio
         lastKnownBssid = null
         lastKnownBssidIface = null
         forgetPerGroupKeys()
+        // A version request sent before the next group reports must not name this one's channel.
+        WifiBandCapability.reportSessionFrequency(0)
         credentialsEpoch++
         onNativeGroupInvalidated?.invoke()
         AppLog.i("WifiDirectManager: the group is being removed ($why), so its credentials are no longer handed out.")

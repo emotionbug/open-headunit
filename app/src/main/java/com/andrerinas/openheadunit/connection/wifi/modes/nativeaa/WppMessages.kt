@@ -46,11 +46,13 @@ object WppMessages {
      * needs nothing on the phone and one that cannot happen at all. WppEndpointPolicy decides.
      *
      * [channelType] is the bands our access point can offer; null when the radio could not be read.
+     * [channels] is the group's own channel in MHz, or empty when it could not be read.
      */
     fun versionRequest(
         carInfo: Wireless.WppCarInfo,
         endpoint: WppEndpoint?,
-        channelType: Wireless.WifiChannelType? = null
+        channelType: Wireless.WifiChannelType? = null,
+        channels: List<Int> = emptyList()
     ): Wireless.WifiVersionRequest =
         Wireless.WifiVersionRequest.newBuilder()
             .setMajor(WppHandshakeSession.WPP_VERSION_MAJOR)
@@ -58,6 +60,7 @@ object WppMessages {
             .setCarInfo(carInfo)
             .also { builder ->
                 if (channelType != null) builder.supportedWifiChannelType = channelType
+                builder.addAllSupportedWifiChannels(channels)
                 if (endpoint != null) {
                     builder.setWppInfo(
                         Wireless.WifiProjectionProtocolInfo.newBuilder()
@@ -113,7 +116,7 @@ object WppMessages {
         Wireless.WifiStartRequest.newBuilder()
             .setIpAddress(ip)
             .setPort(port)
-            .setStatus(0)
+            .setStartRequestReason(Wireless.StartRequestReason.START_REQUEST_REASON_USER_REQUEST)
             .build()
 
     /**

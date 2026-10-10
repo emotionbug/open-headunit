@@ -1110,8 +1110,6 @@
     <string name="native_aa_wake_verdict_destructive">Ditahan di unit ini</string>
     <string name="native_aa_wake_remeasure_confirm">Android Auto hanya memulai nirkabel saat melihat koneksi Bluetooth berubah. Jika unit ini sudah memegang tautan hands-free, aplikasi harus memutuskannya untuk memicu perubahan tersebut. Gunakan ini jika nirkabel berhenti menyala sendiri dan Anda bersedia kehilangan hands-free sejenak saat mencoba lagi.</string>
     <string name="native_aa_wake_remeasure_done">Bangun Bluetooth akan diukur lagi pada koneksi berikutnya.</string>
-    <string name="announce_connection_configuration">Minta batas waktu tautan lebih lama</string>
-    <string name="announce_connection_configuration_description">Memberitahu Android Auto untuk menunggu 15 detik sebelum menganggap sambungan mati alih-alih 3 detik, dan menggunakan buffer soket yang lebih besar.</string>
     <string name="native_aa_ignore_external_bt">Abaikan pemeriksaan kompatibilitas Bluetooth</string>
     <string name="native_aa_ignore_external_bt_description">Unit ini tampak menggunakan Bluetooth pada modul terpisah yang tidak dapat dijangkau oleh Android, sehingga Android Auto nirkabel dimatikan secara otomatis. Nonaktif secara default. Aktifkan hanya jika Anda yakin hal itu keliru.</string>
 

@@ -1023,8 +1023,6 @@
     <string name="preflight_open_location">定位服务</string>
     <string name="preflight_later">稍后</string>
     <string name="preflight_invalid_bssid">无效的 WiFi 位址。请输入 6 组十六进制数字（例如 02:1A:11:FF:3C:4D）。</string>
-    <string name="announce_connection_configuration">要求更长的连接逾时</string>
-    <string name="announce_connection_configuration_description">告诉 Android Auto 在判定连接中断前等待 15 秒，而不是 3 秒，并使用较大的通讯端缓冲区。这是针对在工作阶段中途退出频道几秒钟、并将连接一并中断的无线电。尚未测得你的手机是否会遵循其中任何一项。</string>
     <string name="native_aa_ignore_external_bt">忽略蓝牙相容性检查</string>
     <string name="native_aa_ignore_external_bt_description">此设备似乎将蓝牙置于 Android 无法存取的独立模组上，因此无线 Android Auto 会自动关闭。默认关闭。只有在你认为判断有误时才开启：若判断正确，连接会无声失败，而记录看起来一切正常。</string>
     <string name="native_aa_setup_qr_title">以 QR 码设置</string>

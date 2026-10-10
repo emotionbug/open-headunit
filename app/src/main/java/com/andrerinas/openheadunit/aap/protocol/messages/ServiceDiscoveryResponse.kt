@@ -3,7 +3,6 @@ package com.andrerinas.openheadunit.aap.protocol.messages
 import android.content.Context
 import com.andrerinas.openheadunit.App
 import com.andrerinas.openheadunit.aap.AapMessage
-import com.andrerinas.openheadunit.aap.ConnectionConfigPolicy
 import com.andrerinas.openheadunit.aap.NarrowBandProfilePolicy
 import com.andrerinas.openheadunit.aap.VehicleIdentityPolicy
 import com.andrerinas.openheadunit.aap.VehicleTypePolicy
@@ -18,6 +17,7 @@ import com.andrerinas.openheadunit.connection.wifi.direct.WifiBandCapability
 import com.andrerinas.openheadunit.decoder.video.VideoDecoder
 import com.andrerinas.openheadunit.utils.AppLog
 import com.andrerinas.openheadunit.utils.HeadUnitScreenConfig
+import com.andrerinas.openheadunit.utils.VideoFallbackPolicy
 import com.andrerinas.openheadunit.aap.AudioSessionConfig
 import com.google.protobuf.Message
 
@@ -86,6 +86,9 @@ internal class ServiceDiscoveryResponse(context: Context, audioConfig: AudioSess
                         else -> Media.MediaCodecType.MEDIA_CODEC_VIDEO_H264_BP
                     }
 
+                    // A fallback adopted last session would leak into the margins read below.
+                    HeadUnitScreenConfig.recordAnnouncedFallback(null, 0, 0)
+
                     // Use HeadUnitScreenConfig for negotiated resolution and margins
                     val negotiatedResolution = HeadUnitScreenConfig.negotiatedResolutionType
                     val phoneWidthMargin = HeadUnitScreenConfig.getWidthMargin()
@@ -121,18 +124,40 @@ internal class ServiceDiscoveryResponse(context: Context, audioConfig: AudioSess
                     AppLog.i("[ServiceDiscovery] Margins are: ${phoneWidthMargin}x${phoneHeightMargin}")
                     AppLog.i("[ServiceDiscovery] PixelAspectRatioE4 is: ${HeadUnitScreenConfig.getPixelAspectRatioE4()} (10000 = square)")
 
+                    val announcedFrameRateType = when (announcedFps) {
+                        30 -> Control.Service.MediaSinkService.VideoConfiguration.VideoFrameRateType._30
+                        else -> Control.Service.MediaSinkService.VideoConfiguration.VideoFrameRateType._60
+                    }
+                    val announcedPar = HeadUnitScreenConfig.getPixelAspectRatioE4()
                     mediaSinkServiceBuilder.addVideoConfigs(Control.Service.MediaSinkService.VideoConfiguration.newBuilder().apply {
                         codecResolution = negotiatedResolution
-                        frameRate = when (announcedFps) {
-                            30 -> Control.Service.MediaSinkService.VideoConfiguration.VideoFrameRateType._30
-                            else -> Control.Service.MediaSinkService.VideoConfiguration.VideoFrameRateType._60
-                        }
+                        frameRate = announcedFrameRateType
                         setDensity(HeadUnitScreenConfig.getDensityDpi()) // Use actual densityDpi
-                        setPixelAspectRatioE4(HeadUnitScreenConfig.getPixelAspectRatioE4())
+                        setPixelAspectRatioE4(announcedPar)
                         setMarginWidth(phoneWidthMargin)
                         setMarginHeight(phoneHeightMargin)
                         setVideoCodecType(effectiveCodec)
                     }.build())
+
+                    // A phone that refuses the first size walks the list, so give it one it accepts.
+                    val fallback = VideoFallbackPolicy.fallbackFor(negotiatedResolution)
+                    if (fallback != null) {
+                        val primarySize = VideoFallbackPolicy.sizeOf(negotiatedResolution)
+                        val margins = VideoFallbackPolicy.scaledMargins(
+                            primarySize.first, primarySize.second, phoneWidthMargin, phoneHeightMargin, fallback
+                        )
+                        HeadUnitScreenConfig.recordAnnouncedFallback(fallback, margins.width, margins.height)
+                        AppLog.i("[ServiceDiscovery] Offering a $fallback fallback, margins ${margins.width}x${margins.height}")
+                        mediaSinkServiceBuilder.addVideoConfigs(Control.Service.MediaSinkService.VideoConfiguration.newBuilder().apply {
+                            codecResolution = fallback
+                            frameRate = announcedFrameRateType
+                            setDensity(HeadUnitScreenConfig.getDensityDpi())
+                            setPixelAspectRatioE4(announcedPar)
+                            setMarginWidth(margins.width)
+                            setMarginHeight(margins.height)
+                            setVideoCodecType(effectiveCodec)
+                        }.build())
+                    }
                 }.build()
             }.build()
 
@@ -335,12 +360,6 @@ internal class ServiceDiscoveryResponse(context: Context, audioConfig: AudioSess
                     // user's choice here.
                     setVehicleType(vehicleType)
                 }.build())
-
-                ConnectionConfigPolicy.announce(settings.announceConnectionConfiguration)?.let {
-                    setConnectionConfiguration(it)
-                    AppLog.i("[ServiceDiscovery] Asking for ping timeout ${it.pingConfiguration.timeoutMs}ms " +
-                            "and ${it.wirelessTcpConfiguration.socketReceiveBufferSize}B socket buffers")
-                }
 
                 addAllServices(services)
             }.build()

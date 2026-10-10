@@ -18,7 +18,9 @@ import com.andrerinas.openheadunit.decoder.video.VideoDecoder
 import com.andrerinas.openheadunit.location.LocationHolder
 import com.andrerinas.openheadunit.App
 import com.andrerinas.openheadunit.utils.AppLog
+import com.andrerinas.openheadunit.utils.HeadUnitScreenConfig
 import com.andrerinas.openheadunit.utils.Settings
+import com.andrerinas.openheadunit.utils.VideoFallbackPolicy
 import com.andrerinas.openheadunit.utils.Utils
 
 interface AapControl {
@@ -94,6 +96,12 @@ internal class AapControlMedia(
     private fun mediaStartRequest(request: Media.Start, channel: Int): Int {
         AppLog.i("Media Start Request %s: session=%d, config_index=%d", Channel.name(channel), request.sessionId, request.configurationIndex)
 
+        // The phone's pick must reach the geometry before the first frame is laid out.
+        if (channel == Channel.ID_VID &&
+            VideoFallbackPolicy.adopts(request.configurationIndex, HeadUnitScreenConfig.hasOfferedFallback())) {
+            HeadUnitScreenConfig.adoptFallback()
+        }
+
         aapTransport.setSessionId(channel, request.sessionId)
         aapTransport.noteAudioSinkStarted(channel)
         aapAudio.preparePlayback(channel)
@@ -109,7 +117,8 @@ internal class AapControlMedia(
             status = Media.Config.ConfigStatus.STATUS_READY
             this.maxUnacked = maxUnacked
 
-            addConfigurationIndices(0)
+            val offered = channel == Channel.ID_VID && HeadUnitScreenConfig.hasOfferedFallback()
+            VideoFallbackPolicy.configurationIndices(offered).forEach { addConfigurationIndices(it) }
         }.build()
         AppLog.i("Config response: %s (maxUnacked=%d)", configResponse, maxUnacked)
         val msg = AapMessage(channel, Media.MsgType.MEDIA_MESSAGE_CONFIG_VALUE, configResponse)
