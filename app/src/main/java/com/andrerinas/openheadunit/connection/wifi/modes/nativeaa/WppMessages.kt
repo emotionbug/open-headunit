@@ -113,7 +113,7 @@ object WppMessages {
         Wireless.WifiStartRequest.newBuilder()
             .setIpAddress(ip)
             .setPort(port)
-            .setStatus(0)
+            .setStartRequestReason(Wireless.StartRequestReason.START_REQUEST_REASON_USER_REQUEST)
             .build()
 
     /**

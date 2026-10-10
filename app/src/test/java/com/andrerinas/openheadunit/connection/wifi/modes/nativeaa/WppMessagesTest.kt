@@ -92,7 +92,7 @@ class WppMessagesTest {
         )
         assertEquals("192.168.49.1", parsed.ipAddress)
         assertEquals(5288, parsed.port)
-        assertEquals(0, parsed.status)
+        assertEquals(Wireless.StartRequestReason.START_REQUEST_REASON_USER_REQUEST, parsed.startRequestReason)
         assertEquals(3, parsed.allFields.size)
     }
 
