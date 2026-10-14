@@ -23,6 +23,8 @@ private fun focusLease() = PlaybackFocusLease().apply {
 private fun PlaybackFocusLease.activity(channel: Int, nowMs: Long) = activity(channel, fixtureOwner, nowMs)
 
 fun main() {
+    for (sdk in listOf(16, 21, 22)) aacHealthySyncProgressRegression(sdk)
+    aacHealthyProgressRegression()
     audioTrackBufferRegression()
     automaticPromptRecoveryRegression()
     silentRecoveryRegression(keepActive = false)
@@ -813,9 +815,13 @@ private fun aacProgressOwnershipRegression(csdReplacement: Boolean) {
         val watchdog = field(track, "progressWatchdog")!!
         val waitingSince = field(watchdog, "outputWaitingSince")
         check((waitingSince as Long) >= 0)
+        val healthyUs = field(field(track, "aacRecovery")!!, "healthyOutputUs")
         val copiedMs = field(track, "lastOutputCopiedMs")
         val ptsUs = field(track, "lastOutputPtsUs")
         resume.countDown(); callback.join(3000); check(!callback.isAlive)
+        check(field(field(track, "aacRecovery")!!, "healthyOutputUs") == healthyUs) {
+            "$mode: retired output replenished replacement recovery budget"
+        }
         check(field(watchdog, "outputWaitingSince") == waitingSince) {
             "$mode: retired codec output erased the replacement's watchdog"
         }
@@ -1483,4 +1489,77 @@ private fun boundedPromptRecoveryRegression() {
         AudioTrack.failMinimum = false; finish(track); mixer.stop(); SystemClock.offsetMs = 0
     }
     println("PASS exhausted automatic retries stop reopening and interrupting focus until a fresh Start")
+}
+
+/** Real callback -> PCM conversion -> recovery policy, including unusable output. */
+private fun aacHealthyProgressRegression() {
+    val mixer = AudioMixer(audioLatencyMultiplier = 2)
+    val track = wrapper(mixer)
+    val codec = field(track, "decoder") as MediaCodec
+    val recovery = field(track, "aacRecovery") as AacDecoderRecovery
+    try {
+        synchronized(field(track, "codecOutputLock")!!) {
+            synchronized(recovery) {
+                recovery.request(); check(recovery.next(0) == AacDecoderRecovery.Action.REBUILD)
+                repeat(90) { tick ->
+                    SystemClock.offsetMs = tick * 100L
+                    codec.emit(pcm(4800))
+                }
+                check((field(recovery, "healthyOutputUs") as Long) > 0)
+                codec.emit(ByteArray(3)) // Not one complete stereo PCM frame.
+                check(recovery.pending && field(recovery, "healthyOutputUs") == 0L) {
+                    "Rejected PCM must break healthy progress and request bounded recovery"
+                }
+            }
+        }
+        waitFor("rejected async PCM triggers a replacement") { field(track, "decoder")?.let { it !== codec } == true }
+        val fresh = field(track, "decoder") as MediaCodec
+        waitFor("replacement async format is ready") { (field(track, "outputFormatState") as AacOutputFormat).acceptsOutput }
+        val attempts = recovery.attempts
+        codec.emit(ByteArray(3))
+        check(!recovery.pending && recovery.attempts == attempts) { "Retired callback requested recovery" }
+        repeat(101) { tick ->
+            SystemClock.offsetMs = 20_000 + tick * 100L
+            fresh.emit(pcm(4800))
+        }
+        check(recovery.attempts == 0) { "Successful PCM handoff did not replenish retries" }
+        println("PASS rejected async PCM recovers, retired output is ignored, healthy output earns retries")
+    } finally {
+        finish(track); SystemClock.offsetMs = 0
+    }
+}
+
+private fun aacHealthySyncProgressRegression(sdk: Int) {
+    val originalSdk = Build.VERSION.SDK_INT
+    Build.VERSION.SDK_INT = sdk
+    val mixer = AudioMixer(audioLatencyMultiplier = 2)
+    val track = wrapper(mixer)
+    var codec = field(track, "decoder") as MediaCodec
+    val recovery = field(track, "aacRecovery") as AacDecoderRecovery
+    try {
+        synchronized(recovery) {
+            recovery.request(); check(recovery.next(0) == AacDecoderRecovery.Action.REBUILD)
+        }
+        val rejected = codec
+        rejected.syncOutputs.offer(ByteArray(3))
+        waitFor("API$sdk rejected PCM triggers a replacement") {
+            field(track, "decoder")?.let { it !== rejected } == true
+        }
+        codec = field(track, "decoder") as MediaCodec
+        check(synchronized(recovery) { field(recovery, "healthyOutputUs") == 0L })
+        repeat(101) { tick ->
+            SystemClock.offsetMs = 20_000 + tick * 100L
+            val before = synchronized(recovery) { field(recovery, "healthyOutputUs") as Long }
+            codec.syncOutputs.offer(pcm(4800))
+            waitFor("API$sdk synchronous PCM reaches recovery policy") {
+                synchronized(recovery) {
+                    recovery.attempts == 0 || (field(recovery, "healthyOutputUs") as Long) > before
+                }
+            }
+        }
+        check(recovery.attempts == 0)
+        println("PASS API$sdk synchronous output earns a fresh AAC retry budget")
+    } finally {
+        finish(track); Build.VERSION.SDK_INT = originalSdk; SystemClock.offsetMs = 0
+    }
 }

@@ -83,8 +83,15 @@ class MediaCodec {
  companion object {const val INFO_OUTPUT_FORMAT_CHANGED=-2;const val INFO_OUTPUT_BUFFERS_CHANGED=-3;const val BUFFER_FLAG_CODEC_CONFIG=2;@Volatile var provideInputs=true;@Volatile var startHook:(()->Unit)?=null;val created=CopyOnWriteArrayList<MediaCodec>();fun createDecoderByType(mime:String)=MediaCodec().also{created.add(it)}}
  class CodecException:Exception();class BufferInfo{var presentationTimeUs=0L;var size=0;var offset=0;var flags=0}
  abstract class Callback {abstract fun onInputBufferAvailable(codec:MediaCodec,index:Int);abstract fun onOutputBufferAvailable(codec:MediaCodec,index:Int,info:BufferInfo);abstract fun onError(codec:MediaCodec,e:CodecException);abstract fun onOutputFormatChanged(codec:MediaCodec,format:MediaFormat)}
+ @Volatile private var formatPending=false
+ val syncOutputs=ConcurrentLinkedQueue<ByteArray>()
  @JvmField var callback:Callback?=null;var outputFormat=MediaFormat();val inputBuffers=Array(128){ByteBuffer.allocate(16384)};val outputBuffers=Array(1){ByteBuffer.allocate(16384)};var currentOutput=ByteBuffer.allocate(0);@Volatile var stopHook:(()->Unit)?=null;@Volatile var queued=0
- fun setCallback(c:Callback){callback=c};fun setCallback(c:Callback,h:android.os.Handler){callback=c};fun configure(f:MediaFormat,s:Any?,c:Any?,flags:Int){outputFormat=f};fun start(){startHook?.invoke();callback?.onOutputFormatChanged(this,outputFormat);if(provideInputs)repeat(128){callback?.onInputBufferAvailable(this,it)}}
- fun stop(){stopHook?.invoke()};fun release(){};fun getInputBuffer(i:Int)=inputBuffers[i];fun getOutputBuffer(i:Int)=currentOutput;fun releaseOutputBuffer(i:Int,render:Boolean){};fun dequeueInputBuffer(timeout:Long)=0;fun dequeueOutputBuffer(info:BufferInfo,timeout:Long)=-1;fun queueInputBuffer(i:Int,o:Int,s:Int,pts:Long,flags:Int){queued++}
+ fun setCallback(c:Callback){callback=c};fun setCallback(c:Callback,h:android.os.Handler){callback=c};fun configure(f:MediaFormat,s:Any?,c:Any?,flags:Int){outputFormat=f};fun start(){startHook?.invoke();formatPending=callback==null;callback?.onOutputFormatChanged(this,outputFormat);if(provideInputs)repeat(128){callback?.onInputBufferAvailable(this,it)}}
+ fun stop(){stopHook?.invoke()};fun release(){};fun getInputBuffer(i:Int)=inputBuffers[i];fun getOutputBuffer(i:Int)=currentOutput;fun releaseOutputBuffer(i:Int,render:Boolean){};fun dequeueInputBuffer(timeout:Long)=0;fun dequeueOutputBuffer(info:BufferInfo,timeout:Long):Int {
+ if(formatPending){formatPending=false;return INFO_OUTPUT_FORMAT_CHANGED}
+ val bytes=syncOutputs.poll() ?: return -1
+ outputBuffers[0]=ByteBuffer.wrap(bytes);info.offset=0;info.size=bytes.size;info.flags=0;info.presentationTimeUs=0
+ return 0
+};fun queueInputBuffer(i:Int,o:Int,s:Int,pts:Long,flags:Int){queued++}
  fun emit(bytes:ByteArray){currentOutput=ByteBuffer.wrap(bytes);callback!!.onOutputBufferAvailable(this,0,BufferInfo().apply{size=bytes.size})}
 }
