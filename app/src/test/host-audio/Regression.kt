@@ -24,6 +24,7 @@ private fun PlaybackFocusLease.activity(channel: Int, nowMs: Long) = activity(ch
 
 fun main() {
     audioTrackBufferRegression()
+    bufferTuningRecoveryMarkerRegression()
     pcmEndingRegression()
     audioSettingsRegression()
     aacProgressOwnershipRegression(csdReplacement = true)
@@ -1326,4 +1327,29 @@ private fun audioSettingsRegression() {
         check(decoder.playbackCallbacks.canRender())
     } finally { audio.releaseAllFocus(); decoder.stop(); handler.runAll(); handler.reset() }
     println("PASS session snapshots preserve focus/routing/format until replacement; local output changes retain the negotiated codec")
+}
+
+private fun bufferTuningRecoveryMarkerRegression() {
+    val mixer = AudioMixer(keepOutputActive = true)
+    val track = wrapper(mixer, false)
+    try {
+        mixer.start()
+        track.write(pcm(240), 0, 960)
+        track.pauseForIdle()
+        waitFor("short prompt submitted before tuning failure") { channel(mixer).lastOutputFrame > 0 }
+        val raw = AudioTrack.created.last()
+        raw.bufferHook = {
+            // Model a long-lived old output. This executes on the output owner, after the
+            // cycle has stamped its marker, just before tuning forces an out-of-write reopen.
+            channel(mixer).lastOutputFrame = 48_000L * 60 * 60
+            error("audio server died during buffer tuning")
+        }
+        raw.bufferSizeInFrames += 480
+        waitFor("tuning replaces the old output") { raw.closed && AudioTrack.created.last() !== raw }
+        waitFor("old frame clock cannot hold replacement focus") {
+            channel(mixer).outputConsumed && track.isQuiescent(SystemClock.elapsedRealtime())
+        }
+        check(mixer.isRunning())
+    } finally { finish(track); mixer.stop() }
+    println("PASS output replacement during buffer tuning retires the old device's drain marker")
 }

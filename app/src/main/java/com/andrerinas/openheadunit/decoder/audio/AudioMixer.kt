@@ -55,6 +55,9 @@ class AudioMixer(
         @Volatile var firstPcmMs = -1L
         @Volatile var writePending = false
         @Volatile var lastWriteCompletedMs = -1L
+        var lastOutputFrame = -1L
+        var lastOutputEpoch = -1L
+        @Volatile var outputConsumed = true
         var activeThisCycle = false
         var startupReported = false
         var reportedRebanks = 0L
@@ -160,7 +163,7 @@ class AudioMixer(
         // Terminal recovery parks retained audio. It must not hold the car radio's focus forever.
         (output?.isParked == true && outputUnavailableSinceMs >= 0 &&
             nowMs - outputUnavailableSinceMs >= 1000) ||
-        (!state.writePending && state.buffer.isIdle() && !recoveryPending &&
+        (!state.writePending && state.outputConsumed && state.buffer.isIdle() && !recoveryPending &&
             (state.lastWriteCompletedMs < 0 || nowMs - state.lastWriteCompletedMs >= outputDrainMs) &&
             !state.writePending)
     fun depthFramesFor(channel: Int): Int = channels[channel]?.buffer?.depthFrames() ?: 0
@@ -282,6 +285,17 @@ class AudioMixer(
                 }
                 nextPcmDiagnosticMs = now + 1000
             }
+            // Playback-head reads belong to the output owner. Focus polling reads only this
+            // snapshot, never the device while it may be replaced or released.
+            val played = device.playedFrames()
+            channels.values.forEach {
+                if (it.lastOutputFrame >= 0) {
+                    // Reopening during start or buffer tuning also changes the frame clock.
+                    // An old device's marker cannot hold the replacement's focus indefinitely.
+                    it.outputConsumed = device.writtenFrames < 0 ||
+                        it.lastOutputEpoch != device.outputEpoch || played >= it.lastOutputFrame
+                }
+            }
             val idle = channels.values.all { it.buffer.isIdle() }
             if (!idle && !canRender()) {
                 feedSignal.tryAcquire(10, TimeUnit.MILLISECONDS)
@@ -289,7 +303,8 @@ class AudioMixer(
             }
             val warming = device.hasPendingRecovery || channels.values.any { now < it.warmupUntilMs }
             when (lifecycle.update(now, idle, warming, hasReceivedAudio.get(),
-                device.bufferFrames * 1000L / OUTPUT_SAMPLE_RATE + 20)) {
+                device.bufferFrames * 1000L / OUTPUT_SAMPLE_RATE + 20,
+                channels.values.all { it.outputConsumed })) {
                 MixerOutputLifecycle.Action.WAIT -> {
                     lastCycleMs = -1L
                     feedSignal.tryAcquire(200, TimeUnit.MILLISECONDS)
@@ -298,6 +313,8 @@ class AudioMixer(
                 MixerOutputLifecycle.Action.START -> device.start()
                 MixerOutputLifecycle.Action.PAUSE -> {
                     device.pause()
+                    // These markers drained; API 19+ pause/flush also resets the frame clock.
+                    channels.values.forEach { it.lastOutputFrame = -1L }
                     continue
                 }
                 MixerOutputLifecycle.Action.WRITE -> Unit
@@ -358,7 +375,12 @@ class AudioMixer(
                 replayBeforeWrite != device.recoveryProgressSamples
             if (recovered) lifecycle.outputProgress(writeCompletedMs)
             cycleChannels.forEach {
-                if (it.activeThisCycle || recovered) it.lastWriteCompletedMs = writeCompletedMs
+                if (it.activeThisCycle || recovered) {
+                    it.lastWriteCompletedMs = writeCompletedMs
+                    it.lastOutputFrame = device.writtenFrames
+                    it.lastOutputEpoch = device.outputEpoch
+                    it.outputConsumed = it.lastOutputFrame < 0
+                }
                 it.writePending = false
             }
             if (now >= nextTuneMs) {

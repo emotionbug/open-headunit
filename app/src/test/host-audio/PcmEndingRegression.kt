@@ -34,7 +34,7 @@ internal fun pcmEndingRegression() {
         check(!mixer.isQuiescent(state, SystemClock.elapsedRealtime() + 10_000))
         resume.countDown()
         val deadline = System.nanoTime() + 3_000_000_000L
-        while (track.samples.size < 1920 || state.writePending) {
+        while (track.samples.size < 1920 || state.writePending || !state.outputConsumed) {
             check(System.nanoTime() < deadline) { "mixer did not write the final ramp" }
             Thread.sleep(2)
         }
