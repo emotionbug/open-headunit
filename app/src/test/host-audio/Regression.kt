@@ -24,7 +24,11 @@ private fun PlaybackFocusLease.activity(channel: Int, nowMs: Long) = activity(ch
 
 fun main() {
     audioTrackBufferRegression()
+    automaticPromptRecoveryRegression()
+    silentRecoveryRegression(keepActive = false)
+    silentRecoveryRegression(keepActive = true)
     bufferTuningRecoveryMarkerRegression()
+    boundedPromptRecoveryRegression()
     pcmEndingRegression()
     audioSettingsRegression()
     aacProgressOwnershipRegression(csdReplacement = true)
@@ -1329,6 +1333,98 @@ private fun audioSettingsRegression() {
     println("PASS session snapshots preserve focus/routing/format until replacement; local output changes retain the negotiated codec")
 }
 
+
+/** Retained speech must restart its output and focus without another packet or Start. */
+private fun automaticPromptRecoveryRegression() {
+    val lease = focusLease()
+    lease.complete(lease.activity(5, SystemClock.elapsedRealtime())!!)
+    val reacquired = java.util.concurrent.atomic.AtomicInteger()
+    val mixer = AudioMixer(canRender = { lease.canRender(SystemClock.elapsedRealtime()) },
+        onRecoveryActivity = {
+            lease.activity(5, SystemClock.elapsedRealtime())?.let {
+                reacquired.incrementAndGet()
+                lease.complete(it)
+            }
+        })
+    val track = wrapper(mixer, false)
+    AudioTrack.failMinimum = true
+    try {
+        mixer.start()
+        track.write(pcm(240), 0, 960)
+        track.pauseForIdle()
+        waitFor("output enters bounded recovery cooldown") {
+            (field(mixer, "output") as RecoveringPcmOutput).isParked
+        }
+        lease.release(5, lease.snapshot().getValue(5))
+        val before = AudioTrack.created.size
+        AudioTrack.failMinimum = false
+        SystemClock.offsetMs += 2000
+        waitFor("cooldown reacquires focus and resumes the existing prompt without Start") {
+            AudioTrack.created.drop(before).any { it.samples.any { sample -> sample.toInt() != 0 } }
+        }
+        check(reacquired.get() == 1)
+        waitFor("recovered short prompt drains") { track.isQuiescent(SystemClock.elapsedRealtime()) }
+    } finally {
+        AudioTrack.failMinimum = false
+        finish(track)
+        mixer.stop()
+        SystemClock.offsetMs = 0
+    }
+    println("PASS pending prompt recovers after cooldown, reacquires focus and drains without another Start")
+}
+
+private fun silentRecoveryRegression(keepActive: Boolean) {
+    val allowed = java.util.concurrent.atomic.AtomicBoolean(true)
+    val reacquired = java.util.concurrent.atomic.AtomicInteger()
+    val mixer = AudioMixer(keepOutputActive = keepActive, canRender = { allowed.get() }, onRecoveryActivity = {
+        reacquired.incrementAndGet(); allowed.set(true)
+    })
+    val track = wrapper(mixer, false)
+    try {
+        // The initial warmup creates the output before we feed the short prompt.
+        mixer.start()
+        track.preparePlayback()
+        waitFor("output opened for silent-tail failure") { field(mixer, "output")?.let {
+            (it as RecoveringPcmOutput).writtenFrames >= 0
+        } == true }
+        val raw = AudioTrack.created.last()
+        var heardPcm = false
+        raw.writeHook = { data, offset, count ->
+            val real = (offset until offset + count).any { data[it].toInt() != 0 }
+            if (real) heardPcm = true
+            if (heardPcm && !real) { AudioTrack.failMinimum = true; -6 } else null
+        }
+        track.write(pcm(240), 0, 960)
+        track.pauseForIdle()
+        waitFor("silent tail parks failed output") {
+            (field(mixer, "output") as RecoveringPcmOutput).isTerminal
+        }
+        allowed.set(false)
+        val opens = AudioTrack.minimumQueries
+        SystemClock.offsetMs += 60_000
+        if (!keepActive) {
+            waitFor("silence-only failure becomes quiescent") { track.isQuiescent(SystemClock.elapsedRealtime()) }
+        } else {
+            // Static mode deliberately keeps rendering silent cycles; writePending need not
+            // become observably false between them. Check pacing, not dynamic focus release.
+            waitFor("keep-active output has only silence left") { channel(mixer).buffer.isIdle() }
+        }
+        val clockReads = java.util.concurrent.atomic.AtomicInteger()
+        SystemClock.hook = {
+            if (Thread.currentThread().name.startsWith("AudioMixer-")) clockReads.incrementAndGet()
+        }
+        Thread.sleep(500)
+        SystemClock.hook = null
+        check(clockReads.get() < 1000) { "unpaced silent mixer: ${clockReads.get()} clock reads in 500ms" }
+        check(reacquired.get() == 0 && AudioTrack.minimumQueries == opens)
+        check(mixer.isRunning())
+    } finally {
+        SystemClock.hook = null
+        AudioTrack.failMinimum = false; finish(track); mixer.stop(); SystemClock.offsetMs = 0
+    }
+    println("PASS failed silent tail stays paced without reopening or reacquiring focus (keepActive=$keepActive)")
+}
+
 private fun bufferTuningRecoveryMarkerRegression() {
     val mixer = AudioMixer(keepOutputActive = true)
     val track = wrapper(mixer, false)
@@ -1352,4 +1448,39 @@ private fun bufferTuningRecoveryMarkerRegression() {
         check(mixer.isRunning())
     } finally { finish(track); mixer.stop() }
     println("PASS output replacement during buffer tuning retires the old device's drain marker")
+}
+
+private fun boundedPromptRecoveryRegression() {
+    val allowed = java.util.concurrent.atomic.AtomicBoolean(true)
+    val reacquired = java.util.concurrent.atomic.AtomicInteger()
+    val mixer = AudioMixer(canRender = { allowed.get() }, onRecoveryActivity = {
+        reacquired.incrementAndGet(); allowed.set(true)
+    })
+    val track = wrapper(mixer, false)
+    AudioTrack.failMinimum = true
+    try {
+        mixer.start()
+        track.write(pcm(240), 0, 960)
+        track.pauseForIdle()
+        waitFor("initial recovery parks") { (field(mixer, "output") as RecoveringPcmOutput).isParked }
+        repeat(3) { burst ->
+            allowed.set(false)
+            val before = AudioTrack.minimumQueries
+            SystemClock.offsetMs += 10_000
+            waitFor("automatic burst $burst ends") {
+                AudioTrack.minimumQueries >= before + 3 &&
+                    (field(mixer, "output") as RecoveringPcmOutput).isParked
+            }
+        }
+        val opens = AudioTrack.minimumQueries
+        check(reacquired.get() == 3)
+        allowed.set(false)
+        SystemClock.offsetMs += 1_000_000
+        Thread.sleep(250)
+        check(reacquired.get() == 3 && AudioTrack.minimumQueries == opens)
+        check(track.isQuiescent(SystemClock.elapsedRealtime()))
+    } finally {
+        AudioTrack.failMinimum = false; finish(track); mixer.stop(); SystemClock.offsetMs = 0
+    }
+    println("PASS exhausted automatic retries stop reopening and interrupting focus until a fresh Start")
 }
