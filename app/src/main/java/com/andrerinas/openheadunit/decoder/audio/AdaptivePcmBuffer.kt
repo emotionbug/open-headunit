@@ -64,8 +64,42 @@ internal class AdaptivePcmBuffer(
     )
     @Volatile var silentCycles = 0L
         private set
+    // Historical name: counts new underrun events, even if the next packet avoids a rebank.
     @Volatile var rebanks = 0L
         private set
+    @Volatile var rebankEntries = 0L
+        private set
+    private var reserveWindowStartMs = -1L
+    private var reserveCycles = 0
+    private var reserveMinimumFrames = Int.MAX_VALUE
+    private var reserveMaximumFrames = 0
+
+    /** Post-render depths over a bounded observation window, not a sample of packet peaks.
+     * Cumulative event totals distinguish isolated short shortages from actual refill waits.
+     * This measures the receiver bank only; it does not establish an audible glitch or clock ppm.
+     */
+    internal data class ReserveWindow(
+        val windowMs: Long, val cycles: Int, val minimumFrames: Int, val maximumFrames: Int,
+        val depthFrames: Int, val targetFrames: Int, val underrunEvents: Long,
+        val rebankEntries: Long, val concealedFrames: Long, val compressedFrames: Long
+    )
+
+    @Synchronized fun takeReserveWindow(nowMs: Long): ReserveWindow? {
+        if (reserveWindowStartMs < 0 || nowMs - reserveWindowStartMs < 5000 || reserveCycles == 0) return null
+        val snapshot = ReserveWindow(nowMs - reserveWindowStartMs, reserveCycles,
+            reserveMinimumFrames, reserveMaximumFrames, count / channels, playbackTargetFrames(),
+            rebanks, rebankEntries, concealedFrames, compressedFrames)
+        clearReserveWindow()
+        return snapshot
+    }
+
+    private fun clearReserveWindow() {
+        reserveWindowStartMs = -1
+        reserveCycles = 0
+        reserveMinimumFrames = Int.MAX_VALUE
+        reserveMaximumFrames = 0
+    }
+
     @Volatile var concealedFrames = 0L
         private set
     @Volatile var droppedFrames = 0L
@@ -78,7 +112,12 @@ internal class AdaptivePcmBuffer(
         ended = false
         policy.onArrival(nowMs, frames)
     }
-    @Synchronized fun finish() { ended = true }
+    @Synchronized fun finish() {
+        ended = true
+        // An intentional Stop drains to zero. Keep it out of continuous-playback reserve
+        // observations, and do not join samples across a pause into one apparent drift window.
+        clearReserveWindow()
+    }
     @Synchronized fun targetFrames(): Int = playbackTargetFrames()
     @Synchronized fun maxArrivalGapMs(): Long = policy.largestArrivalGapMs
     @Synchronized fun maxPcmGapMs(): Long = policy.largestPcmGapMs
@@ -222,6 +261,7 @@ internal class AdaptivePcmBuffer(
             if (gapFrames >= cycleFrames * 3) {
                 started = false
                 rebanking = true
+                rebankEntries++
                 firstDataMs = if (count > 0) nowMs else -1L
                 gapFrames = 0
                 needsFade = true
@@ -260,6 +300,14 @@ internal class AdaptivePcmBuffer(
             endingRendered = renderEnding(out, real / channels) > 0
             lastGood.fill(0)
         }
+        // Observe every rendered cycle. Sampling once per log line can repeatedly hit a
+        // packet peak and conceal the gradual loss of reserve between capture batches.
+        if (!ended) {
+            if (reserveWindowStartMs < 0) reserveWindowStartMs = nowMs
+            reserveCycles++
+            reserveMinimumFrames = minOf(reserveMinimumFrames, count / channels)
+            reserveMaximumFrames = maxOf(reserveMaximumFrames, count / channels)
+        }
         System.arraycopy(out, 0, previousOutput, 0, cycleSamples)
         return real > 0 || endingRendered || (!ended && real < cycleSamples)
     }
@@ -295,6 +343,7 @@ internal class AdaptivePcmBuffer(
     }
 
     @Synchronized fun reset() {
+        clearReserveWindow()
         resetDiscardedFrames += count / channels
         head = 0; count = 0; started = false; firstDataMs = -1L; gapFrames = 0
         rebanking = false

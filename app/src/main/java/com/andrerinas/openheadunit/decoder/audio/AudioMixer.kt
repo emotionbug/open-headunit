@@ -267,6 +267,14 @@ class AudioMixer(
                             "lastRead=${loss.lastReadMs}ms started=${loss.started} " +
                             "rebanking=${loss.rebanking} ended=${loss.ended}", warning = true)
                     }
+                    state.buffer.takeReserveWindow(now)?.let { reserve ->
+                        recordDiagnostic(now, "PCM reserve channel=$id window=${reserve.windowMs}ms " +
+                            "renderCycles=${reserve.cycles} postRenderMin=${reserve.minimumFrames} " +
+                            "postRenderMax=${reserve.maximumFrames} depth=${reserve.depthFrames} " +
+                            "target=${reserve.targetFrames} frames " +
+                            "underrunEventsTotal=${reserve.underrunEvents} rebankEntriesTotal=${reserve.rebankEntries} " +
+                            "concealedFramesTotal=${reserve.concealedFrames} compressedFramesTotal=${reserve.compressedFrames}", remember = false)
+                    }
                     val rebanks = state.buffer.rebanks
                     val dropped = state.buffer.droppedFrames
                     val concealed = state.buffer.concealedFrames
@@ -441,8 +449,8 @@ class AudioMixer(
         }
     }
 
-    private fun recordDiagnostic(nowMs: Long, message: String, warning: Boolean = false) {
+    private fun recordDiagnostic(nowMs: Long, message: String, warning: Boolean = false, remember: Boolean = true) {
         val line = "AudioMixer: id=$diagnosticId $message"
-        AudioDiagnostics.report(nowMs, line, warning)
+        AudioDiagnostics.report(nowMs, line, warning, remember)
     }
 }
