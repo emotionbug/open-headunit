@@ -13,6 +13,24 @@ class PcmReserveObservationTest {
         bank.write(pcm, pcm.size, now)
     }
 
+    @Test fun `starvation captures an open supply gap before a later refill`() {
+        val bank = AdaptivePcmBuffer(latencyMultiplier = 2)
+        feed(bank, 0, 960)
+        bank.render(out, 100); bank.render(out, 110)
+        bank.render(out, 120, 7680)
+        feed(bank, 130, 9600)
+        val snapshot = bank.takeStarvation()!!
+        assertEquals(120L, snapshot.atMs)
+        assertEquals(120L, snapshot.lastArrivalAgeMs)
+        assertEquals(120L, snapshot.lastPcmAgeMs)
+        assertEquals(0, snapshot.availableFrames)
+        assertEquals(7680, snapshot.outputBudgetFrames)
+        assertNull(bank.takeStarvation())
+        bank.finish()
+        repeat(30) { bank.render(out, 140L + it * 10) }
+        assertNull(bank.takeStarvation())
+    }
+
     @Test fun `brief shortages are not reported as full rebanks`() {
         val bank = AdaptivePcmBuffer(latencyMultiplier = 2)
         feed(bank, 0, 960)

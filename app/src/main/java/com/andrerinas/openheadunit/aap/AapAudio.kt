@@ -412,6 +412,15 @@ internal class AapAudio(
         if (report.hasGap) AudioDiagnostics.record(arrivalUs / 1000L, line)
     }
 
+    private fun finishPcmTiming(channel: Int, boundary: String) {
+        val report = pcmTiming[channel]?.finish() ?: return
+        // Navigation often ends before the ten-second periodic report. Flush the partial
+        // segment on the ordered control path, without treating Stop time as a packet arrival.
+        val line = "AapAudio: ${Channel.name(channel)} $report boundary=$boundary"
+        AppLog.i(line)
+        if (report.hasGap) AudioDiagnostics.record(SystemClock.elapsedRealtime(), line)
+    }
+
     /**
      * [announcePlayback] is false when the sink is only being built. Announcing takes transient
      * system audio focus, which pauses the car radio, and a sink that has been set up is not a
@@ -528,7 +537,7 @@ internal class AapAudio(
     /** Records the codec the phone named for [channel] in its Media Sink Setup. */
     fun noteSinkCodec(channel: Int, setupType: Int) {
         if (!Channel.isAudio(channel)) return
-        pcmTiming[channel]?.reset()
+        finishPcmTiming(channel, "Setup")
         val codec = AudioSinkCodecPolicy.codecFor(setupType)
         if (codec == null) {
             AppLog.w("AapAudio: sink setup type $setupType on ${Channel.name(channel)} is not an audio codec, keeping codec=$defaultCodec from the setting")
@@ -562,7 +571,7 @@ internal class AapAudio(
 
     /** The sink is ready at Setup; Start can warm its output before the first PCM arrives. */
     fun preparePlayback(channel: Int) {
-        pcmTiming[channel]?.reset()
+        finishPcmTiming(channel, "Start")
         if (!enableAudioSink || !Channel.isAudio(channel)) return
         audioDecoder.preparePlayback(channel, decoderSession)?.let { onAudioPlaybackStarted(channel, it) }
     }
@@ -604,14 +613,14 @@ internal class AapAudio(
 
     fun restartAudio() {
         AppLog.i("AapAudio: Restarting all audio tracks")
-        pcmTiming.values.forEach { it.reset() }
+        pcmTiming.keys.forEach { finishPcmTiming(it, "Restart") }
         // sinkCodecs is kept: the phone sets a sink up once per session, and a restarted track
         // still carries the codec that setup named.
         audioDecoder.stop(decoderSession)
     }
 
     fun stopAudio(channel: Int) {
-        pcmTiming[channel]?.reset()
+        finishPcmTiming(channel, "Stop")
         AppLog.i("Audio Stop: " + Channel.name(channel))
         // The mixer drains buffered speech and controls media ducking on its render clock.
         // Keep the decoder/output alive for the next prompt or media resume.
@@ -625,7 +634,7 @@ internal class AapAudio(
      */
     fun pauseAllAudio() {
         AppLog.i("AapAudio: Pausing all audio tracks for sleep")
-        pcmTiming.values.forEach { it.reset() }
+        pcmTiming.keys.forEach { finishPcmTiming(it, "Sleep") }
         audioDecoder.pauseAll(decoderSession)
         postPlaybackRelease(playbackLease.clear())
     }

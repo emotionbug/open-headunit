@@ -46,6 +46,16 @@ internal class AdaptivePcmBuffer(
     private var closedPrefixSamples = -1
     private var nextSegmentFirstDataMs = -1L
     private var lastReadMs = -1L
+    private var lastArrivalMs = -1L
+    private var lastPcmMs = -1L
+    private var pendingStarvation: Starvation? = null
+    /** Capture at the first short read, before a later packet changes depth or gap maxima.
+     * Output budget is capacity, not a measurement of queued hardware audio.
+     */
+    internal data class Starvation(
+        val atMs: Long, val availableFrames: Int, val targetFrames: Int,
+        val lastArrivalAgeMs: Long?, val lastPcmAgeMs: Long?, val outputBudgetFrames: Int
+    )
     private var pendingOverflow: Overflow? = null
     // Capture the first loss under the bank lock; format/report it on the mixer thread.
     // Normal writes allocate nothing, and repeated overflow cannot grow a diagnostic queue.
@@ -115,12 +125,14 @@ internal class AdaptivePcmBuffer(
     @Synchronized fun noteArrival(nowMs: Long, frames: Int) {
         if (ended) {
             policy.resetArrival()
+            lastPcmMs = -1L
             if (count > 0 || started) {
                 closedPrefixSamples = count
                 nextSegmentFirstDataMs = -1L
             }
         }
         ended = false
+        lastArrivalMs = nowMs
         policy.onArrival(nowMs, frames)
     }
     @Synchronized fun finish() {
@@ -137,6 +149,7 @@ internal class AdaptivePcmBuffer(
     @Synchronized fun maxPcmGapMs(): Long = policy.largestPcmGapMs
     @Synchronized fun depthFrames(): Int = count / channels
     @Synchronized fun takeOverflow(): Overflow? = pendingOverflow.also { pendingOverflow = null }
+    @Synchronized fun takeStarvation(): Starvation? = pendingStarvation.also { pendingStarvation = null }
     // An empty network rebank is still a live stream. Parking the device here adds a
     // pause/flush/play cycle to every late packet burst.
     @Synchronized fun isIdle(): Boolean =
@@ -145,6 +158,7 @@ internal class AdaptivePcmBuffer(
     @Synchronized fun write(data: ShortArray, length: Int, nowMs: Long) {
         val aligned = length.coerceAtMost(data.size) / channels * channels
         if (aligned == 0) return
+        lastPcmMs = nowMs
         if (closedPrefixSamples >= 0 && nextSegmentFirstDataMs < 0) nextSegmentFirstDataMs = nowMs
         if (!ended) policy.onPcmDelivery(nowMs, aligned / channels)
         if (firstDataMs < 0) firstDataMs = nowMs
@@ -264,7 +278,15 @@ internal class AdaptivePcmBuffer(
             recovery.reset()
         } else {
             recovery.reset()
-            if (gapFrames == 0) { policy.onUnderrun(nowMs); rebanks++ }
+            if (gapFrames == 0) {
+                if (pendingStarvation == null) {
+                    pendingStarvation = Starvation(nowMs, real / channels, target,
+                        lastArrivalMs.takeIf { it >= 0 }?.let { (nowMs - it).coerceAtLeast(0) },
+                        lastPcmMs.takeIf { it >= 0 }?.let { (nowMs - it).coerceAtLeast(0) }, outputBurstFrames)
+                }
+                policy.onUnderrun(nowMs)
+                rebanks++
+            }
             silentCycles++
             for (frame in real / channels until cycleFrames) {
                 val missingFrame = gapFrames + frame - real / channels
@@ -385,6 +407,8 @@ internal class AdaptivePcmBuffer(
 
     @Synchronized fun reset() {
         clearReserveWindow()
+        pendingStarvation = null
+        lastArrivalMs = -1L; lastPcmMs = -1L
         resetDiscardedFrames += count / channels
         head = 0; count = 0; started = false; firstDataMs = -1L; gapFrames = 0
         rebanking = false
