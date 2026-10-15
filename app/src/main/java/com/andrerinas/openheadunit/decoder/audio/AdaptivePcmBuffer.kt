@@ -40,6 +40,11 @@ internal class AdaptivePcmBuffer(
     private var gapFrames = 0
     private var needsFade = true
     private var ended = false
+    // A new prompt can arrive before a stopped tail has drained. Keep the closed prefix
+    // in the same ring, but do not let its running state bypass the new prompt's preroll.
+    // -1 means no boundary; zero still closes the last emitted block before new PCM arrives.
+    private var closedPrefixSamples = -1
+    private var nextSegmentFirstDataMs = -1L
     private var lastReadMs = -1L
     private var pendingOverflow: Overflow? = null
     // Capture the first loss under the bank lock; format/report it on the mixer thread.
@@ -108,12 +113,21 @@ internal class AdaptivePcmBuffer(
         private set
 
     @Synchronized fun noteArrival(nowMs: Long, frames: Int) {
-        if (ended) policy.resetArrival()
+        if (ended) {
+            policy.resetArrival()
+            if (count > 0 || started) {
+                closedPrefixSamples = count
+                nextSegmentFirstDataMs = -1L
+            }
+        }
         ended = false
         policy.onArrival(nowMs, frames)
     }
     @Synchronized fun finish() {
         ended = true
+        // All queued segments are now complete and may drain together, even below target.
+        closedPrefixSamples = -1
+        nextSegmentFirstDataMs = -1L
         // An intentional Stop drains to zero. Keep it out of continuous-playback reserve
         // observations, and do not join samples across a pause into one apparent drift window.
         clearReserveWindow()
@@ -131,6 +145,7 @@ internal class AdaptivePcmBuffer(
     @Synchronized fun write(data: ShortArray, length: Int, nowMs: Long) {
         val aligned = length.coerceAtMost(data.size) / channels * channels
         if (aligned == 0) return
+        if (closedPrefixSamples >= 0 && nextSegmentFirstDataMs < 0) nextSegmentFirstDataMs = nowMs
         if (!ended) policy.onPcmDelivery(nowMs, aligned / channels)
         if (firstDataMs < 0) firstDataMs = nowMs
         val keep = minOf(aligned, ring.size)
@@ -158,17 +173,23 @@ internal class AdaptivePcmBuffer(
         require(out.size >= cycleSamples)
         java.util.Arrays.fill(out, 0, cycleSamples, 0.toShort())
         val target = playbackTargetFrames()
+        val waitMs = prerollWaitMs(target)
+        if (closedPrefixSamples >= 0 &&
+            ((count - closedPrefixSamples) / channels >= target ||
+                (nextSegmentFirstDataMs >= 0 && nowMs - nextSegmentFirstDataMs >= waitMs))) {
+            // Ready input can follow the closed tail seamlessly, in original sample order.
+            closedPrefixSamples = -1
+            firstDataMs = nextSegmentFirstDataMs
+            nextSegmentFirstDataMs = -1L
+        }
+        val drainingPrefix = closedPrefixSamples >= 0
         if (!started) {
             // A short navigation prompt must play even if it can never fill the network target.
             // Media resuming after Stop still needs its learned reserve. The short-prompt
             // escape can otherwise start a sparse first batch and immediately starve again.
             // The same rule applies after starvation, while an explicit end drains below it.
-            val waitMs = when {
-                isMediaSink && startupFramesPlayed == 0L -> maxOf(prerollDeadlineMs, mediaPrerollDeadlineMs)
-                isMediaSink || rebanking -> maxOf(prerollDeadlineMs, target * 1000L / sampleRate + 50)
-                else -> prerollDeadlineMs
-            }
-            if (count == 0 || (!ended && count / channels < target && nowMs - firstDataMs < waitMs)) {
+            if (!drainingPrefix && (count == 0 ||
+                    (!ended && count / channels < target && nowMs - firstDataMs < waitMs))) {
                 if (endingFrames == 0) return false
                 renderEnding(out, 0)
                 System.arraycopy(out, 0, previousOutput, 0, cycleSamples)
@@ -186,7 +207,7 @@ internal class AdaptivePcmBuffer(
         // Both create normal depth peaks; allow for them before repaying sustained backlog.
         val outputSlack = (outputBurstFrames - cycleFrames).coerceAtLeast(0)
         val slack = maxOf(sampleRate * 30 / 1000, policy.largestChunkFrames - cycleFrames + outputSlack)
-        val canRecover = !ended && gapFrames == 0 && !needsFade
+        val canRecover = !ended && !drainingPrefix && gapFrames == 0 && !needsFade
         recovery.observe(nowMs, target, policy.largestChunkFrames, slack, count / channels,
             inputFrames, canRecover)
         // A late decoder batch is still playable PCM, even at a fixed latency setting.
@@ -203,7 +224,8 @@ internal class AdaptivePcmBuffer(
             catchUp = 0
         } else if (catchUp > 0 || proposal == 0) recoveryDeferrals = 0
         val skipped = catchUp * channels
-        val real = minOf(count, cycleSamples)
+        val real = minOf(count, cycleSamples, if (drainingPrefix) closedPrefixSamples else count)
+        val closesPrefix = drainingPrefix && real == closedPrefixSamples
         val readHead = (head + skipped) % ring.size
         val first = minOf(real, ring.size - readHead)
         System.arraycopy(ring, readHead, out, 0, first)
@@ -224,6 +246,7 @@ internal class AdaptivePcmBuffer(
         }
         head = (head + real + skipped) % ring.size
         count -= real + skipped
+        if (drainingPrefix) closedPrefixSamples -= real
         // Unmatched noise retains the old 100ms spacing; short failed matches must not
         // turn a 5ms crossfade dip into modulation on every 10ms render cycle.
         recovery.consumed(nowMs, catchUp, if (overlap.matched) catchUp else sampleRate / 1000)
@@ -234,7 +257,7 @@ internal class AdaptivePcmBuffer(
         if (real == cycleSamples) {
             System.arraycopy(out, 0, lastGood, 0, cycleSamples)
             gapFrames = 0
-        } else if (ended) {
+        } else if (ended || closesPrefix) {
             // Sink Stop is a deliberate end, not packet loss. Drain even a partial final block.
             gapFrames = 0
             lastGood.fill(0)
@@ -271,9 +294,9 @@ internal class AdaptivePcmBuffer(
 
         // Blend a new live position into the tail that was actually heard. This also fades back
         // from PLC and fades initial playback in, without adding a block of latency.
-        if (needsFade || recovering || (real < cycleSamples && !ended)) {
+        if (needsFade || recovering || (real < cycleSamples && !ended && !closesPrefix)) {
             val fadeFrames = cycleFrames / 2
-            val liveFrames = if (ended) minOf(fadeFrames, real / channels) else fadeFrames
+            val liveFrames = if (ended || closesPrefix) minOf(fadeFrames, real / channels) else fadeFrames
             for (frame in 0 until liveFrames) {
                 val mix = (frame + 1).toFloat() / fadeFrames
                 for (ch in 0 until channels) {
@@ -287,7 +310,7 @@ internal class AdaptivePcmBuffer(
             needsFade = false
         }
         var endingRendered = false
-        if (ended && count == 0) {
+        if (closesPrefix || (ended && count == 0)) {
             // Stop is input completion, not a command to truncate the last word. Preserve
             // every real sample, then append a 5ms ramp from the actual final output sample.
             // The ramp can cross a render boundary; pending frames keep focus/drain accounting
@@ -296,20 +319,29 @@ internal class AdaptivePcmBuffer(
                 out[real - channels + ch] else previousOutput[cycleSamples - channels + ch]
             endingFrames = if (endingSample.any { it != 0.toShort() }) cycleFrames / 2 else 0
             started = false
-            firstDataMs = -1L
+            firstDataMs = if (closesPrefix) nextSegmentFirstDataMs else -1L
+            closedPrefixSamples = -1
+            nextSegmentFirstDataMs = -1L
             endingRendered = renderEnding(out, real / channels) > 0
             lastGood.fill(0)
         }
         // Observe every rendered cycle. Sampling once per log line can repeatedly hit a
         // packet peak and conceal the gradual loss of reserve between capture batches.
-        if (!ended) {
+        if (!ended && !drainingPrefix) {
             if (reserveWindowStartMs < 0) reserveWindowStartMs = nowMs
             reserveCycles++
             reserveMinimumFrames = minOf(reserveMinimumFrames, count / channels)
             reserveMaximumFrames = maxOf(reserveMaximumFrames, count / channels)
         }
         System.arraycopy(out, 0, previousOutput, 0, cycleSamples)
-        return real > 0 || endingRendered || (!ended && real < cycleSamples)
+        return real > 0 || endingRendered || (!ended && !closesPrefix && real < cycleSamples)
+    }
+
+    private fun prerollWaitMs(target: Int): Long = when {
+        isMediaSink && startupFramesPlayed == 0L -> maxOf(prerollDeadlineMs, mediaPrerollDeadlineMs)
+        isMediaSink || rebanking || policy.hasCarriedReserve ->
+            maxOf(prerollDeadlineMs, target * 1000L / sampleRate + 50)
+        else -> prerollDeadlineMs
     }
 
     private fun renderEnding(out: ShortArray, offsetFrames: Int): Int {
@@ -337,6 +369,15 @@ internal class AdaptivePcmBuffer(
         val drop = samples.coerceAtMost(count) / channels * channels
         head = (head + drop) % ring.size
         count -= drop
+        if (closedPrefixSamples >= 0) {
+            closedPrefixSamples = (closedPrefixSamples - drop).coerceAtLeast(0)
+            if (closedPrefixSamples == 0) {
+                closedPrefixSamples = -1
+                started = false
+                firstDataMs = nextSegmentFirstDataMs
+                nextSegmentFirstDataMs = -1L
+            }
+        }
         droppedFrames += drop / channels
         needsFade = true
         recovery.reset()
@@ -349,10 +390,11 @@ internal class AdaptivePcmBuffer(
         rebanking = false
         lastReadMs = -1L
         needsFade = true; ended = false
+        closedPrefixSamples = -1; nextSegmentFirstDataMs = -1L
         endingFrames = 0
         recoveryDeferrals = 0
         lastGood.fill(0); previousOutput.fill(0)
-        policy.resetArrival()
+        policy.resetArrival(retainReserve = false)
         recovery.reset()
     }
 }
