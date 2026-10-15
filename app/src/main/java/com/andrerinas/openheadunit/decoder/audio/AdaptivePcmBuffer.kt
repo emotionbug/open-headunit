@@ -85,6 +85,9 @@ internal class AdaptivePcmBuffer(
     @Volatile var rebankEntries = 0L
         private set
     private var reserveWindowStartMs = -1L
+    private var reserveLastRenderMs = -1L
+    private var pendingStoppedReserve: ReserveWindow? = null
+    private var skippedReserveWindows = 0L
     private var reserveCycles = 0
     private var reserveMinimumFrames = Int.MAX_VALUE
     private var reserveMaximumFrames = 0
@@ -96,20 +99,31 @@ internal class AdaptivePcmBuffer(
     internal data class ReserveWindow(
         val windowMs: Long, val cycles: Int, val minimumFrames: Int, val maximumFrames: Int,
         val depthFrames: Int, val targetFrames: Int, val underrunEvents: Long,
-        val rebankEntries: Long, val concealedFrames: Long, val compressedFrames: Long
+        val rebankEntries: Long, val concealedFrames: Long, val compressedFrames: Long,
+        val stopped: Boolean = false, val skippedWindows: Long = 0
     )
 
     @Synchronized fun takeReserveWindow(nowMs: Long): ReserveWindow? {
+        pendingStoppedReserve?.let {
+            pendingStoppedReserve = null
+            val snapshot = it.copy(skippedWindows = skippedReserveWindows)
+            skippedReserveWindows = 0
+            return snapshot
+        }
         if (reserveWindowStartMs < 0 || nowMs - reserveWindowStartMs < 5000 || reserveCycles == 0) return null
-        val snapshot = ReserveWindow(nowMs - reserveWindowStartMs, reserveCycles,
-            reserveMinimumFrames, reserveMaximumFrames, count / channels, playbackTargetFrames(),
-            rebanks, rebankEntries, concealedFrames, compressedFrames)
+        val snapshot = reserveSnapshot(nowMs)
         clearReserveWindow()
         return snapshot
     }
 
+    private fun reserveSnapshot(nowMs: Long, stopped: Boolean = false) =
+        ReserveWindow((nowMs - reserveWindowStartMs).coerceAtLeast(0), reserveCycles,
+            reserveMinimumFrames, reserveMaximumFrames, count / channels, playbackTargetFrames(),
+            rebanks, rebankEntries, concealedFrames, compressedFrames, stopped)
+
     private fun clearReserveWindow() {
         reserveWindowStartMs = -1
+        reserveLastRenderMs = -1
         reserveCycles = 0
         reserveMinimumFrames = Int.MAX_VALUE
         reserveMaximumFrames = 0
@@ -140,8 +154,14 @@ internal class AdaptivePcmBuffer(
         // All queued segments are now complete and may drain together, even below target.
         closedPrefixSamples = -1
         nextSegmentFirstDataMs = -1L
-        // An intentional Stop drains to zero. Keep it out of continuous-playback reserve
-        // observations, and do not join samples across a pause into one apparent drift window.
+        // Preserve even a short prompt's live depths before its intentional drain reaches
+        // zero. One pending slot bounds storage; report skipped summaries rather than
+        // silently replacing the first observation when several Stops beat the log poll.
+        if (reserveCycles > 0) {
+            if (pendingStoppedReserve == null)
+                pendingStoppedReserve = reserveSnapshot(reserveLastRenderMs, stopped = true)
+            else skippedReserveWindows++
+        }
         clearReserveWindow()
     }
     @Synchronized fun targetFrames(): Int = playbackTargetFrames()
@@ -351,6 +371,7 @@ internal class AdaptivePcmBuffer(
         // packet peak and conceal the gradual loss of reserve between capture batches.
         if (!ended && !drainingPrefix) {
             if (reserveWindowStartMs < 0) reserveWindowStartMs = nowMs
+            reserveLastRenderMs = nowMs
             reserveCycles++
             reserveMinimumFrames = minOf(reserveMinimumFrames, count / channels)
             reserveMaximumFrames = maxOf(reserveMaximumFrames, count / channels)
@@ -407,6 +428,8 @@ internal class AdaptivePcmBuffer(
 
     @Synchronized fun reset() {
         clearReserveWindow()
+        pendingStoppedReserve = null
+        skippedReserveWindows = 0
         pendingStarvation = null
         lastArrivalMs = -1L; lastPcmMs = -1L
         resetDiscardedFrames += count / channels

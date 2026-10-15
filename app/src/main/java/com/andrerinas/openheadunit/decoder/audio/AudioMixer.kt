@@ -278,8 +278,10 @@ class AudioMixer(
                     }
                     state.buffer.takeReserveWindow(now)?.let { reserve ->
                         recordDiagnostic(now, "PCM reserve channel=$id window=${reserve.windowMs}ms " +
+                            "boundary=${if (reserve.stopped) "Stop" else "periodic"} skippedWindows=${reserve.skippedWindows} " +
                             "renderCycles=${reserve.cycles} postRenderMin=${reserve.minimumFrames} " +
-                            "postRenderMax=${reserve.maximumFrames} depth=${reserve.depthFrames} " +
+                            "postRenderMax=${reserve.maximumFrames} " +
+                            "${if (reserve.stopped) "depthAtStop" else "depth"}=${reserve.depthFrames} " +
                             "target=${reserve.targetFrames} frames " +
                             "underrunEventsTotal=${reserve.underrunEvents} rebankEntriesTotal=${reserve.rebankEntries} " +
                             "concealedFramesTotal=${reserve.concealedFrames} compressedFramesTotal=${reserve.compressedFrames}", remember = false)

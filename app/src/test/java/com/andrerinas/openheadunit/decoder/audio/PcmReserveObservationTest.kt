@@ -88,6 +88,12 @@ class PcmReserveObservationTest {
         bank.render(out, 1000)
         bank.finish()
         repeat(4) { bank.render(out, 1010L + it * 10) }
+        val stopped = bank.takeReserveWindow(10_000)!!
+        assertTrue(stopped.stopped)
+        assertEquals(480, stopped.minimumFrames)
+        assertEquals(480, stopped.depthFrames)
+        assertEquals(1, stopped.cycles)
+        assertEquals(0L, stopped.windowMs)
         assertNull(bank.takeReserveWindow(10_000))
         assertEquals(0L, bank.rebanks)
         assertEquals(0L, bank.rebankEntries)
@@ -98,4 +104,23 @@ class PcmReserveObservationTest {
         assertEquals(480, snapshot.minimumFrames)
     }
 
+    @Test fun `multiple short prompts keep a bounded summary and expose skipped windows`() {
+        val bank = AdaptivePcmBuffer(latencyMultiplier = 2)
+        repeat(3) { index ->
+            val now = index * 1000L
+            feed(bank, now, 960)
+            bank.render(out, now + 100)
+            bank.finish()
+            repeat(4) { bank.render(out, now + 110 + it * 10) }
+            bank.finish() // Repeated Stop without live renders adds no record.
+        }
+        val snapshot = bank.takeReserveWindow(3000)!!
+        assertTrue(snapshot.stopped)
+        assertEquals(2L, snapshot.skippedWindows)
+        assertEquals(480, snapshot.minimumFrames)
+        assertNull(bank.takeReserveWindow(3000))
+        feed(bank, 4000, 960)
+        bank.render(out, 4100); bank.finish(); bank.reset()
+        assertNull(bank.takeReserveWindow(5000))
+    }
 }
