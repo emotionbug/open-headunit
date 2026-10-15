@@ -431,12 +431,10 @@ internal class AapAudio(
         }
         val gain = (1.0f + (offset / 100.0f)).coerceIn(0.0f, 2.0f)
 
-        // Voice and Navigation benefit from lower latency. Cap the multiplier for those channels.
-        val effectiveMultiplier = if (channel == Channel.ID_AUD) {
-            audioLatencyMultiplier
-        } else {
-            audioLatencyMultiplier.coerceAtMost(4)
-        }
+        // The latency preference sets the network reserve for every audio sink. Guidance
+        // shares the same delivery stalls as music. Short completed prompts can still drain
+        // below the target on Stop; the mixer bounds the wait when Stop has not arrived.
+        val effectiveMultiplier = audioLatencyMultiplier
 
         val fromSetup = sinkCodecs[channel]
         val codec = fromSetup ?: defaultCodec

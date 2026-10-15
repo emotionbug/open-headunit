@@ -33,6 +33,7 @@ fun main() {
     boundedPromptRecoveryRegression()
     pcmEndingRegression()
     audioSettingsRegression()
+    audioLatencyPreferenceRegression()
     aacProgressOwnershipRegression(csdReplacement = true)
     aacProgressOwnershipRegression(csdReplacement = false)
     handoffRetirementBeforePublicationRegression()
@@ -1244,6 +1245,36 @@ private fun protocolSessionClosureRegression() {
         }
         println("PASS ${if(inFlight) "in-flight" else "queued"} old protocol focus retires with its decoder session and preserves the fresh focus")
     }
+}
+
+/** Exercise the real Setup-to-bank path; direct buffer tests cannot catch per-channel caps. */
+private fun audioLatencyPreferenceRegression() {
+    val handler = android.os.Handler
+    for (sdk in listOf(16, 33)) for (multiplier in listOf(1, 2, 4, 8, 16))
+        for (codec in listOf(1, 2)) for (shared in listOf(false, true)) {
+        Build.VERSION.SDK_INT = sdk
+        handler.reset()
+        val settings = com.andrerinas.openheadunit.utils.Settings().apply {
+            audioLatencyMultiplier = multiplier
+            staticAudioFocus = shared
+        }
+        val decoder = AudioDecoder()
+        val audio = com.andrerinas.openheadunit.aap.AapAudio(decoder, AudioManager(), settings)
+        try {
+            for (id in listOf(4, 5, 6)) {
+                audio.noteSinkCodec(id, codec)
+                audio.precreateAudioTrack(id)
+                val track = checkNotNull(decoder.getTrack(id))
+                val bank = (field(track, "mixerChannel") as AudioMixer.Channel).buffer
+                val startupFloorMs = if (id == 6) 120L else 60L
+                val requested = maxOf(startupFloorMs, AudioJitterBufferPolicy.targetMsFor(multiplier)) * 48
+                check(bank.targetFrames().toLong() == requested) {
+                    "sdk=$sdk channel=$id codec=$codec multiplier=$multiplier target=${bank.targetFrames()} requested=$requested"
+                }
+            }
+        } finally { audio.releaseAllFocus(); decoder.stop(); handler.runAll(); handler.reset() }
+    }
+    println("PASS all audio sinks honor each selected reserve through AapAudio Setup for PCM and AAC with shared and separate outputs on API 16/33")
 }
 
 /** Saving preferences must not combine new focus/codec choices with old output ownership. */
