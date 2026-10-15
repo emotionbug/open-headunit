@@ -57,6 +57,8 @@ class AudioMixer(
         @Volatile var lastWriteCompletedMs = -1L
         var lastOutputFrame = -1L
         var lastOutputEpoch = -1L
+        var lastRealEndFrame = -1L
+        var lastRealEpoch = -1L
         @Volatile var outputConsumed = true
         var activeThisCycle = false
         var startupReported = false
@@ -80,6 +82,7 @@ class AudioMixer(
     private val mediaBuffer = IntArray(SHORTS_PER_CYCLE)
     private val channelBuffer = ShortArray(SHORTS_PER_CYCLE)
     private val outputBuffer = ShortArray(SHORTS_PER_CYCLE)
+    private val renderDeadline = PcmRenderDeadline()
     private val limiter = MixerSoftClipper()
     private val ducking = MixerDuckingEnvelope(OUTPUT_SAMPLE_RATE)
 
@@ -157,6 +160,7 @@ class AudioMixer(
         state.warmupUntilMs = 0
         if (state.firstPcmMs < 0) state.preparedMs = -1L
         state.buffer.finish()
+        if (feedSignal.availablePermits() == 0) feedSignal.release()
     }
     fun isRunning(): Boolean = running.get()
     /** Estimated device drain, after actual write completion, never just bank consumption. */
@@ -226,6 +230,39 @@ class AudioMixer(
         return outputBuffer
     }
 
+    internal fun renderWaitMs(device: PcmOutput, nowMs: Long, renderWorkMs: Long,
+                              cycleChannels: Array<Channel> = channelSnapshot): Long {
+        val epoch = device.outputEpoch
+        var realEnd = -1L
+        for (state in cycleChannels) {
+            if (state.lastRealEpoch == epoch && state.buffer.wouldConceal())
+                realEnd = maxOf(realEnd, state.lastRealEndFrame)
+        }
+        // Read/observe the clock even without a shortage, so a cold track is never
+        // mistaken for a running one. This runs only on the output owner thread.
+        val played = device.playedFrames()
+        return renderDeadline.waitMs(nowMs, epoch, device.writtenFrames, played,
+            realEnd, epoch, device.bufferFrames, device.hasPendingRecovery, renderWorkMs)
+    }
+
+    internal fun recordRealOutput(device: PcmOutput, epochBefore: Long, writtenBefore: Long,
+                                  recovered: Boolean, cycleChannels: Array<Channel>) {
+        // Replayed staging PCM and device replacement break this block's frame mapping.
+        // PLC and ending ramps belong to focus/drain accounting, but not to real reserve.
+        val written = device.writtenFrames
+        val known = !recovered && epochBefore == device.outputEpoch && writtenBefore >= 0 &&
+            written - writtenBefore == SAMPLES_PER_CYCLE.toLong()
+        for (state in cycleChannels) {
+            if (!known) {
+                state.lastRealEndFrame = -1
+                state.lastRealEpoch = -1
+            } else if (state.buffer.lastRenderRealFrames > 0) {
+                state.lastRealEndFrame = writtenBefore + state.buffer.lastRenderRealFrames
+                state.lastRealEpoch = epochBefore
+            }
+        }
+    }
+
     private fun mixLoop() {
         requestAudioThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO)
         val device = output ?: return
@@ -249,7 +286,9 @@ class AudioMixer(
         var lastCycleMs = -1L
         var loopGapMaxMs = 0L
         var mixWorkMaxMs = 0L
+        var previousMixWorkMaxMs = 0L
         var writeMaxMs = 0L
+        var renderWaits = 0L
         while (running.get()) {
             val now = SystemClock.elapsedRealtime()
             if (lastCycleMs >= 0) loopGapMaxMs = maxOf(loopGapMaxMs, now - lastCycleMs)
@@ -335,6 +374,7 @@ class AudioMixer(
                 MixerOutputLifecycle.Action.START -> device.start()
                 MixerOutputLifecycle.Action.PAUSE -> {
                     device.pause()
+                    renderDeadline.reset()
                     // These markers drained; API 19+ pause/flush also resets the frame clock.
                     channels.values.forEach { it.lastOutputFrame = -1L }
                     continue
@@ -342,6 +382,14 @@ class AudioMixer(
                 MixerOutputLifecycle.Action.WRITE -> Unit
             }
             val cycleChannels = channelSnapshot
+            val waitMs = renderWaitMs(device, now, maxOf(mixWorkMaxMs, previousMixWorkMaxMs), cycleChannels)
+            if (waitMs > 0) {
+                // All channels share the same output clock. Keep their PCM in the banks
+                // while queued sound plays; never insert silence in the other channels.
+                renderWaits++
+                feedSignal.tryAcquire(waitMs, TimeUnit.MILLISECONDS)
+                continue
+            }
             cycleChannels.forEach { it.writePending = true }
             renderCycle(now, renderBurst, cycleChannels)
             for ((id, state) in channels) {
@@ -356,6 +404,7 @@ class AudioMixer(
             }
             val writeStartMs = SystemClock.elapsedRealtime()
             val epochBeforeWrite = device.outputEpoch
+            val writtenBeforeWrite = device.writtenFrames
             val replayBeforeWrite = device.recoveryProgressSamples
             var replayAnnounced = false
             mixWorkMaxMs = maxOf(mixWorkMaxMs, writeStartMs - now)
@@ -406,6 +455,7 @@ class AudioMixer(
             recoveryPending = device.hasPendingRecovery
             val recovered = epochBeforeWrite != device.outputEpoch ||
                 replayBeforeWrite != device.recoveryProgressSamples
+            recordRealOutput(device, epochBeforeWrite, writtenBeforeWrite, recovered, cycleChannels)
             if (recovered) lifecycle.outputProgress(writeCompletedMs)
             cycleChannels.forEach {
                 if (it.activeThisCycle || recovered) {
@@ -449,7 +499,8 @@ class AudioMixer(
                     "staging=${device.stagingBufferFrames}, xruns=${if (device.underrunsSupported) device.underruns.toString() else "N/A"}, " +
                     "producerUnderruns=${device.producerUnderruns}, burst=${device.burstFrames}, " +
                     "requested=$requestedFrames, stableFloor=${policy.stableFloorFrames}, maximum=${policy.maximumFrames}, " +
-                    "loopGapMax=${loopGapMaxMs}ms mixWorkMax=${mixWorkMaxMs}ms writeMax=${writeMaxMs}ms", remember = false)
+                    "loopGapMax=${loopGapMaxMs}ms mixWorkMax=${mixWorkMaxMs}ms writeMax=${writeMaxMs}ms " +
+                    "renderWaits=$renderWaits", remember = false)
                 for ((id, state) in channels) {
                     AudioDiagnostics.report(now, "AudioMixer: id=$diagnosticId channel=$id target=${state.buffer.targetFrames() * 1000L / OUTPUT_SAMPLE_RATE}ms " +
                         "depth=${state.buffer.depthFrames() * 1000L / OUTPUT_SAMPLE_RATE}ms " +
@@ -457,7 +508,10 @@ class AudioMixer(
                         "concealedFrames=${state.buffer.concealedFrames} staleFrames=${state.buffer.droppedFrames} " +
                         "compressedFrames=${state.buffer.compressedFrames}", remember = false)
                 }
-                loopGapMaxMs = 0; mixWorkMaxMs = 0; writeMaxMs = 0
+                // Keep the previous reporting window's render cost across the boundary;
+                // a slow cycle must not lose its scheduling allowance when counters roll.
+                previousMixWorkMaxMs = mixWorkMaxMs
+                loopGapMaxMs = 0; mixWorkMaxMs = 0; writeMaxMs = 0; renderWaits = 0
                 nextReportMs = now + 10_000L
             }
         }

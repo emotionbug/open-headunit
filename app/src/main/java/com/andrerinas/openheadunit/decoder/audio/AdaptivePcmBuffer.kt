@@ -202,8 +202,17 @@ internal class AdaptivePcmBuffer(
         inputFrames += keep / channels
     }
 
+    // Only the first shortage can still be avoided without changing PLC/refill semantics.
+    // Stop and a closing prefix are deliberate ends, not missing input to wait for.
+    @Synchronized fun wouldConceal(): Boolean =
+        started && !ended && closedPrefixSamples < 0 && gapFrames == 0 && count < cycleSamples
+
+    var lastRenderRealFrames = 0
+        private set
+
     /** Renders one 10ms block. Returns true when there is real or concealed audio. */
     @Synchronized fun render(out: ShortArray, nowMs: Long, outputBurstFrames: Int = cycleFrames): Boolean {
+        lastRenderRealFrames = 0
         require(out.size >= cycleSamples)
         java.util.Arrays.fill(out, 0, cycleSamples, 0.toShort())
         val target = playbackTargetFrames()
@@ -259,6 +268,7 @@ internal class AdaptivePcmBuffer(
         } else if (catchUp > 0 || proposal == 0) recoveryDeferrals = 0
         val skipped = catchUp * channels
         val real = minOf(count, cycleSamples, if (drainingPrefix) closedPrefixSamples else count)
+        lastRenderRealFrames = real / channels
         val closesPrefix = drainingPrefix && real == closedPrefixSamples
         val readHead = (head + skipped) % ring.size
         val first = minOf(real, ring.size - readHead)

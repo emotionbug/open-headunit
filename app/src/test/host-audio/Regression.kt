@@ -32,6 +32,8 @@ fun main() {
     bufferTuningRecoveryMarkerRegression()
     boundedPromptRecoveryRegression()
     pcmEndingRegression()
+    pcmRenderDeadlineRegression()
+    pcmRenderResumeRegression()
     audioSettingsRegression()
     audioLatencyPreferenceRegression()
     aacProgressOwnershipRegression(csdReplacement = true)
