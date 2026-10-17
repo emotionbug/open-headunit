@@ -4,13 +4,16 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.Handler
 import com.andrerinas.openheadunit.aap.protocol.Channel
+import com.andrerinas.openheadunit.decoder.video.VideoBuffer
+import com.andrerinas.openheadunit.decoder.video.VideoBufferPool
 import com.andrerinas.openheadunit.decoder.video.VideoDecoder
+import com.andrerinas.openheadunit.decoder.video.VideoQueueTiming
 import com.andrerinas.openheadunit.utils.Settings
 import org.junit.Assert.*
 import org.junit.Test
 import org.mockito.kotlin.*
-import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicLong
 
 class VideoTransportBoundaryTest {
     @Test fun `every split including a bare four byte start code reaches the decoder once`() =
@@ -33,6 +36,12 @@ class VideoTransportBoundaryTest {
                     decoded.add(data.copyOfRange(offset, offset + (call.arguments[2] as Int)))
                     null
                 }.whenever(decoder).decode(any<ByteArray>(), any(), any(), any(), any())
+                doAnswer { call ->
+                    val storage = call.getArgument<VideoBuffer>(0)
+                    val offset = call.getArgument<Int>(1)
+                    decoded.add(storage.data.copyOfRange(offset, offset + call.getArgument<Int>(2)))
+                    null
+                }.whenever(decoder).decodeOwned(any(), any(), any(), any(), any(), any())
                 val video = AapVideo(decoder, Settings(context)) { fail("healthy split $split requested recovery") }
                 val reassembler = AapMessageReassembler()
                 var acks = 0
@@ -62,16 +71,48 @@ class VideoTransportBoundaryTest {
             .apply { isAccessible = true }.set(transport, value)
         field("aapVideo", video)
         field("videoHandler", handler)
-        field("videoBacklog", AtomicInteger())
-        field("videoBufferPool", LinkedBlockingQueue<ByteArray>())
+        val backlog = AtomicInteger()
+        val queuedBytes = AtomicLong()
+        val pool = VideoBufferPool()
+        field("videoBacklog", backlog)
+        field("videoQueuedBytes", queuedBytes)
+        field("videoQueueTiming", VideoQueueTiming())
+        field("videoBufferPool", pool)
         whenever(video.isPayload(any())).thenReturn(true)
         doReturn(101).whenever(transport).getSessionId(Channel.ID_VID)
         doNothing().whenever(transport).sendMediaAck(any(), any())
-        val data = ByteArray(16)
+        val data = ByteArray(16) { it.toByte() }
+        val expected = data.copyOf()
+        var retained: VideoBuffer? = null
+        doAnswer { call ->
+            val message = call.getArgument<AapMessage>(0)
+            val storage = call.getArgument<VideoBuffer>(1)
+            assertSame(storage.data, message.data)
+            assertEquals(expected.size, message.size)
+            assertArrayEquals(expected, message.data.copyOf(message.size))
+            assertEquals(1, backlog.get())
+            assertEquals(storage.data.size.toLong(), queuedBytes.get())
+            retained = storage.retain() // Simulate the asynchronous codec feeder.
+            true
+        }.whenever(video).process(any(), any(), any())
         transport.dispatchVideo(AapMessage(Channel.ID_VID, 11, 0, 2, data.size, data))
+        data.fill(99) // The next TLS read may overwrite its borrowed storage immediately.
+        verify(transport, never()).sendMediaAck(any(), any())
         doReturn(202).whenever(transport).getSessionId(Channel.ID_VID)
         jobs.single().run()
-        verify(transport).sendMediaAck(Channel.ID_VID, 101)
+        inOrder(video, transport) {
+            verify(video).process(any(), any(), any())
+            verify(transport).sendMediaAck(Channel.ID_VID, 101)
+        }
         verify(transport, never()).sendMediaAck(Channel.ID_VID, 202)
+        assertEquals(0, backlog.get())
+        assertEquals(0L, queuedBytes.get())
+        assertEquals(0, pool.retainedBytes)
+        val feeder = checkNotNull(retained)
+        assertArrayEquals(expected, feeder.data.copyOf(expected.size))
+        feeder.release()
+        val reused = pool.acquire(expected.size)
+        assertSame(feeder.data, reused.data)
+        reused.release()
     }
 }

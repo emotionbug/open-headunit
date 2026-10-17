@@ -1,5 +1,7 @@
 package com.andrerinas.openheadunit.aap
 
+import com.andrerinas.openheadunit.decoder.video.VideoBufferPool
+import com.andrerinas.openheadunit.decoder.video.VideoQueueTiming
 import org.junit.Assert.*
 import org.junit.Test
 import org.mockito.Mockito.*
@@ -23,7 +25,9 @@ class PeerCloseReasonTest {
             .apply { isAccessible = true }.set(it, value)
         set("lifecycleLock", Any())
         set("terminated", java.util.concurrent.CountDownLatch(1))
-        set("videoBufferPool", java.util.concurrent.LinkedBlockingQueue<ByteArray>())
+        set("videoBufferPool", VideoBufferPool())
+        set("videoQueuedBytes", java.util.concurrent.atomic.AtomicLong())
+        set("videoQueueTiming", VideoQueueTiming())
         set("videoBacklog", java.util.concurrent.atomic.AtomicInteger())
         set("videoShedTotal", java.util.concurrent.atomic.AtomicLong())
         // Keep the real retirement path: callback failure must not skip resource cleanup.

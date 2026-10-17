@@ -156,7 +156,8 @@ class AapTransport(
  private fun resetMicrophone(){}
  private val focusCycleGainRunnable=Runnable{}
  private val unrepairedCheckRunnable=Runnable{}
- private val videoBufferPool=ConcurrentLinkedQueue<ByteArray>()
+ private val videoBufferPool=object { fun close(){} }
+ private val videoQueuedBytes=java.util.concurrent.atomic.AtomicLong()
  private val videoBacklog=java.util.concurrent.atomic.AtomicInteger()
  private val videoShedTotal=java.util.concurrent.atomic.AtomicLong()
  private var lastMessageReceivedMs=0L

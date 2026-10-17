@@ -8,34 +8,25 @@ import com.andrerinas.openheadunit.decoder.video.VideoFragmentAssembler
 import com.andrerinas.openheadunit.decoder.video.VideoRecoveryPolicy
 import com.andrerinas.openheadunit.utils.AppLog
 import com.andrerinas.openheadunit.utils.Settings
-import java.nio.ByteBuffer
+import com.andrerinas.openheadunit.decoder.video.VideoBuffer
+import com.andrerinas.openheadunit.decoder.video.VideoBufferPool
+import com.andrerinas.openheadunit.decoder.video.VideoAssemblyBuffer
 
 internal class AapVideo(private val videoDecoder: VideoDecoder, private val settings: Settings, private val onFrameCorrupted: () -> Unit) {
 
     companion object {
-        /** Enough for H.264 at the resolutions most head units negotiate. ~2MB. */
-        private const val INITIAL_BUFFER_BYTES = Messages.DEF_BUFFER_LENGTH * 16
-
-        /** Ceiling for [ensureCapacity]. ~8MB, which covers H.265 at 4K. */
+        /** Ceiling for access-unit assembly. ~8MB, which covers H.265 at 4K. */
         private const val MAX_BUFFER_BYTES = Messages.DEF_BUFFER_LENGTH * 64
 
         /** Spacing of the anomaly summary, matched to the decoder's throughput line so they interleave. */
         private const val ANOMALY_REPORT_INTERVAL_MS = 5000L
     }
 
-    /**
-     * Reassembly buffer for fragmented frames. Grows on demand.
-     *
-     * It used to be sized up front from settings.videoCodec, which is the user's preference and
-     * not the codec the session runs: ServiceDiscoveryResponse negotiates H.265 at 1440p and 4K
-     * whatever that setting says, and falls back to H.264 when the user asked for H.265 on a
-     * device with no HEVC decoder. Either mismatch handed an H.265 stream the 2MB H.264 buffer and
-     * turned every large frame into a fragment overflow. The real answer is also not available
-     * here - AapVideo is constructed with the transport, before the phone has negotiated anything
-     * - so start small and let a frame that does not fit be the thing that asks for more.
-     */
-    private var messageBuffer = ByteBuffer.allocate(INITIAL_BUFFER_BYTES)
-    private var legacyAssembledBuffer: ByteArray? = null
+    // Completed access units transfer their storage to the feeder. The assembler owns only
+    // the unfinished run; no session-wide 2 MB scratch array or completion copy is needed.
+    private val assemblyPool = VideoBufferPool()
+    private val messageBuffer = VideoAssemblyBuffer(assemblyPool, MAX_BUFFER_BYTES)
+    private var assemblyArrivalNanos = 0L
     private var lastKeyframeRequestMs = 0L
     private var lastAnomalyReportMs = 0L
 
@@ -190,26 +181,6 @@ internal class AapVideo(private val videoDecoder: VideoDecoder, private val sett
     }
 
     /**
-     * Makes room for [additionalBytes] more of the frame being assembled, growing [messageBuffer]
-     * if it has to. Returns false only at [MAX_BUFFER_BYTES], where the frame is genuinely too
-     * large to be one we can decode and the caller should invalidate it.
-     */
-    private fun ensureCapacity(additionalBytes: Int): Boolean {
-        if (messageBuffer.remaining() >= additionalBytes) return true
-
-        val needed = messageBuffer.position() + additionalBytes
-        if (needed > MAX_BUFFER_BYTES) return false
-
-        var capacity = messageBuffer.capacity()
-        while (capacity < needed) capacity *= 2
-        val grown = ByteBuffer.allocate(capacity.coerceAtMost(MAX_BUFFER_BYTES))
-        grown.put(messageBuffer.array(), 0, messageBuffer.position())
-        messageBuffer = grown
-        AppLog.i("AapVideo: Reassembly buffer grown to ${grown.capacity() / 1024}KB")
-        return true
-    }
-
-    /**
      * Length of the Annex B start code at [offset], or -1 if there is none.
      *
      * Bounded by [len] - the message's payload length - and not by `buf.size`. The two are only
@@ -250,7 +221,7 @@ internal class AapVideo(private val videoDecoder: VideoDecoder, private val sett
         )
     }
 
-    fun process(message: AapMessage): Boolean {
+    fun process(message: AapMessage, storage: VideoBuffer? = null, receivedNanos: Long = System.nanoTime()): Boolean {
         val buf = message.data
         val len = message.size
         val flags = message.flags.toInt()
@@ -284,16 +255,15 @@ internal class AapVideo(private val videoDecoder: VideoDecoder, private val sett
         return when (val action = decision.action) {
             is VideoFragmentAssembler.Action.DecodeWhole -> {
                 messageBuffer.clear()
-                videoDecoder.decode(buf, action.payloadOffset, len - action.payloadOffset, settings.forceSoftwareDecoding, settings.videoCodec)
+                decode(buf, action.payloadOffset, len - action.payloadOffset, storage, receivedNanos)
                 true
             }
 
             is VideoFragmentAssembler.Action.BeginAssembly -> {
                 messageBuffer.clear()
                 val bytes = len - action.payloadOffset
-                if (ensureCapacity(bytes)) {
-                    messageBuffer.put(buf, action.payloadOffset, bytes)
-                } else {
+                assemblyArrivalNanos = receivedNanos
+                if (!messageBuffer.append(buf, action.payloadOffset, bytes)) {
                     // A first fragment on its own larger than the ceiling. Used to throw a
                     // BufferOverflowException that the read loop swallowed, taking the rest of the
                     // frame's fragments with it and explaining nothing.
@@ -307,11 +277,9 @@ internal class AapVideo(private val videoDecoder: VideoDecoder, private val sett
             }
 
             VideoFragmentAssembler.Action.Append -> {
-                if (ensureCapacity(len)) {
-                    messageBuffer.put(buf, 0, len)
-                } else {
+                if (!messageBuffer.append(buf, 0, len)) {
                     AppLog.e(
-                        "AapVideo: Fragment overflow (Flag 8)! Size $len on top of ${messageBuffer.position()} " +
+                        "AapVideo: Fragment overflow (Flag 8)! Size $len on top of ${messageBuffer.size} " +
                             "exceeds the ${MAX_BUFFER_BYTES / 1024}KB cap. Invalidating frame."
                     )
                     handleAnomaly(assembler.onOverflow(), message)
@@ -320,7 +288,7 @@ internal class AapVideo(private val videoDecoder: VideoDecoder, private val sett
             }
 
             VideoFragmentAssembler.Action.AppendAndDecode -> {
-                if (!ensureCapacity(len)) {
+                if (!messageBuffer.append(buf, 0, len)) {
                     AppLog.e(
                         "AapVideo: Final fragment overflow (Flag 10)! Frame exceeds the " +
                             "${MAX_BUFFER_BYTES / 1024}KB cap. Invalidating frame."
@@ -328,9 +296,7 @@ internal class AapVideo(private val videoDecoder: VideoDecoder, private val sett
                     handleAnomaly(assembler.onOverflow(), message)
                     return true
                 }
-                messageBuffer.put(buf, 0, len)
-                messageBuffer.flip()
-                val assembledSize = messageBuffer.limit()
+                val assembledSize = messageBuffer.size
 
                 if (discardCompletedAssembly) {
                     // The framing audit found this run short by at least a whole fragment. Decoding
@@ -345,17 +311,12 @@ internal class AapVideo(private val videoDecoder: VideoDecoder, private val sett
                     return true
                 }
 
-                if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.LOLLIPOP) {
-                    if (legacyAssembledBuffer == null || legacyAssembledBuffer!!.size < assembledSize) {
-                        legacyAssembledBuffer = ByteArray(assembledSize + 1024)
-                    }
-                    messageBuffer.get(legacyAssembledBuffer!!, 0, assembledSize)
-                    videoDecoder.decode(legacyAssembledBuffer!!, 0, assembledSize, settings.forceSoftwareDecoding, settings.videoCodec)
-                } else {
-                    videoDecoder.decode(messageBuffer.array(), 0, assembledSize, settings.forceSoftwareDecoding, settings.videoCodec)
+                val completed = messageBuffer.detach()
+                try {
+                    decode(completed.data, 0, assembledSize, completed, assemblyArrivalNanos)
+                } finally {
+                    completed.release()
                 }
-
-                messageBuffer.clear()
                 true
             }
 
@@ -372,10 +333,19 @@ internal class AapVideo(private val videoDecoder: VideoDecoder, private val sett
         }
     }
 
+    private fun decode(data: ByteArray, offset: Int, size: Int, storage: VideoBuffer?, receivedNanos: Long) {
+        if (storage == null) {
+            videoDecoder.decode(data, offset, size, settings.forceSoftwareDecoding, settings.videoCodec)
+        } else {
+            videoDecoder.decodeOwned(storage, offset, size, settings.forceSoftwareDecoding, settings.videoCodec, receivedNanos)
+        }
+    }
+
     fun release() {
-        // Decoding is synchronous here, so there is nothing to drain - but the fragment run has to
-        // be closed, or a session that ends mid-frame leaves the next one's first fragments looking
-        // like a truncation.
+        // The codec feeder may still own completed frames. Closing the pool rejects their late
+        // returns, while the unfinished assembly belongs to this worker and can be released now.
+        messageBuffer.clear()
+        assemblyPool.close()
         discardNextAssembly = false
         assembler.reset()
         lastAnomalyReportMs = 0L

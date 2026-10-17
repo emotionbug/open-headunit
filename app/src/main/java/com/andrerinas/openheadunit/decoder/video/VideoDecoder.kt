@@ -322,18 +322,21 @@ class VideoDecoder(
     // thread. That thread carries every channel - video, audio, microphone, control - so while it
     // sat inside dequeueInputBuffer nothing else on the link was dispatched and the socket went
     // undrained, which turned a busy decoder into stalled audio and late keepalives. The one wait
-    // the read thread still takes is deliberate and different in kind: when this queue is FULL,
-    // offerWithBackpressure() paces that thread by one queue slot - one frame period in steady
-    // state - so the phone's ack window throttles it instead of frames being shed. Frames are
-    // copied on the way in because the transport reuses the buffer it hands us.
-    private class PendingFrame(var data: ByteArray, var size: Int, var arrivalNanos: Long)
+    // video worker still takes is deliberate: when this queue is full, offerWithBackpressure()
+    // waits for capacity without holding the socket reader. Owned input is retained through the
+    // feed; borrowed input is copied. Count and bytes remain bounded independently of ACKs.
+    private class PendingFrame(
+        var data: ByteArray, var size: Int, var arrivalNanos: Long,
+        val offset: Int = 0, val storage: VideoBuffer? = null,
+        var receivedNanos: Long = arrivalNanos
+    )
     // Re-derived per session by refreshPipelineSizing(), not fixed here. This object is built once
     // in AppComponent and lives for the whole process, so a depth chosen in the constructor
     // outlasted every settings change: a unit switched to 30fps kept the 60fps queue, and a log
     // could report "queue holds 15 frames, 500ms at 60fps" - two numbers that cannot both be right.
     @Volatile private var memoryReading: DeviceMemoryReading = readMemory()
     @Volatile private var frameQueueCapacity = VideoFeedQueuePolicy.capacityFor(settings.fpsLimit)
-    @Volatile private var frameQueue = ArrayBlockingQueue<PendingFrame>(frameQueueCapacity)
+    @Volatile private var frameQueue = VideoFrameQueue<PendingFrame>(frameQueueCapacity, 32L * 1024 * 1024) { it.data.size }
     @Volatile private var framePool = ArrayBlockingQueue<PendingFrame>(frameQueueCapacity + 2)
 
     @Volatile private var constrained = memoryReading.profile == DeviceMemoryProfile.CONSTRAINED
@@ -374,7 +377,6 @@ class VideoDecoder(
 
     // Reuse buffers for older API levels to minimize GC pressure
     private var inputBuffers: Array<ByteBuffer>? = null
-    private var legacyFrameBuffer: ByteArray? = null
 
     var dimensionsListener: VideoDimensionsListener? = null
     var onFpsChanged: ((Int) -> Unit)? = null
@@ -795,6 +797,9 @@ class VideoDecoder(
                 running = false
                 outputThread.also { outputThread = null }
             }
+            // Stop admission before joining workers. An offer already waiting outside this
+            // monitor must wake and release its retained storage, never refill a drained queue.
+            clearFrameQueue()
             try {
                 // A slow native call may outlive this join, but can no longer publish results.
                 if (retiredOutput != null && retiredOutput != Thread.currentThread()) {
@@ -841,7 +846,6 @@ class VideoDecoder(
             codec = null
             softwareHevcDecoder = null
             inputBuffers = null
-            legacyFrameBuffer = null
             codecBufferInfo = null
             if (!DecoderStopPolicy.isDecoderRestart(reason)) {
                 restartsSinceLastFrame = 0
@@ -933,7 +937,19 @@ class VideoDecoder(
      * before the first rendered frame.
      */
     fun decode(buffer: ByteArray, offset: Int, size: Int, forceSoftware: Boolean, codecName: String) {
-        val frame = synchronized(this) {
+        decodeFrame(buffer, offset, size, forceSoftware, codecName, null, System.nanoTime())
+    }
+
+    /** Borrows the caller's reference, retaining it only when the asynchronous feeder needs it. */
+    internal fun decodeOwned(storage: VideoBuffer, offset: Int, size: Int, forceSoftware: Boolean,
+                             codecName: String, receivedNanos: Long) {
+        decodeFrame(storage.data, offset, size, forceSoftware, codecName, storage, receivedNanos)
+    }
+
+    private fun decodeFrame(buffer: ByteArray, offset: Int, size: Int, forceSoftware: Boolean,
+                            codecName: String, storage: VideoBuffer?, receivedNanos: Long) {
+        require(offset >= 0 && size >= 0 && offset <= buffer.size - size)
+        val prepared = synchronized(this) {
             // Input-side liveness: bytes are arriving from the phone right now.
             lastInputBytesReceivedMs = elapsedRealtime()
 
@@ -989,22 +1005,11 @@ class VideoDecoder(
 
             if (decoderPermanentlyFailed) return
 
-            // Buffer management for backward compatibility
-            // Modern devices (API 21+) use the original buffer with offset/size to avoid GC pressure.
-            val frameData: ByteArray
-            val frameOffset: Int
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-                if (legacyFrameBuffer == null || legacyFrameBuffer!!.size < size) {
-                    legacyFrameBuffer = ByteArray(size + 1024)
-                }
-                System.arraycopy(buffer, offset, legacyFrameBuffer!!, 0, size)
-                frameData = legacyFrameBuffer!!
-                frameOffset = 0
-            } else {
-                frameData = buffer
-                frameOffset = offset
-            }
-
+            // Both MediaCodec input APIs consume ByteBuffer slices, including getInputBuffers()
+            // before API 21. The Annex B scanners also take explicit bounds; a legacy staging
+            // array adds a copy without changing the bytes delivered to either API.
+            val frameData = buffer
+            val frameOffset = offset
 
             // Initialization phase: detect codec and configuration (SPS/PPS).
             // Only runs the detection heuristic on the very first init of the session; once a
@@ -1074,66 +1079,60 @@ class VideoDecoder(
 
             if (codec == null) return
 
-            prepareFrame(frameData, frameOffset, size)
+            prepareFrame(frameData, frameOffset, size, storage, receivedNanos)?.let { it to frameQueue }
         } ?: return
 
         // Outside the monitor on purpose: stop() synchronizes on this object, and a wait held
         // inside it would block the teardown for up to the whole budget. Out here stop() clears
         // running and the wait aborts within one slice.
-        offerWithBackpressure(frame)
+        offerWithBackpressure(prepared.first, prepared.second)
     }
 
     /**
-     * Copies a frame into a pooled buffer while the transport's bytes are still valid - the
-     * caller reuses the buffer it handed us the moment decode() returns, so the copy has to
-     * happen before the monitor is released.
+     * Retains owned input through the feed, including its offset past the DATA header. Borrowed
+     * callers still copy before returning. No array returns to a pool until the feeder's finally
+     * block, including codec failure, queue rejection and session teardown.
      */
-    private fun prepareFrame(frameData: ByteArray, frameOffset: Int, size: Int): PendingFrame? {
+    private fun prepareFrame(frameData: ByteArray, frameOffset: Int, size: Int,
+                             storage: VideoBuffer?, receivedNanos: Long): PendingFrame? {
         // An empty frame reaches the codec as nothing at all, so queueing it would only inflate
         // the fed count that the throughput line uses to say whether frames arrived.
         if (size <= 0) return null
 
+        if (storage != null) {
+            return PendingFrame(storage.data, size, System.nanoTime(), frameOffset, storage.retain(), receivedNanos)
+        }
         val frame = borrowFrame(size)
 
         System.arraycopy(frameData, frameOffset, frame.data, 0, size)
         frame.size = size
-        // Stamped here, not where the frame is handed over: the feed thread drains a backlog in
-        // a few milliseconds, so timestamps taken there would give a dozen frames near-identical
-        // values and flatten the cadence the codec sees.
+        // Keep codec PTS in its existing clock domain: the first packet may have arrived before
+        // startTime was set during configure. Receipt time is separate end-to-end queue telemetry.
         frame.arrivalNanos = System.nanoTime()
+        frame.receivedNanos = receivedNanos
         return frame
     }
 
     /**
-     * Places the frame on the feed queue, pacing the transport's read thread when it is full.
-     *
-     * The bounded stall is the point, not a hazard. While this thread waits, no further messages
-     * are read or acked, so the phone's unacked-message window closes and the phone slows to the
-     * rate the codec actually drains - the protocol's own flow control, doing the throttling that
-     * shedding used to fake. A full queue plus an arriving frame only ever happens when the phone
-     * is outrunning the codec, so in steady state the wait per frame is one frame period, and a
-     * link-stall backlog (phone silent, queue draining) never blocks here at all.
-     *
-     * Every frame shed by the old immediate drop was a reference some later frame predicted from,
-     * so each one cost a washed-out, blocky picture until the phone's own keyframe - and the phone
-     * runs a fixed keyframe period measured at ~69s, beyond anything the focus-cycle ladder can
-     * repair when the drops keep coming.
-     *
-     * Budget expiry still sheds the frame: the feed thread's own give-up frees a slot every
-     * [VideoFeedQueuePolicy.INPUT_DEQUEUE_PATIENCE_MS], so outlasting the budget means the codec
-     * took nothing for the whole wait - a wedge, which belongs to the sync_stall watchdog, with
-     * [notifyFrameDropped]'s keyframe ask covering the picture that frame cost.
+     * Waits for count/byte capacity on the video worker, preserving reference-frame order.
+     * Transport ACKs follow this call, but are not a hard sender bound; see
+     * [VideoFeedThrottlePolicy]. A closing queue rejects the frame without touching its successor.
      */
-    private fun offerWithBackpressure(frame: PendingFrame) {
-        // Read once: this runs outside the monitor, and a session start on the same thread can
-        // have replaced the queue between two reads of the field.
-        val queue = frameQueue
-        if (queue.offer(frame)) return
+    private fun offerWithBackpressure(frame: PendingFrame, queue: VideoFrameQueue<PendingFrame>) {
+        // Captured with the frame under the decoder monitor. A stop closes this exact owner;
+        // a later start cannot make an old frame eligible for the new queue.
+        try {
+            if (queue.offer(frame)) return
+        } catch (e: InterruptedException) {
+            Thread.currentThread().interrupt()
+            recycleFrame(frame)
+            return
+        }
 
         val waitStart = elapsedRealtime()
         var accepted = false
         var elapsed = 0L
-        while (!accepted && VideoFeedThrottlePolicy.shouldKeepWaiting(elapsed, running)) {
+        while (!accepted && !queue.isClosed && VideoFeedThrottlePolicy.shouldKeepWaiting(elapsed, running)) {
             accepted = try {
                 queue.offer(frame, VideoFeedThrottlePolicy.OFFER_SLICE_MS, TimeUnit.MILLISECONDS)
             } catch (e: InterruptedException) {
@@ -1156,14 +1155,14 @@ class VideoDecoder(
             // A teardown fails the offer the same way a wedge does - stop() clears running and
             // empties the queue. Say nothing then: the frame is moot and the keyframe ask would
             // fire on every ordinary stop.
-            if (running) notifyFrameDropped()
+            if (running && !queue.isClosed && queue === frameQueue) notifyFrameDropped()
         }
     }
 
     /**
-     * Reports that the read thread is being paced, at most once per [FEED_DROP_LOG_INTERVAL_MS].
+     * Reports that the video worker is being paced, at most once per [FEED_DROP_LOG_INTERVAL_MS].
      *
-     * Called from the transport's read thread only. The throughput line's `enqueueWait` carries
+     * Called from the video worker only. The throughput line's `enqueueWait` carries
      * the magnitude; this line only says it began.
      */
     private fun logFeedPacing() {
@@ -1176,7 +1175,7 @@ class VideoDecoder(
         val alsoSuppressed =
             if (suppressedFeedPacingLogs > 0) " (+$suppressedFeedPacingLogs more since the last line)" else ""
         suppressedFeedPacingLogs = 0
-        AppLog.i("Feed queue full - pacing the transport thread instead of shedding frames%s", alsoSuppressed)
+        AppLog.i("Feed queue full - pacing the video worker instead of shedding frames%s", alsoSuppressed)
     }
 
     /** Takes a buffer from the pool, growing it if this frame does not fit, or allocates one. */
@@ -1198,6 +1197,10 @@ class VideoDecoder(
      * behaviour exactly.
      */
     private fun recycleFrame(frame: PendingFrame) {
+        frame.storage?.let {
+            it.release()
+            return
+        }
         val bytes = frame.data.size
         if (pooledBytes.get().toLong() + bytes > pooledByteBudget.toLong()) return
         if (framePool.offer(frame)) pooledBytes.addAndGet(bytes)
@@ -1252,16 +1255,19 @@ class VideoDecoder(
             )
         }
         val self = Thread.currentThread()
+        val queue = frameQueue
+        val timing = VideoQueueTiming("Video receipt-to-feed")
         while (running && feedThread === self) {
             val frame = try {
-                frameQueue.poll(FEED_POLL_MS, TimeUnit.MILLISECONDS)
+                queue.poll(FEED_POLL_MS, TimeUnit.MILLISECONDS)
             } catch (e: InterruptedException) {
                 break
             } ?: continue
 
             try {
                 if (!FeedLoopPolicy.shouldFeed(running, feedThread === self, codec != null, decoderNeedsRestart)) continue
-                val buf = ByteBuffer.wrap(frame.data, 0, frame.size)
+                timing.onStart(frame.receivedNanos, System.nanoTime(), queue.retainedBytes)?.let { AppLog.i(it) }
+                val buf = ByteBuffer.wrap(frame.data, frame.offset, frame.size)
                 when (feedInputBuffer(buf, frame.arrivalNanos)) {
                     FeedResult.FED -> {
                         framesFed++
@@ -1345,23 +1351,20 @@ class VideoDecoder(
         pooledByteBudget = if (constrained) CONSTRAINED_POOL_BUDGET_BYTES else Int.MAX_VALUE
 
         val capacity = VideoFeedQueuePolicy.capacityFor(settings.fpsLimit)
-        if (capacity == frameQueueCapacity) return
+        if (capacity == frameQueueCapacity && !frameQueue.isClosed) return
         AppLog.i(
             "VideoDecoder: feed queue resized $frameQueueCapacity -> $capacity frames " +
                 "(${VideoFeedQueuePolicy.heldMsAt(settings.fpsLimit)}ms at ${settings.fpsLimit}fps)"
         )
         frameQueueCapacity = capacity
-        frameQueue = ArrayBlockingQueue<PendingFrame>(capacity)
+        frameQueue = VideoFrameQueue(capacity, 32L * 1024 * 1024) { it.data.size }
         framePool = ArrayBlockingQueue<PendingFrame>(capacity + 2)
         pooledBytes.set(0)
     }
 
     /** Empties the feed queue back into the pool. Anything still waiting is stale after a stop. */
     private fun clearFrameQueue() {
-        while (true) {
-            val frame = frameQueue.poll() ?: break
-            recycleFrame(frame)
-        }
+        frameQueue.closeAndDrain().forEach(::recycleFrame)
     }
 
     private fun shouldUseBundledHevc(type: CodecType, forceSoftware: Boolean): Boolean {
@@ -1831,8 +1834,9 @@ class VideoDecoder(
                 @Suppress("DEPRECATION") inputBuffers = codec?.inputBuffers
             }
 
+            // refreshPipelineSizing installed an open queue before configure. Closing it here
+            // would reject the first frame even though the codec has started successfully.
             running = true
-            clearFrameQueue()
             val newOutputThread = Thread {
                 android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_DISPLAY)
                 LegacyOptimizer.setHighPriority()
@@ -2006,8 +2010,8 @@ class VideoDecoder(
             // before the component had drained its first buffers, on hardware that then went on to
             // decode at full rate.
             //
-            // The whole dequeue is timed, not just the retries: the first call blocks for up to
-            // TIMEOUT_US on its own, and what holds up audio behind us is the total.
+            // The whole dequeue is timed, not just retries: the first call can block for
+            // TIMEOUT_US too. It runs on the feeder, independently of the shared socket reader.
             //
             // running is checked every iteration because interrupt() cannot abort a MediaCodec
             // call: stop() clears running before it joins this thread, so checking it here bounds
@@ -2056,17 +2060,17 @@ class VideoDecoder(
 
             val content = if (buffer.hasArray()) {
                 CodecConfigScanner.classify(
-                    buffer.array(), buffer.position(), buffer.remaining(), currentCodecType == CodecType.H265
+                    buffer.array(), buffer.arrayOffset() + buffer.position(), buffer.remaining(), currentCodecType == CodecType.H265
                 )
             } else {
                 CodecConfigScanner.Content.NO_PARAMETER_SETS
             }
             reportContentOnce(content)
             if (content != CodecConfigScanner.Content.NO_PARAMETER_SETS && buffer.hasArray()) {
-                trackParameterSets(buffer.array(), buffer.position(), buffer.remaining())
+                trackParameterSets(buffer.array(), buffer.arrayOffset() + buffer.position(), buffer.remaining())
             }
             val isKeyframe = buffer.hasArray() && VideoKeyframeScanner.containsKeyframe(
-                buffer.array(), buffer.position(), buffer.remaining(), currentCodecType == CodecType.H265
+                buffer.array(), buffer.arrayOffset() + buffer.position(), buffer.remaining(), currentCodecType == CodecType.H265
             )
             // BUFFER_FLAG_CODEC_CONFIG says the buffer is codec-specific data and nothing else, so a
             // component may consume it and produce no output. Set it only for a unit that really is
@@ -2095,19 +2099,20 @@ class VideoDecoder(
                 return FeedResult.DROPPED_TOO_LARGE
             }
 
+            val payloadSize = buffer.remaining()
             inputBuffer.put(buffer)
             inputBuffer.flip()
 
             val pts = ((if (arrivalNanos > 0L) arrivalNanos else System.nanoTime()) - startTime) / 1000
 
-            currentCodec.queueInputBuffer(inputIndex, 0, inputBuffer.limit(), pts, flags)
+            currentCodec.queueInputBuffer(inputIndex, 0, payloadSize, pts, flags)
             queued = true
             if (isKeyframe) {
                 // Fed, not yet repaired. The picture counts as repaired at the output side, where
                 // a keyframe that arrived holed is told apart from one that decodes.
                 keyframeRepair.onKeyframeFed(pts)
                 lastKeyframeFedMs = elapsedRealtime()
-                AppLog.i("VideoDecoder: keyframe reached the codec (${inputBuffer.limit()} bytes)")
+                AppLog.i("VideoDecoder: keyframe reached the codec ($payloadSize bytes)")
             }
             return FeedResult.FED
         } catch (e: Exception) {

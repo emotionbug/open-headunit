@@ -36,6 +36,7 @@ import com.andrerinas.openheadunit.decoder.audio.AudioDiagnostics
 import com.andrerinas.openheadunit.decoder.audio.MicRecorder
 import com.andrerinas.openheadunit.decoder.video.DecoderStopPolicy
 import com.andrerinas.openheadunit.decoder.video.VideoDecoder
+import com.andrerinas.openheadunit.decoder.video.VideoBufferPool
 import com.andrerinas.openheadunit.main.BackgroundNotification
 import com.andrerinas.openheadunit.ssl.SingleKeyKeyManager
 import com.andrerinas.openheadunit.utils.AppLog
@@ -113,10 +114,11 @@ class AapTransport(
     private val terminated = java.util.concurrent.CountDownLatch(1)
     private var retiringWorkers: List<Thread> = emptyList()
 
-    // Reused payload copies for the video thread. The SSL layer hands back one buffer it overwrites
-    // on the next read, so a message that outlives the read has to carry its own bytes; pooling
-    // them keeps a 50 fps stream from allocating per frame.
-    private val videoBufferPool = java.util.concurrent.LinkedBlockingQueue<ByteArray>()
+    // TLS bytes are borrowed until the next read. Copy once into owned storage; whole frames
+    // retain this same array through MediaCodec input, rather than copying into a second pool.
+    private val videoBufferPool = VideoBufferPool()
+    private val videoQueuedBytes = java.util.concurrent.atomic.AtomicLong(0)
+    private val videoQueueTiming = com.andrerinas.openheadunit.decoder.video.VideoQueueTiming()
 
     // Messages handed to the video thread and not yet processed. The park that used to hold the
     // read thread lives here now, so this is where it can still be seen.
@@ -837,7 +839,8 @@ class AapTransport(
                 if (videoDecoder.onKeyframeObserved === keyframeObservedCallback) videoDecoder.onKeyframeObserved = null
             }
             cleanupStep("video") { aapVideo.release() }
-            videoBufferPool.clear()
+            videoBufferPool.close()
+            videoQueuedBytes.set(0)
             videoBacklog.set(0)
             videoShedTotal.set(0)
             aapRead = null
@@ -898,24 +901,27 @@ class AapTransport(
      * backlog to 256, so [VIDEO_BACKLOG_LIMIT] is the real ceiling.
      */
     internal fun dispatchVideo(message: AapMessage): Boolean {
+        val receivedNanos = System.nanoTime()
         val isPayload = aapVideo.isPayload(message)
         val acks = AapMessageFraming.completesMediaData(message.type, message.flags.toInt())
         // Capture ownership at receipt. A later MediaStart can replace the channel's session
         // while video is queued; its eventual ACK still belongs to this message's original one.
         val ackSession = getSessionId(message.channel)
         val handler = videoHandler
-        if (handler == null) {
+        if (handler == null || closing) {
             if (acks) sendMediaAck(message.channel, ackSession)
             return isPayload
         }
         val channel = message.channel
-        if (videoBacklog.get() >= VIDEO_BACKLOG_LIMIT) {
+        if (videoBacklog.get() >= VIDEO_BACKLOG_LIMIT ||
+            videoQueuedBytes.get() + VideoBufferPool.capacityFor(message.size) > VIDEO_BACKLOG_BYTES) {
             // A phone that ignores its own window, or an ack we never got to send. Shed rather than
             // allocate, and tell the assembler the run has a hole so a partial access unit is
             // discarded instead of decoded as though it were whole. The ack still goes out, or the
             // window closes for good and the picture never comes back.
             if (videoShedTotal.getAndIncrement() == 0L) {
-                AppLog.w("AapTransport: the video thread is $VIDEO_BACKLOG_LIMIT messages behind, " +
+                AppLog.w("AapTransport: video backlog reached its count/byte ceiling " +
+                    "(messages=${videoBacklog.get()}, bytes=${videoQueuedBytes.get()}), " +
                     "shedding - see videoShed= on the transport dispatch line for how many")
             }
             if (isPayload) dispatchVideoRunHoled(true)
@@ -923,20 +929,30 @@ class AapTransport(
             return isPayload
         }
         val size = message.size
-        val copy = obtainVideoBuffer(size)
-        System.arraycopy(message.data, 0, copy, 0, size)
-        val queued = AapMessage(channel, message.flags, message.type, message.dataOffset, size, copy)
+        val storage = videoBufferPool.acquire(size)
+        System.arraycopy(message.data, 0, storage.data, 0, size)
+        val queued = AapMessage(channel, message.flags, message.type, message.dataOffset, size, storage.data)
         videoBacklog.incrementAndGet()
-        handler.post {
+        videoQueuedBytes.addAndGet(storage.data.size.toLong())
+        val posted = handler.post {
             try {
-                aapVideo.process(queued)
+                val timing = videoQueueTiming.onStart(receivedNanos, System.nanoTime(), videoQueuedBytes.get())
+                if (timing != null) AppLog.i("$timing, idlePoolBytes=${videoBufferPool.retainedBytes}")
+                aapVideo.process(queued, storage, receivedNanos)
             } catch (e: Exception) {
                 AppLog.e("Error processing video message", e)
             } finally {
                 videoBacklog.decrementAndGet()
-                recycleVideoBuffer(copy)
+                videoQueuedBytes.addAndGet(-storage.data.size.toLong())
+                storage.release()
                 if (acks) sendMediaAck(channel, ackSession)
             }
+        }
+        if (!posted) {
+            videoBacklog.decrementAndGet()
+            videoQueuedBytes.addAndGet(-storage.data.size.toLong())
+            storage.release()
+            if (acks) sendMediaAck(channel, ackSession)
         }
         return isPayload
     }
@@ -956,17 +972,6 @@ class AapTransport(
     internal fun dispatchVideoRunHoled(discardAssembledUnit: Boolean) {
         val handler = videoHandler ?: return
         handler.post { aapVideo.onFragmentRunHoled(discardAssembledUnit) }
-    }
-
-    private fun obtainVideoBuffer(size: Int): ByteArray {
-        while (true) {
-            val pooled = videoBufferPool.poll() ?: return ByteArray(maxOf(size, MIN_VIDEO_BUFFER_BYTES))
-            if (pooled.size >= size) return pooled
-        }
-    }
-
-    private fun recycleVideoBuffer(buffer: ByteArray) {
-        if (videoBufferPool.size < VIDEO_BUFFER_POOL_LIMIT) videoBufferPool.offer(buffer)
     }
 
     /**
@@ -1326,7 +1331,6 @@ class AapTransport(
         private const val MSG_POLL = 1
         private const val MSG_SEND = 2
 
-        /** Pooled video payload copies: enough for a fragment run and the one behind it. */
         /**
          * Messages the video thread may be behind before the transport sheds.
          *
@@ -1337,8 +1341,8 @@ class AapTransport(
          */
         private const val VIDEO_BACKLOG_LIMIT = 256
 
-        private const val VIDEO_BUFFER_POOL_LIMIT = 8
-        private const val MIN_VIDEO_BUFFER_BYTES = 64 * 1024
+        // Capacity, not payload: an unusually large message must not defeat the count limit.
+        private const val VIDEO_BACKLOG_BYTES = 32L * 1024 * 1024
         // Maximum wall-clock time allowed for the version-exchange phase of the AAP handshake.
         // Prevents the retry loop from blocking for minutes on an unresponsive USB device.
         private const val HANDSHAKE_TIMEOUT_MS = 10_000L

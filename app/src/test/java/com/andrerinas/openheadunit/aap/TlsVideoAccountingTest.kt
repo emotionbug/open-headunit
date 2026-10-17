@@ -3,6 +3,7 @@ package com.andrerinas.openheadunit.aap
 import android.os.SystemClock
 import com.andrerinas.openheadunit.aap.protocol.Channel
 import com.andrerinas.openheadunit.connection.projection.ProjectionConnection
+import com.andrerinas.openheadunit.decoder.video.VideoBuffer
 import com.andrerinas.openheadunit.decoder.video.VideoDecoder
 import com.andrerinas.openheadunit.decoder.video.VideoFaultInjector
 import com.andrerinas.openheadunit.utils.Settings
@@ -76,6 +77,16 @@ class TlsVideoAccountingTest {
                 whenever(settings.videoCodec).thenReturn("h264")
                 whenever(settings.debugVideoFaultInjection).thenReturn(VideoFaultInjector.Mode.OFF)
                 val decoder = mock<VideoDecoder>()
+                val retained = mutableListOf<VideoBuffer>()
+                val decoded = mutableListOf<ByteArray>()
+                doAnswer { call ->
+                    val storage = call.getArgument<VideoBuffer>(0)
+                    val offset = call.getArgument<Int>(1)
+                    val size = call.getArgument<Int>(2)
+                    decoded.add(storage.data.copyOfRange(offset, offset + size))
+                    retained += storage.retain()
+                    null
+                }.whenever(decoder).decodeOwned(any(), any(), any(), any(), any(), any())
                 val video = AapVideo(decoder, settings) {}
                 val repairs = mutableListOf<Boolean>()
                 val repair: (Boolean) -> Unit = { discard -> repairs += discard; video.onFragmentRunHoled(discard) }
@@ -84,9 +95,22 @@ class TlsVideoAccountingTest {
                 }
                 val reader: AapRead = if (bulk) AapReadMultipleMessages(connection, ssl, handler, repair)
                     else AapReadSingleMessage(connection, ssl, handler, repair)
-                while (position < wire.size) assertEquals(0, reader.read())
-                assertEquals(listOf(true), repairs)
-                verify(decoder, times(4)).decode(any(), any(), eq(1014), any(), any())
+                try {
+                    while (position < wire.size) assertEquals(0, reader.read())
+                    assertEquals(listOf(true), repairs)
+                    verify(decoder, times(4)).decodeOwned(any(), eq(0), eq(1014), any(), any(), any())
+                    verify(decoder, never()).decode(any(), any(), any(), any(), any())
+                    val expected = first.copyOfRange(10, first.size) + last
+                    assertEquals(4, decoded.size)
+                    decoded.forEach { assertArrayEquals(expected, it) }
+                    retained.forEachIndexed { index, storage ->
+                        assertArrayEquals(expected, storage.data.copyOf(expected.size))
+                        retained.take(index).forEach { assertNotSame(it.data, storage.data) }
+                    }
+                } finally {
+                    retained.forEach { it.release() }
+                    video.release()
+                }
             }
         }
 }
