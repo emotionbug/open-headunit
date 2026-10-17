@@ -54,6 +54,15 @@ object VideoKeyframeScanner {
         var headersSeen = 0
 
         while (i + 3 < end && headersSeen < MAX_NAL_HEADERS_SCANNED) {
+            // Annex B starts with 00 00 01 or 00 00 00 01. If byte i+2 is neither
+            // 0 nor 1, none of i, i+1 or i+2 can start a prefix. Skip all three.
+            // Unlike a byte-budget cutoff this still finds an IDR after a long SEI, and
+            // ordinary P-frame payloads no longer require a branch at every single byte.
+            val third = data[i + 2].toInt()
+            if (third != 0 && third != 1) {
+                i += 3
+                continue
+            }
             val headerPos = startCodeHeaderPos(data, i, end)
             if (headerPos < 0) {
                 i++
