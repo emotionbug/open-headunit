@@ -1476,50 +1476,6 @@ class VideoDecoder(
     }
 
     /**
-     * Splits a combined packet into multiple NAL units and normalizes start codes.
-     */
-    private fun forEachNalUnit(buffer: ByteArray, offset: Int, size: Int, callback: (ByteArray, Int) -> Unit) {
-        var currentPos = offset
-        val limit = offset + size
-
-        while (currentPos < limit - 3) {
-            var nalStart = -1
-            var startCodeLen = 0
-
-            for (i in currentPos until limit - 3) {
-                if (buffer[i].toInt() == 0 && buffer[i+1].toInt() == 0) {
-                    if (buffer[i+2].toInt() == 0 && buffer[i+3].toInt() == 1) {
-                        nalStart = i; startCodeLen = 4; break
-                    } else if (buffer[i+2].toInt() == 1) {
-                        nalStart = i; startCodeLen = 3; break
-                    }
-                }
-            }
-
-            if (nalStart != -1) {
-                var nalEnd = limit
-                for (j in (nalStart + startCodeLen) until limit - 3) {
-                    if (buffer[j].toInt() == 0 && buffer[j+1].toInt() == 0 &&
-                        (buffer[j+2].toInt() == 1 || (buffer[j+2].toInt() == 0 && buffer[j+3].toInt() == 1))) {
-                        nalEnd = j; break
-                    }
-                }
-
-                val rawNal = buffer.copyOfRange(nalStart, nalEnd)
-                val fixedNal = if (startCodeLen == 3) {
-                    // Normalize to 4-byte start codes for better decoder compatibility
-                    ByteArray(rawNal.size + 1).apply {
-                        this[0] = 0; System.arraycopy(rawNal, 0, this, 1, rawNal.size)
-                    }
-                } else rawNal
-
-                callback(fixedNal, if (startCodeLen == 3) 4 else 4)
-                currentPos = nalEnd
-            } else break
-        }
-    }
-
-    /**
      * Reads this session's sequence parameter set: picture size for the codec, and the buffering
      * fields for the log.
      *
@@ -1600,10 +1556,15 @@ class VideoDecoder(
      * Extracts SPS/PPS/VPS data for the decoder configuration (CSD).
      */
     private fun scanAndApplyConfig(buffer: ByteArray, offset: Int, size: Int, type: CodecType) {
-        forEachNalUnit(buffer, offset, size) { nalData, headerLen ->
-            val nalFirstByte = nalData[headerLen].toInt()
+        AnnexBNalUnits.forEach(buffer, offset, size) { nalOffset, nalSize ->
+            val nalFirstByte = buffer[nalOffset].toInt()
+            val nalType = if (type == CodecType.H264) nalFirstByte and 0x1F else (nalFirstByte and 0x7E) shr 1
+            val isParameterSet = if (type == CodecType.H264) nalType == 7 || nalType == 8
+                else nalType in 32..34
+            if (!isParameterSet) return@forEach
+            val nalData = AnnexBNalUnits.copyWithStartCode(buffer, nalOffset, nalSize)
+            val headerLen = 4
             if (type == CodecType.H264) {
-                val nalType = nalFirstByte and 0x1F
                 if (nalType == 7) { // SPS
                     sps = nalData
                     applyParameterSet(nalData, headerLen, CodecType.H264)
@@ -1612,7 +1573,6 @@ class VideoDecoder(
                 // H.264 requires at least SPS to start
                 if (sps != null) codecConfigured = true
             } else {
-                val nalType = (nalFirstByte and 0x7E) shr 1
                 if (nalType == 32) vps = nalData
                 else if (nalType == 33) {
                     sps = nalData
@@ -1905,15 +1865,15 @@ class VideoDecoder(
      *
      * Diagnostic only - see [ParameterSetTracker] for why nothing here writes to the stored CSD or
      * the configured size. Runs only on units the config scanner says carry parameter sets, which is
-     * keyframes and config messages, so the per-NAL copying [forEachNalUnit] does is paid a few times
-     * a minute rather than sixty times a second.
+     * keyframes and config messages. The frame remains borrowed throughout this call: picture NALs
+     * are skipped without copying, and the tracker snapshots only new or changed parameter sets.
      */
     private fun trackParameterSets(data: ByteArray, offset: Int, size: Int) {
         val hevc = currentCodecType == CodecType.H265
-        var spsNal: ByteArray? = null
-        var spsHeaderLen = 0
-        forEachNalUnit(data, offset, size) { nalData, headerLen ->
-            val first = nalData[headerLen].toInt()
+        var spsOffset = -1
+        var spsSize = 0
+        AnnexBNalUnits.forEach(data, offset, size) { nalOffset, nalSize ->
+            val first = data[nalOffset].toInt()
             val kind = if (hevc) {
                 when ((first and 0x7E) shr 1) {
                     32 -> ParameterSetTracker.Kind.VPS
@@ -1929,19 +1889,17 @@ class VideoDecoder(
                 }
             }
             if (kind != null) {
-                parameterSetTracker.offer(kind, nalData, headerLen, nalData.size - headerLen)
+                parameterSetTracker.offer(kind, data, nalOffset, nalSize)
                 if (kind == ParameterSetTracker.Kind.SPS) {
-                    spsNal = nalData
-                    spsHeaderLen = headerLen
+                    spsOffset = nalOffset
+                    spsSize = nalSize
                 }
             }
         }
 
         val change = parameterSetTracker.takeChange() ?: return
         val kinds = change.kinds.joinToString(" ")
-        // Snapshotted because the lambda above assigns it; a captured var is not smart-castable.
-        val sps = spsNal
-        val sizeNote = if (sps != null) describeSizeChange(sps, spsHeaderLen, hevc) else "size unread"
+        val sizeNote = if (spsOffset >= 0) describeSizeChange(data, spsOffset, spsSize, hevc) else "size unread"
         AppLog.w(
             "VideoDecoder: parameter sets changed mid-session ($kinds, $sizeNote) - change #${change.ordinal}"
         )
@@ -1952,16 +1910,15 @@ class VideoDecoder(
      * configured size is corrected by the component's own output format, and second-guessing it from
      * here is the behaviour change this measurement exists to justify or rule out.
      */
-    private fun describeSizeChange(nalData: ByteArray, headerLen: Int, hevc: Boolean): String {
-        val length = nalData.size - headerLen
+    private fun describeSizeChange(nalData: ByteArray, offset: Int, length: Int, hevc: Boolean): String {
         val width: Int
         val height: Int
         if (hevc) {
-            val parsed = ParameterSetInspector.parseHevcSps(nalData, headerLen, length) ?: return "size unparsed"
+            val parsed = ParameterSetInspector.parseHevcSps(nalData, offset, length) ?: return "size unparsed"
             width = parsed.width
             height = parsed.height
         } else {
-            val parsed = ParameterSetInspector.parseH264Sps(nalData, headerLen, length) ?: return "size unparsed"
+            val parsed = ParameterSetInspector.parseH264Sps(nalData, offset, length) ?: return "size unparsed"
             width = parsed.width
             height = parsed.height
         }
