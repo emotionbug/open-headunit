@@ -99,9 +99,25 @@ class ParameterSetTrackerTest {
         assertFalse(t.offer(Kind.SPS, bytes(1, 2), 0, 0))
         assertFalse(t.offer(Kind.SPS, bytes(1, 2), 1, 5))
         assertFalse(t.offer(Kind.SPS, bytes(1, 2), -1, 2))
+        assertFalse(t.offer(Kind.SPS, bytes(1, 2), Int.MAX_VALUE, 2))
         // Nothing was stored, so a real set is still the first of its kind. Had any of the three
         // been kept, these bytes would differ from it and this would report a change.
         assertFalse(t.offer(Kind.SPS, bytes(1, 2)))
+    }
+
+    @Test
+    fun `equal borrowed slice does not replace the retained snapshot`() {
+        val t = ParameterSetTracker()
+        t.offer(Kind.SPS, bytes(1, 2, 3))
+        val field = ParameterSetTracker::class.java.getDeclaredField("stored").apply { isAccessible = true }
+        val snapshot = (field.get(t) as Array<*>)[Kind.SPS.ordinal]
+        val borrowed = bytes(9, 1, 2, 3, 9)
+        assertFalse(t.offer(Kind.SPS, borrowed, 1, 3))
+        org.junit.Assert.assertSame(snapshot, (field.get(t) as Array<*>)[Kind.SPS.ordinal])
+        borrowed[2] = 7
+        assertTrue(t.offer(Kind.SPS, borrowed, 1, 3))
+        borrowed[2] = 8
+        assertFalse(t.offer(Kind.SPS, bytes(1, 7, 3)))
     }
 
     @Test

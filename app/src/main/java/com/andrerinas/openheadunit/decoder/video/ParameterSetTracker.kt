@@ -51,12 +51,14 @@ class ParameterSetTracker {
      * change - there was nothing to differ from - which is what keeps a fresh session silent.
      */
     fun offer(kind: Kind, data: ByteArray, offset: Int, length: Int): Boolean {
-        if (length <= 0 || offset < 0 || offset + length > data.size) return false
+        if (length <= 0 || offset < 0 || offset > data.size - length) return false
         val previous = stored[kind.ordinal]
-        val copy = data.copyOfRange(offset, offset + length)
-        stored[kind.ordinal] = copy
+        // Repeated keyframes usually carry identical sets. Compare the borrowed range before
+        // allocating; retain a private snapshot only on first sight or an actual change.
+        if (previous != null && previous.size == length &&
+            previous.indices.all { previous[it] == data[offset + it] }) return false
+        stored[kind.ordinal] = data.copyOfRange(offset, offset + length)
         if (previous == null) return false
-        if (previous.contentEquals(copy)) return false
         pending.add(kind)
         return true
     }
