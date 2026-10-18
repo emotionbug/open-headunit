@@ -432,6 +432,7 @@ internal class AapControlService(
             Control.ControlMsgType.MESSAGE_CHANNEL_CLOSE_NOTIFICATION_VALUE -> {
                 AppLog.i("RX: Channel Close Notification on chan ${message.channel}")
                 if (message.channel == Channel.ID_SEN) aapTransport.sensorSubscriptions.stopAll()
+                if (message.channel == Channel.ID_BTH) aapTransport.bluetoothControl.closeChannel()
                 if (message.channel == Channel.ID_MIC) aapTransport.closeMicSession()
                 if (Channel.isAudio(message.channel) &&
                     aapTransport.isAudioSinkStarted(message.channel)) {
@@ -462,6 +463,7 @@ internal class AapControlService(
                 aapTransport.mediaSessions.advertise(contract.media, it.mediaOffer)
                 it.mediaOffer.codec(Channel.ID_VID)?.let(aapTransport.aapVideo::noteAnnouncedCodec)
                 aapTransport.sensorSubscriptions.advertise(it.sensorTypes)
+                aapTransport.bluetoothControl.advertise(it.bluetoothAddress)
                 discoveryResponse = it
             }
         }
@@ -616,6 +618,7 @@ internal class AapControlGateway(
             Channel.ID_CTR -> return serviceControl.execute(message)
             Channel.ID_INP -> return touchControl.execute(message)
             Channel.ID_SEN -> return sensorControl.execute(message)
+            Channel.ID_BTH -> return aapTransport.bluetoothControl.execute(message)
             Channel.ID_VID, Channel.ID_AUD, Channel.ID_AU1, Channel.ID_AU2, Channel.ID_MIC -> return mediaControl.execute(message)
         }
         return 0

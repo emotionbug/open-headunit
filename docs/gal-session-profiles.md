@@ -251,6 +251,27 @@ policy derived from the inspected sender, not a version-independent statement ab
 schema. The observed LOCATION/NIGHT/DRIVING_STATUS callers request zero. One pending value and one
 scheduled task per active subscription keep sensor work separate from the audio flow-control policy.
 
+## Bluetooth pairing service
+
+The service handles phone PairingRequest (0x8001) and replies with PairingResponse (0x8002), including
+both required fields: status and already-paired. Bluetooth Binder work runs outside the shared
+receive thread, with at most one pending lookup. Channel close invalidates a pending result.
+
+Success requires an existing bond and an already connected HFP-client link to that phone on the
+local adapter whose readable address matches the advertised address. The profile lookup is bounded
+and runs on the Bluetooth worker. If its callback never arrives, that transport does not repeat
+the binding attempt; a new connection may try again. Application context owns the lookup. A missing bond or unconfirmed call link receives pairing-delayed; an unreadable/redacted address,
+permission denial, unavailable adapter or external vehicle radio receives unavailable. OHU does
+not return success/false: old phones can interpret it as mismatched bond records and unpair.
+Even success/true can start HFP retries which eventually unpair on old phones, so a bond alone
+is insufficient. This handler confirms an existing call link; it does not establish a new one.
+
+This is **partial pairing-service support**, not HFP implementation or automatic pairing. Android
+continues to own PIN/confirmation dialogs. OHU does not invent authentication data (0x8003) and an
+incoming authentication result (0x8004) does not grant a bond or a call-audio route. Global vendor
+MAC properties are insufficient to prove that a local Android bond database belongs to that radio.
+
+
 Microphone ANC/EC fields remain diagnostic requests, not a promise about hardware processing.
 The inspected AA17/18 builders always send false for both; using those values as mandatory
 switches would disable the user's configured effects. Local microphone settings and Android's

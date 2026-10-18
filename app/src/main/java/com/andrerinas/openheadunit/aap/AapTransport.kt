@@ -124,6 +124,7 @@ class AapTransport(
     // Messages refused because the backlog was already at its ceiling. See VIDEO_BACKLOG_LIMIT.
     private val videoShedTotal = java.util.concurrent.atomic.AtomicLong(0)
     private val micRecorder: MicRecorder = MicRecorder(context)
+    internal val bluetoothControl = AapControlBluetooth(context, send = { message, current -> sendIfCurrent(message, current) })
     internal val sensorSubscriptions = GalSensorSubscriptions<SensorEvent>()
     private val droppedSensorEvents = HashMap<Int, Int>(4)
     private var lastSensorDropLogMs = 0L
@@ -848,6 +849,7 @@ class AapTransport(
             // Notify promptly; CommManager keeps this owner until awaitTermination completes.
             cleanupStep("notify") { cb?.invoke(cleanEnd) }
             cleanupStep("sensors") { sensorSubscriptions.stopAll() }
+            cleanupStep("Bluetooth") { bluetoothControl.shutdown() }
             cleanupStep("microphone") { retireMicrophone() }
             sendHandler?.removeCallbacks(mediaStatisticsTick)
             sendHandler?.removeCallbacks(focusCycleGainRunnable)
@@ -1247,6 +1249,14 @@ class AapTransport(
         }
         lastSensorDropLogMs = now
         AppLog.i("AapTransport: dropping sensor events, isAlive=$isAlive startedSensors=${sensorSubscriptions.activeTypes()} droppedByType=$droppedSensorEvents")
+    }
+
+    /** Worker-produced replies must still belong to an open channel when they reach the writer. */
+    internal fun sendIfCurrent(message: AapMessage, current: () -> Boolean): Boolean {
+        if (!tlsWriter.isReady) return false
+        return sendHandler?.post {
+            if (current()) sendEncryptedMessage(message.data, message.size)
+        } == true
     }
 
     fun send(message: AapMessage) {
