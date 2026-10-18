@@ -96,6 +96,15 @@ class AudioTrackWrapper(
         decodeThread = if (isAac) Thread(::runDecoder, "AacDecode-$channelId").also { it.start() } else null
     }
 
+    internal fun setGalBufferLimit(ms: Long?) = mixerChannel.buffer.setRequestedLimit(ms)
+
+    internal fun galPlaybackSample(): com.andrerinas.openheadunit.aap.GalPlaybackSample {
+        val (queueUs, overflows, underruns) = mixerChannel.buffer.telemetry()
+        // This is the PCM bank estimate only. AAC input and hardware output queues are not
+        // atomically observable here, so do not manufacture an end-to-end delay from them.
+        return com.andrerinas.openheadunit.aap.GalPlaybackSample(playbackOwner, queueUs, overflows, underruns)
+    }
+
     fun builtCodec(): AudioSinkCodec = when {
         !isAac -> AudioSinkCodec.PCM
         isAdts -> AudioSinkCodec.AAC_LC_ADTS

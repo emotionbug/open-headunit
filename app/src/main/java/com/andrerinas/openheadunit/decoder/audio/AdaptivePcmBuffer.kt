@@ -31,6 +31,7 @@ internal class AdaptivePcmBuffer(
     private var startupFramesPlayed = 0L
     private var head = 0
     private var count = 0
+    private var overflowEvents = 0L
     private var inputFrames = 0L
     private var offeredFrames = 0L
     private var resetDiscardedFrames = 0L
@@ -166,6 +167,12 @@ internal class AdaptivePcmBuffer(
         }
         clearReserveWindow()
     }
+    /** One atomic sample of the PCM bank; device/codec delay is deliberately not included. */
+    @Synchronized fun telemetry(): Triple<Long, Long, Long> =
+        Triple(count.toLong() / channels * 1_000_000 / sampleRate, overflowEvents, rebanks)
+
+    @Synchronized fun setRequestedLimit(ms: Long?) { policy.requestedLimitMs = ms }
+
     @Synchronized fun targetFrames(): Int = playbackTargetFrames()
     @Synchronized fun maxArrivalGapMs(): Long = policy.largestArrivalGapMs
     @Synchronized fun maxPcmGapMs(): Long = policy.largestPcmGapMs
@@ -187,6 +194,7 @@ internal class AdaptivePcmBuffer(
         val keep = minOf(aligned, ring.size)
         val skip = aligned - keep
         val oldDrop = (count + keep - ring.size).coerceAtLeast(0)
+        if (oldDrop > 0 || skip > 0) overflowEvents++
         if ((oldDrop > 0 || skip > 0) && pendingOverflow == null) {
             pendingOverflow = Overflow(nowMs, aligned / channels, count / channels, capacityFrames,
                 oldDrop / channels, skip / channels, offeredFrames, startupFramesPlayed,

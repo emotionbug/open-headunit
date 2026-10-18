@@ -30,7 +30,7 @@ class AudioDecoder {
         val onSessionClosed: () -> Unit = {}
     )
     class PlaybackSession internal constructor(internal val callbacks: PlaybackCallbacks) {
-        internal var closed = false // Accessed only under the decoder lock.
+        @Volatile internal var closed = false // Mutated under the decoder lock; telemetry only observes it.
     }
     @Volatile private var activeSession = PlaybackSession(PlaybackCallbacks())
     internal var playbackCallbacks: PlaybackCallbacks
@@ -69,6 +69,17 @@ class AudioDecoder {
     fun decode(channel: Int, buffer: ByteArray, offset: Int, size: Int, session: PlaybackSession = activeSession) {
         val audioTrack = synchronized(this) { if (accepts(session)) audioTracks[channel] else null }
         audioTrack?.write(buffer, offset, size)
+    }
+
+    internal fun galPlaybackSample(channel: Int, session: PlaybackSession):
+        com.andrerinas.openheadunit.aap.GalPlaybackSample? {
+        // The transport writer must not wait on this decoder's monitor: start/stop can hold
+        // it through MediaCodec construction or worker joins. The concurrent registration
+        // plus volatile connection token gives diagnostics a non-owning, discardable sample.
+        if (!accepts(session)) return null
+        val track = audioTracks[channel] ?: return null
+        val sample = track.galPlaybackSample()
+        return sample.takeIf { accepts(session) && audioTracks[channel] === track }
     }
 
     fun configure(channel: Int, buffer: ByteArray, offset: Int, size: Int, session: PlaybackSession = activeSession) {

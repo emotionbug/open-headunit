@@ -452,6 +452,7 @@ internal class AapAudio(
         audioDecoder.start(channel, stream, config.sampleRate, config.numberOfBits, config.numberOfChannels,
             codec.isAac, gain, effectiveMultiplier, audioQueueCapacity, staticAudioFocus, attachHwDspEqualizer,
             preferAAudio = settings.useAAudioOutput, isAdts = codec == AudioSinkCodec.AAC_LC_ADTS, session = decoderSession)
+        audioDecoder.getTrack(channel, decoderSession)?.setGalBufferLimit(galBufferLimits[channel])
         if (announcePlayback) audioDecoder.getTrack(channel, decoderSession)?.let {
             onAudioPlaybackStarted(channel, it.playbackOwner)
         }
@@ -594,6 +595,16 @@ internal class AapAudio(
 
         audioDecoder.decode(channel, buf, start, length, decoderSession)
     }
+
+    private val galBufferLimits = java.util.concurrent.ConcurrentHashMap<Int, Long>()
+
+    internal fun applyGalBufferLimit(channel: Int, ms: Long?) {
+        if (ms == null) galBufferLimits.remove(channel) else galBufferLimits[channel] = ms
+        audioDecoder.getTrack(channel, decoderSession)?.setGalBufferLimit(ms)
+    }
+
+    internal fun galPlaybackSample(channel: Int): GalPlaybackSample? =
+        audioDecoder.galPlaybackSample(channel, decoderSession)
 
     fun updateGains() {
         val mediaGain = (1.0f + (settings.mediaVolumeOffset / 100.0f)).coerceIn(0.0f, 2.0f)

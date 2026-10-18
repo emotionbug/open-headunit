@@ -6,6 +6,9 @@ internal class AdaptiveJitterPolicy(
     private val sampleRate: Int,
     latencyMultiplier: Int = AudioJitterBufferPolicy.DEFAULT_MULTIPLIER
 ) {
+    // A GAL request guides the quiet-period reserve decay. Never clamp today's learned
+    // reserve to a newly received value: a supply deficit must still raise it immediately.
+    var requestedLimitMs: Long? = null
     private val floorMs = maxOf(60L, AudioJitterBufferPolicy.targetMsFor(latencyMultiplier))
     // Keep the normal low-latency budget, but do not enforce it after the link demonstrates
     // that it cannot hold. Otherwise every 160-300ms batch is trimmed and then starves.
@@ -204,7 +207,8 @@ internal class AdaptiveJitterPolicy(
         // LatencyRecoveryPolicy's bounded overlaps; changing this target never discards audio.
         if (nowMs - lastDisturbanceMs >= 10_000 && nowMs - lastAdjustmentMs >= 1000) {
             marginMs = (marginMs - 5).coerceAtLeast(15)
-            ceilingMs = (ceilingMs - 5).coerceAtLeast(initialCeilingMs)
+            val quietFloorMs = minOf(initialCeilingMs, requestedLimitMs?.coerceAtLeast(floorMs) ?: initialCeilingMs)
+            ceilingMs = (ceilingMs - 5).coerceAtLeast(quietFloorMs)
             lastAdjustmentMs = nowMs
         }
     }
