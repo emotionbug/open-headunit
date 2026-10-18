@@ -1335,4 +1335,8 @@
     <string name="copy_to_clipboard">Copy</string>
     <string name="copied_to_clipboard">Copied to clipboard</string>
     <string name="audio_settings_reconnect">Audio settings saved. Reconnect Android Auto to apply them.</string>
+    <string name="gal_profile">Android Auto protocol (GAL)</string>
+    <string name="gal_profile_compatibility">Compatibility (1.2, default)</string>
+    <string name="gal_profile_experimental">Up to %1$s (experimental)</string>
+    <string name="gal_profile_description">Applies on the next connection after saving. Uses a lower profile if the phone reports an older version.\n5.0 changes audio flow control; 6.0 and 6.1 also change video flow control. Synchronized A/V presentation and media statistics are not yet implemented.\nIf a connection fails, select Compatibility and reconnect.</string>
 </resources>

@@ -176,6 +176,7 @@ class SettingsFragment : Fragment() {
     private var pendingForceSoftware: Boolean? = null
     private var pendingSoftwareVideoDecoder: Settings.SoftwareVideoDecoder? = null
     private var pendingVideoCodec: String? = null
+    private var pendingGalProfile: String? = null
     private var pendingFpsLimit: Int? = null
     private var pendingBluetoothAddress: String? = null
     private var pendingBluetoothAnnounceSkip: Boolean? = null
@@ -358,6 +359,7 @@ class SettingsFragment : Fragment() {
         pendingForceSoftware = settings.forceSoftwareDecoding
         pendingSoftwareVideoDecoder = settings.softwareVideoDecoder
         pendingVideoCodec = settings.videoCodec
+        pendingGalProfile = settings.galProfile
         pendingFpsLimit = settings.fpsLimit
         pendingBluetoothAddress = settings.bluetoothAddress
         pendingBluetoothAnnounceSkip = BluetoothAnnouncePolicy.isSkip(settings.bluetoothAnnounceMode)
@@ -498,6 +500,7 @@ class SettingsFragment : Fragment() {
         pendingForceSoftware = settings.forceSoftwareDecoding
         pendingSoftwareVideoDecoder = settings.softwareVideoDecoder
         pendingVideoCodec = settings.videoCodec
+        pendingGalProfile = settings.galProfile
         pendingFpsLimit = settings.fpsLimit
         pendingBluetoothAddress = settings.bluetoothAddress
         pendingBluetoothAnnounceSkip = BluetoothAnnouncePolicy.isSkip(settings.bluetoothAnnounceMode)
@@ -727,6 +730,7 @@ class SettingsFragment : Fragment() {
         pendingForceSoftware?.let { if (it != settings.forceSoftwareDecoding) settings.forceSoftwareDecoding = it }
         pendingSoftwareVideoDecoder?.let { if (it != settings.softwareVideoDecoder) settings.softwareVideoDecoder = it }
         pendingVideoCodec?.let { if (it != settings.videoCodec) settings.videoCodec = it }
+        pendingGalProfile?.let { if (it != settings.galProfile) settings.galProfile = it }
         pendingFpsLimit?.let { if (it != settings.fpsLimit) settings.fpsLimit = it }
         pendingBluetoothAddress?.let { if (it != settings.bluetoothAddress) settings.bluetoothAddress = it }
         pendingBluetoothAnnounceSkip?.let {
@@ -881,7 +885,8 @@ class SettingsFragment : Fragment() {
 
     private fun checkChanges() {
         // Check for any changes
-        val anyChange = pendingAdvancedSettings != settings.isAdvancedSettingsActive ||
+        val anyChange = pendingGalProfile != settings.galProfile ||
+                        pendingAdvancedSettings != settings.isAdvancedSettingsActive ||
                         pendingUseGps != settings.useGpsForNavigation ||
                         pendingShowNavigationNotifications != settings.showNavigationNotifications ||
                         pendingSyncMediaSessionAaMetadata != settings.syncMediaSessionWithAaMetadata ||
@@ -1063,6 +1068,29 @@ class SettingsFragment : Fragment() {
             value = connectionModesLabel(),
             onClick = { showConnectionModeDialog() }
         ))
+
+        val galProfiles = com.andrerinas.openheadunit.aap.GalProfile.entries
+        val galLabels = galProfiles.map { profile ->
+            if (profile == com.andrerinas.openheadunit.aap.GalProfile.COMPATIBILITY) getString(R.string.gal_profile_compatibility)
+            else getString(R.string.gal_profile_experimental, profile.version.toString())
+        }
+        val galSelection = com.andrerinas.openheadunit.aap.GalProfile.fromSetting(pendingGalProfile ?: settings.galProfile)
+        items.add(SettingItem.SettingEntry(
+            stableId = "galProfile",
+            nameResId = R.string.gal_profile,
+            value = galLabels[galProfiles.indexOf(galSelection)],
+            onClick = {
+                MaterialAlertDialogBuilder(requireContext(), R.style.DarkAlertDialog)
+                    .setTitle(R.string.gal_profile)
+                    .setSingleChoiceItems(galLabels.toTypedArray(), galProfiles.indexOf(galSelection)) { dialog, which ->
+                        pendingGalProfile = galProfiles[which].version.toString()
+                        checkChanges()
+                        dialog.dismiss()
+                        updateSettingsList()
+                    }.show()
+            }
+        ))
+        items.add(SettingItem.InfoBanner(stableId = "galProfileInfo", textResId = R.string.gal_profile_description))
 
         // Language Selector
         val availableLocales = LocaleHelper.getAvailableLocales(requireContext())
