@@ -19,6 +19,7 @@ enum MsgType
     MEDIA_MESSAGE_UPDATE_UI_CONFIG_REQUEST = 0x8009;
     MEDIA_MESSAGE_UPDATE_UI_CONFIG_REPLY = 0x800A;
     MEDIA_MESSAGE_AUDIO_UNDERFLOW_NOTIFICATION = 0x800B;
+    MEDIA_MESSAGE_OPTIONS = 0x8014;
 }
 
 enum MediaCodecType
@@ -55,6 +56,35 @@ message Start
 {
     required int32 session_id = 1;
     required uint32 configuration_index = 2;
+    // AA18 sender writes value 2 when its DATA credit controller is bypassed. The original
+    // names of 0/1 are not recovered; retain them without inventing different policies.
+    enum FlowControl { MODE_0 = 0; MODE_1 = 1; ACKLESS = 2; }
+    optional FlowControl flow_control = 3;
+    optional MediaOptions options = 4;
+}
+
+// Wire-compatible with google.protobuf.Duration (ordinary signed varints, not ZigZag).
+message MediaDuration {
+    optional int64 seconds = 1;
+    optional int32 nanos = 2;
+}
+
+// AA18 Start field 4 and message 0x8014 share this schema. Names describe the traced
+// sender builders; optional presence matters. These are requests, not measured timing.
+message MediaOptions {
+    optional MediaDuration audio_buffer_limit = 1;
+    optional bool enable_av_sync = 2;
+    optional MediaDuration max_lag_tolerance = 3;
+    optional MediaDuration sync_interval = 4;
+    optional MediaDuration max_audio_delay_allowed = 5;
+    optional MediaDuration max_video_delay_allowed = 6;
+    optional uint32 average_lag_weight = 7;
+    optional MediaDuration sync_offset_override = 8;
+    optional bool enable_media_stats = 9;
+    optional MediaDuration media_stats_report_interval = 10;
+    optional bool enable_video_timing_controller = 11;
+    optional MediaDuration video_timing_controller_min_delay = 12;
+    optional MediaDuration video_timing_controller_max_delay = 13;
 }
 
 message Ack
@@ -146,6 +176,16 @@ message UiConfig
     optional Insets content_insets = 2;
     optional Insets stable_content_insets = 3;
     optional int32 ui_theme = 4;
+    // UI elements supplied by the head unit; the phone hides its corresponding widgets.
+    enum UiElement {
+        UNKNOWN = 0;
+        CLOCK = 1;
+        BATTERY_LEVEL = 2;
+        PHONE_SIGNAL = 3;
+        NATIVE_UI_AFFORDANCE = 4;
+        NAVIGATION_TURN_DATA_AVAILABLE = 5;
+    }
+    repeated UiElement ui_elements = 5;
 }
 
 message UpdateUiConfigRequest

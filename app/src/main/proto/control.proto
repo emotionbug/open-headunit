@@ -108,6 +108,7 @@ message Service
             optional uint32 pixel_aspect_ratio_e4 = 8;
             optional uint32 real_density = 9;
             optional MediaCodecType video_codec_type = 10;
+            optional UiConfig ui_config = 11;
         }
 
         required MediaCodecType available_type = 1;

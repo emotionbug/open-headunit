@@ -2698,6 +2698,21 @@ public final class Control {
          * @return The videoCodecType.
          */
         com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaCodecType getVideoCodecType();
+
+        /**
+         * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.UiConfig ui_config = 11;</code>
+         * @return Whether the uiConfig field is set.
+         */
+        boolean hasUiConfig();
+        /**
+         * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.UiConfig ui_config = 11;</code>
+         * @return The uiConfig.
+         */
+        com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfig getUiConfig();
+        /**
+         * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.UiConfig ui_config = 11;</code>
+         */
+        com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfigOrBuilder getUiConfigOrBuilder();
       }
       /**
        * Protobuf type {@code com.andrerinas.openheadunit.aap.protocol.proto.Service.MediaSinkService.VideoConfiguration}
@@ -3188,6 +3203,32 @@ public final class Control {
           return result == null ? com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaCodecType.MEDIA_CODEC_AUDIO_PCM : result;
         }
 
+        public static final int UI_CONFIG_FIELD_NUMBER = 11;
+        private com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfig uiConfig_;
+        /**
+         * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.UiConfig ui_config = 11;</code>
+         * @return Whether the uiConfig field is set.
+         */
+        @java.lang.Override
+        public boolean hasUiConfig() {
+          return ((bitField0_ & 0x00000400) != 0);
+        }
+        /**
+         * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.UiConfig ui_config = 11;</code>
+         * @return The uiConfig.
+         */
+        @java.lang.Override
+        public com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfig getUiConfig() {
+          return uiConfig_ == null ? com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfig.getDefaultInstance() : uiConfig_;
+        }
+        /**
+         * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.UiConfig ui_config = 11;</code>
+         */
+        @java.lang.Override
+        public com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfigOrBuilder getUiConfigOrBuilder() {
+          return uiConfig_ == null ? com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfig.getDefaultInstance() : uiConfig_;
+        }
+
         private byte memoizedIsInitialized = -1;
         @java.lang.Override
         public final boolean isInitialized() {
@@ -3252,6 +3293,9 @@ public final class Control {
           if (((bitField0_ & 0x00000200) != 0)) {
             output.writeEnum(10, videoCodecType_);
           }
+          if (((bitField0_ & 0x00000400) != 0)) {
+            output.writeMessage(11, getUiConfig());
+          }
           getUnknownFields().writeTo(output);
         }
 
@@ -3300,6 +3344,10 @@ public final class Control {
           if (((bitField0_ & 0x00000200) != 0)) {
             size += com.google.protobuf.CodedOutputStream
               .computeEnumSize(10, videoCodecType_);
+          }
+          if (((bitField0_ & 0x00000400) != 0)) {
+            size += com.google.protobuf.CodedOutputStream
+              .computeMessageSize(11, getUiConfig());
           }
           size += getUnknownFields().getSerializedSize();
           memoizedSize = size;
@@ -3363,6 +3411,11 @@ public final class Control {
           if (hasVideoCodecType()) {
             if (videoCodecType_ != other.videoCodecType_) return false;
           }
+          if (hasUiConfig() != other.hasUiConfig()) return false;
+          if (hasUiConfig()) {
+            if (!getUiConfig()
+                .equals(other.getUiConfig())) return false;
+          }
           if (!getUnknownFields().equals(other.getUnknownFields())) return false;
           return true;
         }
@@ -3413,6 +3466,10 @@ public final class Control {
           if (hasVideoCodecType()) {
             hash = (37 * hash) + VIDEO_CODEC_TYPE_FIELD_NUMBER;
             hash = (53 * hash) + videoCodecType_;
+          }
+          if (hasUiConfig()) {
+            hash = (37 * hash) + UI_CONFIG_FIELD_NUMBER;
+            hash = (53 * hash) + getUiConfig().hashCode();
           }
           hash = (29 * hash) + getUnknownFields().hashCode();
           memoizedHashCode = hash;
@@ -3533,13 +3590,19 @@ public final class Control {
 
           // Construct using com.andrerinas.openheadunit.aap.protocol.proto.Control.Service.MediaSinkService.VideoConfiguration.newBuilder()
           private Builder() {
-
+            maybeForceBuilderInitialization();
           }
 
           private Builder(
               com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
             super(parent);
-
+            maybeForceBuilderInitialization();
+          }
+          private void maybeForceBuilderInitialization() {
+            if (com.google.protobuf.GeneratedMessageV3
+                    .alwaysUseFieldBuilders) {
+              getUiConfigFieldBuilder();
+            }
           }
           @java.lang.Override
           public Builder clear() {
@@ -3555,6 +3618,11 @@ public final class Control {
             pixelAspectRatioE4_ = 0;
             realDensity_ = 0;
             videoCodecType_ = 1;
+            uiConfig_ = null;
+            if (uiConfigBuilder_ != null) {
+              uiConfigBuilder_.dispose();
+              uiConfigBuilder_ = null;
+            }
             return this;
           }
 
@@ -3628,6 +3696,12 @@ public final class Control {
             if (((from_bitField0_ & 0x00000200) != 0)) {
               result.videoCodecType_ = videoCodecType_;
               to_bitField0_ |= 0x00000200;
+            }
+            if (((from_bitField0_ & 0x00000400) != 0)) {
+              result.uiConfig_ = uiConfigBuilder_ == null
+                  ? uiConfig_
+                  : uiConfigBuilder_.build();
+              to_bitField0_ |= 0x00000400;
             }
             result.bitField0_ |= to_bitField0_;
           }
@@ -3705,6 +3779,9 @@ public final class Control {
             }
             if (other.hasVideoCodecType()) {
               setVideoCodecType(other.getVideoCodecType());
+            }
+            if (other.hasUiConfig()) {
+              mergeUiConfig(other.getUiConfig());
             }
             this.mergeUnknownFields(other.getUnknownFields());
             onChanged();
@@ -3818,6 +3895,13 @@ public final class Control {
                     }
                     break;
                   } // case 80
+                  case 90: {
+                    input.readMessage(
+                        getUiConfigFieldBuilder().getBuilder(),
+                        extensionRegistry);
+                    bitField0_ |= 0x00000400;
+                    break;
+                  } // case 90
                   default: {
                     if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                       done = true; // was an endgroup tag
@@ -4255,6 +4339,127 @@ public final class Control {
             videoCodecType_ = 1;
             onChanged();
             return this;
+          }
+
+          private com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfig uiConfig_;
+          private com.google.protobuf.SingleFieldBuilderV3<
+              com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfig, com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfig.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfigOrBuilder> uiConfigBuilder_;
+          /**
+           * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.UiConfig ui_config = 11;</code>
+           * @return Whether the uiConfig field is set.
+           */
+          public boolean hasUiConfig() {
+            return ((bitField0_ & 0x00000400) != 0);
+          }
+          /**
+           * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.UiConfig ui_config = 11;</code>
+           * @return The uiConfig.
+           */
+          public com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfig getUiConfig() {
+            if (uiConfigBuilder_ == null) {
+              return uiConfig_ == null ? com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfig.getDefaultInstance() : uiConfig_;
+            } else {
+              return uiConfigBuilder_.getMessage();
+            }
+          }
+          /**
+           * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.UiConfig ui_config = 11;</code>
+           */
+          public Builder setUiConfig(com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfig value) {
+            if (uiConfigBuilder_ == null) {
+              if (value == null) {
+                throw new NullPointerException();
+              }
+              uiConfig_ = value;
+            } else {
+              uiConfigBuilder_.setMessage(value);
+            }
+            bitField0_ |= 0x00000400;
+            onChanged();
+            return this;
+          }
+          /**
+           * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.UiConfig ui_config = 11;</code>
+           */
+          public Builder setUiConfig(
+              com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfig.Builder builderForValue) {
+            if (uiConfigBuilder_ == null) {
+              uiConfig_ = builderForValue.build();
+            } else {
+              uiConfigBuilder_.setMessage(builderForValue.build());
+            }
+            bitField0_ |= 0x00000400;
+            onChanged();
+            return this;
+          }
+          /**
+           * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.UiConfig ui_config = 11;</code>
+           */
+          public Builder mergeUiConfig(com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfig value) {
+            if (uiConfigBuilder_ == null) {
+              if (((bitField0_ & 0x00000400) != 0) &&
+                uiConfig_ != null &&
+                uiConfig_ != com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfig.getDefaultInstance()) {
+                getUiConfigBuilder().mergeFrom(value);
+              } else {
+                uiConfig_ = value;
+              }
+            } else {
+              uiConfigBuilder_.mergeFrom(value);
+            }
+            if (uiConfig_ != null) {
+              bitField0_ |= 0x00000400;
+              onChanged();
+            }
+            return this;
+          }
+          /**
+           * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.UiConfig ui_config = 11;</code>
+           */
+          public Builder clearUiConfig() {
+            bitField0_ = (bitField0_ & ~0x00000400);
+            uiConfig_ = null;
+            if (uiConfigBuilder_ != null) {
+              uiConfigBuilder_.dispose();
+              uiConfigBuilder_ = null;
+            }
+            onChanged();
+            return this;
+          }
+          /**
+           * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.UiConfig ui_config = 11;</code>
+           */
+          public com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfig.Builder getUiConfigBuilder() {
+            bitField0_ |= 0x00000400;
+            onChanged();
+            return getUiConfigFieldBuilder().getBuilder();
+          }
+          /**
+           * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.UiConfig ui_config = 11;</code>
+           */
+          public com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfigOrBuilder getUiConfigOrBuilder() {
+            if (uiConfigBuilder_ != null) {
+              return uiConfigBuilder_.getMessageOrBuilder();
+            } else {
+              return uiConfig_ == null ?
+                  com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfig.getDefaultInstance() : uiConfig_;
+            }
+          }
+          /**
+           * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.UiConfig ui_config = 11;</code>
+           */
+          private com.google.protobuf.SingleFieldBuilderV3<
+              com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfig, com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfig.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfigOrBuilder>
+              getUiConfigFieldBuilder() {
+            if (uiConfigBuilder_ == null) {
+              uiConfigBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+                  com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfig, com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfig.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfigOrBuilder>(
+                      getUiConfig(),
+                      getParentForChildren(),
+                      isClean());
+              uiConfig_ = null;
+            }
+            return uiConfigBuilder_;
           }
           @java.lang.Override
           public final Builder setUnknownFields(
@@ -23569,14 +23774,14 @@ public final class Control {
     /**
      * <code>optional uint32 socket_receive_buffer_size_kb = 1 [deprecated = true];</code>
      * @deprecated com.andrerinas.openheadunit.aap.protocol.proto.WirelessTcpConfiguration.socket_receive_buffer_size_kb is deprecated.
-     *     See control.proto;l=273
+     *     See control.proto;l=274
      * @return Whether the socketReceiveBufferSizeKb field is set.
      */
     @java.lang.Deprecated boolean hasSocketReceiveBufferSizeKb();
     /**
      * <code>optional uint32 socket_receive_buffer_size_kb = 1 [deprecated = true];</code>
      * @deprecated com.andrerinas.openheadunit.aap.protocol.proto.WirelessTcpConfiguration.socket_receive_buffer_size_kb is deprecated.
-     *     See control.proto;l=273
+     *     See control.proto;l=274
      * @return The socketReceiveBufferSizeKb.
      */
     @java.lang.Deprecated int getSocketReceiveBufferSizeKb();
@@ -23584,14 +23789,14 @@ public final class Control {
     /**
      * <code>optional uint32 socket_send_buffer_size_kb = 2 [deprecated = true];</code>
      * @deprecated com.andrerinas.openheadunit.aap.protocol.proto.WirelessTcpConfiguration.socket_send_buffer_size_kb is deprecated.
-     *     See control.proto;l=274
+     *     See control.proto;l=275
      * @return Whether the socketSendBufferSizeKb field is set.
      */
     @java.lang.Deprecated boolean hasSocketSendBufferSizeKb();
     /**
      * <code>optional uint32 socket_send_buffer_size_kb = 2 [deprecated = true];</code>
      * @deprecated com.andrerinas.openheadunit.aap.protocol.proto.WirelessTcpConfiguration.socket_send_buffer_size_kb is deprecated.
-     *     See control.proto;l=274
+     *     See control.proto;l=275
      * @return The socketSendBufferSizeKb.
      */
     @java.lang.Deprecated int getSocketSendBufferSizeKb();
@@ -23694,7 +23899,7 @@ public final class Control {
     /**
      * <code>optional uint32 socket_receive_buffer_size_kb = 1 [deprecated = true];</code>
      * @deprecated com.andrerinas.openheadunit.aap.protocol.proto.WirelessTcpConfiguration.socket_receive_buffer_size_kb is deprecated.
-     *     See control.proto;l=273
+     *     See control.proto;l=274
      * @return Whether the socketReceiveBufferSizeKb field is set.
      */
     @java.lang.Override
@@ -23704,7 +23909,7 @@ public final class Control {
     /**
      * <code>optional uint32 socket_receive_buffer_size_kb = 1 [deprecated = true];</code>
      * @deprecated com.andrerinas.openheadunit.aap.protocol.proto.WirelessTcpConfiguration.socket_receive_buffer_size_kb is deprecated.
-     *     See control.proto;l=273
+     *     See control.proto;l=274
      * @return The socketReceiveBufferSizeKb.
      */
     @java.lang.Override
@@ -23717,7 +23922,7 @@ public final class Control {
     /**
      * <code>optional uint32 socket_send_buffer_size_kb = 2 [deprecated = true];</code>
      * @deprecated com.andrerinas.openheadunit.aap.protocol.proto.WirelessTcpConfiguration.socket_send_buffer_size_kb is deprecated.
-     *     See control.proto;l=274
+     *     See control.proto;l=275
      * @return Whether the socketSendBufferSizeKb field is set.
      */
     @java.lang.Override
@@ -23727,7 +23932,7 @@ public final class Control {
     /**
      * <code>optional uint32 socket_send_buffer_size_kb = 2 [deprecated = true];</code>
      * @deprecated com.andrerinas.openheadunit.aap.protocol.proto.WirelessTcpConfiguration.socket_send_buffer_size_kb is deprecated.
-     *     See control.proto;l=274
+     *     See control.proto;l=275
      * @return The socketSendBufferSizeKb.
      */
     @java.lang.Override
@@ -24269,7 +24474,7 @@ public final class Control {
       /**
        * <code>optional uint32 socket_receive_buffer_size_kb = 1 [deprecated = true];</code>
        * @deprecated com.andrerinas.openheadunit.aap.protocol.proto.WirelessTcpConfiguration.socket_receive_buffer_size_kb is deprecated.
-       *     See control.proto;l=273
+       *     See control.proto;l=274
        * @return Whether the socketReceiveBufferSizeKb field is set.
        */
       @java.lang.Override
@@ -24279,7 +24484,7 @@ public final class Control {
       /**
        * <code>optional uint32 socket_receive_buffer_size_kb = 1 [deprecated = true];</code>
        * @deprecated com.andrerinas.openheadunit.aap.protocol.proto.WirelessTcpConfiguration.socket_receive_buffer_size_kb is deprecated.
-       *     See control.proto;l=273
+       *     See control.proto;l=274
        * @return The socketReceiveBufferSizeKb.
        */
       @java.lang.Override
@@ -24289,7 +24494,7 @@ public final class Control {
       /**
        * <code>optional uint32 socket_receive_buffer_size_kb = 1 [deprecated = true];</code>
        * @deprecated com.andrerinas.openheadunit.aap.protocol.proto.WirelessTcpConfiguration.socket_receive_buffer_size_kb is deprecated.
-       *     See control.proto;l=273
+       *     See control.proto;l=274
        * @param value The socketReceiveBufferSizeKb to set.
        * @return This builder for chaining.
        */
@@ -24303,7 +24508,7 @@ public final class Control {
       /**
        * <code>optional uint32 socket_receive_buffer_size_kb = 1 [deprecated = true];</code>
        * @deprecated com.andrerinas.openheadunit.aap.protocol.proto.WirelessTcpConfiguration.socket_receive_buffer_size_kb is deprecated.
-       *     See control.proto;l=273
+       *     See control.proto;l=274
        * @return This builder for chaining.
        */
       @java.lang.Deprecated public Builder clearSocketReceiveBufferSizeKb() {
@@ -24317,7 +24522,7 @@ public final class Control {
       /**
        * <code>optional uint32 socket_send_buffer_size_kb = 2 [deprecated = true];</code>
        * @deprecated com.andrerinas.openheadunit.aap.protocol.proto.WirelessTcpConfiguration.socket_send_buffer_size_kb is deprecated.
-       *     See control.proto;l=274
+       *     See control.proto;l=275
        * @return Whether the socketSendBufferSizeKb field is set.
        */
       @java.lang.Override
@@ -24327,7 +24532,7 @@ public final class Control {
       /**
        * <code>optional uint32 socket_send_buffer_size_kb = 2 [deprecated = true];</code>
        * @deprecated com.andrerinas.openheadunit.aap.protocol.proto.WirelessTcpConfiguration.socket_send_buffer_size_kb is deprecated.
-       *     See control.proto;l=274
+       *     See control.proto;l=275
        * @return The socketSendBufferSizeKb.
        */
       @java.lang.Override
@@ -24337,7 +24542,7 @@ public final class Control {
       /**
        * <code>optional uint32 socket_send_buffer_size_kb = 2 [deprecated = true];</code>
        * @deprecated com.andrerinas.openheadunit.aap.protocol.proto.WirelessTcpConfiguration.socket_send_buffer_size_kb is deprecated.
-       *     See control.proto;l=274
+       *     See control.proto;l=275
        * @param value The socketSendBufferSizeKb to set.
        * @return This builder for chaining.
        */
@@ -24351,7 +24556,7 @@ public final class Control {
       /**
        * <code>optional uint32 socket_send_buffer_size_kb = 2 [deprecated = true];</code>
        * @deprecated com.andrerinas.openheadunit.aap.protocol.proto.WirelessTcpConfiguration.socket_send_buffer_size_kb is deprecated.
-       *     See control.proto;l=274
+       *     See control.proto;l=275
        * @return This builder for chaining.
        */
       @java.lang.Deprecated public Builder clearSocketSendBufferSizeKb() {
@@ -37408,7 +37613,7 @@ public final class Control {
     java.lang.String[] descriptorData = {
       "\n\rcontrol.proto\022.com.andrerinas.openhead" +
       "unit.aap.protocol.proto\032\014common.proto\032\013m" +
-      "edia.proto\032\rsensors.proto\"\370\"\n\007Service\022h\n" +
+      "edia.proto\032\rsensors.proto\"\305#\n\007Service\022h\n" +
       "\024phone_status_service\030\n \001(\0132J.com.andrer" +
       "inas.openheadunit.aap.protocol.proto.Ser" +
       "vice.PhoneStatusService\022\n\n\002id\030\001 \002(\r\022j\n\025s" +
@@ -37444,7 +37649,7 @@ public final class Control {
       "nheadunit.aap.protocol.proto.Service.Sen" +
       "sorSourceService.Sensor\032R\n\006Sensor\022H\n\004typ" +
       "e\030\001 \002(\0162:.com.andrerinas.openheadunit.aa" +
-      "p.protocol.proto.SensorType\032\266\t\n\020MediaSin" +
+      "p.protocol.proto.SensorType\032\203\n\n\020MediaSin" +
       "kService\022V\n\016available_type\030\001 \002(\0162>.com.a" +
       "ndrerinas.openheadunit.aap.protocol.prot" +
       "o.MediaCodecType\022S\n\naudio_type\030\002 \001(\0162?.c" +
@@ -37455,7 +37660,7 @@ public final class Control {
       "o_configs\030\004 \003(\0132[.com.andrerinas.openhea" +
       "dunit.aap.protocol.proto.Service.MediaSi" +
       "nkService.VideoConfiguration\022\037\n\027availabl" +
-      "e_while_in_call\030\005 \001(\010\032\204\006\n\022VideoConfigura" +
+      "e_while_in_call\030\005 \001(\010\032\321\006\n\022VideoConfigura" +
       "tion\022\216\001\n\020codec_resolution\030\001 \002(\0162t.com.an" +
       "drerinas.openheadunit.aap.protocol.proto" +
       ".Service.MediaSinkService.VideoConfigura" +
@@ -37469,197 +37674,199 @@ public final class Control {
       " \001(\r\022\035\n\025pixel_aspect_ratio_e4\030\010 \001(\r\022\024\n\014r" +
       "eal_density\030\t \001(\r\022X\n\020video_codec_type\030\n " +
       "\001(\0162>.com.andrerinas.openheadunit.aap.pr" +
-      "otocol.proto.MediaCodecType\"\246\001\n\030VideoCod" +
-      "ecResolutionType\022\014\n\010_800x480\020\001\022\r\n\t_1280x" +
-      "720\020\002\022\016\n\n_1920x1080\020\003\022\016\n\n_2560x1440\020\004\022\016\n" +
-      "\n_3840x2160\020\005\022\r\n\t_720x1280\020\006\022\016\n\n_1080x19" +
-      "20\020\007\022\016\n\n_1440x2560\020\010\022\016\n\n_2160x3840\020\t\"&\n\022" +
-      "VideoFrameRateType\022\007\n\003_60\020\001\022\007\n\003_30\020\002\032\265\002\n" +
-      "\022InputSourceService\022\032\n\022keycodes_supporte" +
-      "d\030\001 \003(\r\022k\n\013touchscreen\030\002 \001(\0132V.com.andre" +
-      "rinas.openheadunit.aap.protocol.proto.Se" +
-      "rvice.InputSourceService.TouchConfig\022h\n\010" +
-      "touchpad\030\003 \001(\0132V.com.andrerinas.openhead" +
-      "unit.aap.protocol.proto.Service.InputSou" +
-      "rceService.TouchConfig\032,\n\013TouchConfig\022\r\n" +
-      "\005width\030\001 \002(\r\022\016\n\006height\030\002 \002(\r\032\335\001\n\022MediaSo" +
-      "urceService\022L\n\004type\030\001 \002(\0162>.com.andrerin" +
-      "as.openheadunit.aap.protocol.proto.Media" +
-      "CodecType\022X\n\014audio_config\030\002 \002(\0132B.com.an" +
-      "drerinas.openheadunit.aap.protocol.proto" +
-      ".AudioConfiguration\022\037\n\027available_while_i" +
-      "n_call\030\003 \001(\010\032\222\001\n\020BluetoothService\022\023\n\013car" +
-      "_address\030\001 \002(\t\022i\n\031supported_pairing_meth" +
-      "ods\030\002 \003(\0162F.com.andrerinas.openheadunit." +
-      "aap.protocol.proto.BluetoothPairingMetho" +
-      "d\032\234\003\n\027NavigationStatusService\022\033\n\023minimum" +
-      "_interval_ms\030\001 \002(\r\022i\n\004type\030\002 \002(\0162[.com.a" +
-      "ndrerinas.openheadunit.aap.protocol.prot" +
-      "o.Service.NavigationStatusService.Cluste" +
-      "rType\022s\n\rimage_options\030\003 \001(\0132\\.com.andre" +
-      "rinas.openheadunit.aap.protocol.proto.Se" +
-      "rvice.NavigationStatusService.ImageOptio" +
-      "ns\032G\n\014ImageOptions\022\r\n\005width\030\001 \002(\005\022\016\n\006hei" +
-      "ght\030\002 \002(\005\022\030\n\020colour_deth_bits\030\003 \002(\005\";\n\013C" +
-      "lusterType\022\030\n\024CustomImageSupported\020\001\022\022\n\016" +
-      "ImageCodesOnly\020\002\032\034\n\032MediaPlaybackStatusS" +
-      "ervice\032\344\001\n\020PhoneStatus_Call\022X\n\005state\030\001 \001" +
-      "(\0162I.com.andrerinas.openheadunit.aap.pro" +
-      "tocol.proto.Service.PhoneStatus_State\022\035\n" +
-      "\025call_duration_seconds\030\002 \001(\r\022\025\n\rcaller_n" +
-      "umber\030\003 \001(\t\022\021\n\tcaller_id\030\004 \001(\t\022\032\n\022caller" +
-      "_number_type\030\005 \001(\t\022\021\n\tthumbnail\030\006 \001(\014\032=\n" +
-      "\021PhoneStatus_Input\022\025\n\rcaller_number\030\001 \001(" +
-      "\t\022\021\n\tcaller_id\030\002 \001(\t\032\206\001\n\022PhoneStatusServ" +
-      "ice\022W\n\005calls\030\001 \003(\0132H.com.andrerinas.open" +
-      "headunit.aap.protocol.proto.Service.Phon" +
-      "eStatus_Call\022\027\n\017signal_strength\030\002 \001(\r\032P\n" +
-      "\026VendorExtensionService\022\014\n\004name\030\001 \001(\t\022\032\n" +
-      "\022package_white_list\030\002 \003(\t\022\014\n\004data\030\003 \001(\014\032" +
-      "\034\n\032GenericNotificationService\032/\n\025WifiPro" +
-      "jectionService\022\026\n\016car_wifi_bssid\030\001 \001(\t\"d" +
-      "\n\021PhoneStatus_State\022\n\n\006InCall\020\001\022\n\n\006OnHol" +
-      "d\020\002\022\r\n\tHangingUp\020\003\022\014\n\010Incoming\020\004\022\t\n\005Mute" +
-      "d\020\005\022\017\n\013Conferenced\020\006\"B\n\027ServiceDiscovery" +
-      "Request\022\022\n\nphone_name\030\004 \002(\t\022\023\n\013phone_bra" +
-      "nd\030\005 \002(\t\"\313\005\n\030ServiceDiscoveryResponse\022I\n" +
-      "\010services\030\001 \003(\01327.com.andrerinas.openhea" +
-      "dunit.aap.protocol.proto.Service\022\014\n\004make" +
-      "\030\002 \002(\t\022\r\n\005model\030\003 \002(\t\022\014\n\004year\030\004 \002(\t\022\022\n\nv" +
-      "ehicle_id\030\005 \002(\t\022W\n\017driver_position\030\006 \002(\016" +
-      "2>.com.andrerinas.openheadunit.aap.proto" +
-      "col.proto.DriverPosition\022\026\n\016head_unit_ma" +
-      "ke\030\007 \002(\t\022\027\n\017head_unit_model\030\010 \002(\t\022 \n\030hea" +
-      "d_unit_software_build\030\t \002(\t\022\"\n\032head_unit" +
-      "_software_version\030\n \002(\t\022\'\n\037can_play_nati" +
-      "ve_media_during_vr\030\013 \002(\010\022\034\n\024hide_project" +
-      "ed_clock\030\014 \001(\010\022\035\n\025session_configuration\030" +
-      "\r \001(\005\022\024\n\014display_name\030\016 \001(\t\022\031\n\021probe_for" +
-      "_support\030\017 \001(\010\022i\n\030connection_configurati" +
-      "on\030\020 \001(\0132G.com.andrerinas.openheadunit.a" +
-      "ap.protocol.proto.ConnectionConfiguratio" +
-      "n\022S\n\rheadunit_info\030\021 \001(\0132<.com.andrerina" +
-      "s.openheadunit.aap.protocol.proto.HeadUn" +
-      "itInfo\"{\n\021PingConfiguration\022\022\n\ntimeout_m" +
-      "s\030\001 \001(\r\022\023\n\013interval_ms\030\002 \001(\r\022!\n\031high_lat" +
-      "ency_threshold_ms\030\003 \001(\r\022\032\n\022tracked_ping_" +
-      "count\030\004 \001(\r\"\322\001\n\030WirelessTcpConfiguration" +
-      "\022)\n\035socket_receive_buffer_size_kb\030\001 \001(\rB" +
-      "\002\030\001\022&\n\032socket_send_buffer_size_kb\030\002 \001(\rB" +
-      "\002\030\001\022\036\n\026socket_read_timeout_ms\030\003 \001(\r\022\"\n\032s" +
-      "ocket_receive_buffer_size\030\004 \001(\r\022\037\n\027socke" +
-      "t_send_buffer_size\030\005 \001(\r\"\346\001\n\027ConnectionC" +
-      "onfiguration\022]\n\022ping_configuration\030\001 \001(\013" +
-      "2A.com.andrerinas.openheadunit.aap.proto" +
-      "col.proto.PingConfiguration\022l\n\032wireless_" +
-      "tcp_configuration\030\002 \001(\0132H.com.andrerinas" +
-      ".openheadunit.aap.protocol.proto.Wireles" +
-      "sTcpConfiguration\"1\n\025VersionRequestOptio" +
-      "ns\022\030\n\020snapshot_version\030\001 \001(\003\"\203\001\n\026Version" +
-      "ResponseOptions\022i\n\030connection_configurat" +
-      "ion\030\001 \001(\0132G.com.andrerinas.openheadunit." +
-      "aap.protocol.proto.ConnectionConfigurati" +
-      "on\"b\n\026ServiceDiscoveryUpdate\022H\n\007service\030" +
-      "\001 \001(\01327.com.andrerinas.openheadunit.aap." +
-      "protocol.proto.Service\":\n\022ChannelOpenReq" +
-      "uest\022\020\n\010priority\030\001 \002(\021\022\022\n\nservice_id\030\002 \002" +
-      "(\005\"d\n\023ChannelOpenResponse\022M\n\006status\030\001 \002(" +
-      "\0162=.com.andrerinas.openheadunit.aap.prot" +
-      "ocol.proto.MessageStatus\"4\n\013PingRequest\022" +
-      "\021\n\ttimestamp\030\001 \002(\003\022\022\n\nbug_report\030\002 \001(\005\"!" +
-      "\n\014PingResponse\022\021\n\ttimestamp\030\001 \002(\003\"]\n\rBye" +
-      "ByeRequest\022L\n\006reason\030\001 \002(\0162<.com.andreri" +
-      "nas.openheadunit.aap.protocol.proto.ByeB" +
-      "yeReason\"\020\n\016ByeByeResponse\"\314\001\n\030VoiceSess" +
-      "ionNotification\022k\n\006status\030\001 \002(\0162[.com.an" +
-      "drerinas.openheadunit.aap.protocol.proto" +
-      ".VoiceSessionNotification.VoiceSessionSt" +
-      "atus\"C\n\022VoiceSessionStatus\022\026\n\022VOICE_STAT" +
-      "US_START\020\001\022\025\n\021VOICE_STATUS_STOP\020\002\"\200\002\n\035Au" +
-      "dioFocusRequestNotification\022t\n\007request\030\001" +
-      " \001(\0162c.com.andrerinas.openheadunit.aap.p" +
-      "rotocol.proto.AudioFocusRequestNotificat" +
-      "ion.AudioFocusRequestType\"i\n\025AudioFocusR" +
-      "equestType\022\010\n\004NONE\020\000\022\010\n\004GAIN\020\001\022\022\n\016GAIN_T" +
-      "RANSIENT\020\002\022\033\n\027GAIN_TRANSIENT_MAY_DUCK\020\003\022" +
-      "\013\n\007RELEASE\020\004\"\360\002\n\026AudioFocusNotification\022" +
-      "o\n\013focus_state\030\001 \002(\0162Z.com.andrerinas.op" +
-      "enheadunit.aap.protocol.proto.AudioFocus" +
-      "Notification.AudioFocusStateType\022\023\n\013unso" +
-      "licited\030\002 \001(\010\"\317\001\n\023AudioFocusStateType\022\016\n" +
-      "\nSTATE_GAIN\020\001\022\030\n\024STATE_GAIN_TRANSIENT\020\002\022" +
-      "\016\n\nSTATE_LOSS\020\003\022!\n\035STATE_LOSS_TRANSIENT_" +
-      "CAN_DUCK\020\004\022\030\n\024STATE_LOSS_TRANSIENT\020\005\022\031\n\025" +
-      "STATE_GAIN_MEDIA_ONLY\020\006\022&\n\"STATE_GAIN_TR" +
-      "ANSIENT_GUIDANCE_ONLY\020\007\"o\n\033NavFocusReque" +
-      "stNotification\022P\n\nfocus_type\030\001 \001(\0162<.com" +
-      ".andrerinas.openheadunit.aap.protocol.pr" +
-      "oto.NavFocusType\"h\n\024NavFocusNotification" +
-      "\022P\n\nfocus_type\030\001 \002(\0162<.com.andrerinas.op" +
-      "enheadunit.aap.protocol.proto.NavFocusTy" +
-      "pe\"f\n\031BatteryStatusNotification\022\025\n\rbatte" +
-      "ry_level\030\001 \002(\r\022\030\n\020time_remaining_s\030\002 \001(\r" +
-      "\022\030\n\020critical_battery\030\003 \001(\010\"9\n\017ConnectedD" +
-      "evice\022\023\n\013device_name\030\001 \001(\t\022\021\n\tdevice_id\030" +
-      "\002 \001(\005\"\240\001\n\023CarConnectedDevices\022Z\n\021connect" +
-      "ed_devices\030\001 \003(\0132?.com.andrerinas.openhe" +
-      "adunit.aap.protocol.proto.ConnectedDevic" +
-      "e\022\023\n\013unsolicited\030\002 \001(\010\022\030\n\nfinal_list\030\003 \001" +
-      "(\010:\004true\"\367\004\n\022UserSwitchResponse\022c\n\006statu" +
-      "s\030\001 \001(\0162S.com.andrerinas.openheadunit.aa" +
-      "p.protocol.proto.UserSwitchResponse.User" +
-      "SwitchStatus\022X\n\017selected_device\030\002 \001(\0132?." +
+      "otocol.proto.MediaCodecType\022K\n\tui_config" +
+      "\030\013 \001(\01328.com.andrerinas.openheadunit.aap" +
+      ".protocol.proto.UiConfig\"\246\001\n\030VideoCodecR" +
+      "esolutionType\022\014\n\010_800x480\020\001\022\r\n\t_1280x720" +
+      "\020\002\022\016\n\n_1920x1080\020\003\022\016\n\n_2560x1440\020\004\022\016\n\n_3" +
+      "840x2160\020\005\022\r\n\t_720x1280\020\006\022\016\n\n_1080x1920\020" +
+      "\007\022\016\n\n_1440x2560\020\010\022\016\n\n_2160x3840\020\t\"&\n\022Vid" +
+      "eoFrameRateType\022\007\n\003_60\020\001\022\007\n\003_30\020\002\032\265\002\n\022In" +
+      "putSourceService\022\032\n\022keycodes_supported\030\001" +
+      " \003(\r\022k\n\013touchscreen\030\002 \001(\0132V.com.andrerin" +
+      "as.openheadunit.aap.protocol.proto.Servi" +
+      "ce.InputSourceService.TouchConfig\022h\n\010tou" +
+      "chpad\030\003 \001(\0132V.com.andrerinas.openheaduni" +
+      "t.aap.protocol.proto.Service.InputSource" +
+      "Service.TouchConfig\032,\n\013TouchConfig\022\r\n\005wi" +
+      "dth\030\001 \002(\r\022\016\n\006height\030\002 \002(\r\032\335\001\n\022MediaSourc" +
+      "eService\022L\n\004type\030\001 \002(\0162>.com.andrerinas." +
+      "openheadunit.aap.protocol.proto.MediaCod" +
+      "ecType\022X\n\014audio_config\030\002 \002(\0132B.com.andre" +
+      "rinas.openheadunit.aap.protocol.proto.Au" +
+      "dioConfiguration\022\037\n\027available_while_in_c" +
+      "all\030\003 \001(\010\032\222\001\n\020BluetoothService\022\023\n\013car_ad" +
+      "dress\030\001 \002(\t\022i\n\031supported_pairing_methods" +
+      "\030\002 \003(\0162F.com.andrerinas.openheadunit.aap" +
+      ".protocol.proto.BluetoothPairingMethod\032\234" +
+      "\003\n\027NavigationStatusService\022\033\n\023minimum_in" +
+      "terval_ms\030\001 \002(\r\022i\n\004type\030\002 \002(\0162[.com.andr" +
+      "erinas.openheadunit.aap.protocol.proto.S" +
+      "ervice.NavigationStatusService.ClusterTy" +
+      "pe\022s\n\rimage_options\030\003 \001(\0132\\.com.andrerin" +
+      "as.openheadunit.aap.protocol.proto.Servi" +
+      "ce.NavigationStatusService.ImageOptions\032" +
+      "G\n\014ImageOptions\022\r\n\005width\030\001 \002(\005\022\016\n\006height" +
+      "\030\002 \002(\005\022\030\n\020colour_deth_bits\030\003 \002(\005\";\n\013Clus" +
+      "terType\022\030\n\024CustomImageSupported\020\001\022\022\n\016Ima" +
+      "geCodesOnly\020\002\032\034\n\032MediaPlaybackStatusServ" +
+      "ice\032\344\001\n\020PhoneStatus_Call\022X\n\005state\030\001 \001(\0162" +
+      "I.com.andrerinas.openheadunit.aap.protoc" +
+      "ol.proto.Service.PhoneStatus_State\022\035\n\025ca" +
+      "ll_duration_seconds\030\002 \001(\r\022\025\n\rcaller_numb" +
+      "er\030\003 \001(\t\022\021\n\tcaller_id\030\004 \001(\t\022\032\n\022caller_nu" +
+      "mber_type\030\005 \001(\t\022\021\n\tthumbnail\030\006 \001(\014\032=\n\021Ph" +
+      "oneStatus_Input\022\025\n\rcaller_number\030\001 \001(\t\022\021" +
+      "\n\tcaller_id\030\002 \001(\t\032\206\001\n\022PhoneStatusService" +
+      "\022W\n\005calls\030\001 \003(\0132H.com.andrerinas.openhea" +
+      "dunit.aap.protocol.proto.Service.PhoneSt" +
+      "atus_Call\022\027\n\017signal_strength\030\002 \001(\r\032P\n\026Ve" +
+      "ndorExtensionService\022\014\n\004name\030\001 \001(\t\022\032\n\022pa" +
+      "ckage_white_list\030\002 \003(\t\022\014\n\004data\030\003 \001(\014\032\034\n\032" +
+      "GenericNotificationService\032/\n\025WifiProjec" +
+      "tionService\022\026\n\016car_wifi_bssid\030\001 \001(\t\"d\n\021P" +
+      "honeStatus_State\022\n\n\006InCall\020\001\022\n\n\006OnHold\020\002" +
+      "\022\r\n\tHangingUp\020\003\022\014\n\010Incoming\020\004\022\t\n\005Muted\020\005" +
+      "\022\017\n\013Conferenced\020\006\"B\n\027ServiceDiscoveryReq" +
+      "uest\022\022\n\nphone_name\030\004 \002(\t\022\023\n\013phone_brand\030" +
+      "\005 \002(\t\"\313\005\n\030ServiceDiscoveryResponse\022I\n\010se" +
+      "rvices\030\001 \003(\01327.com.andrerinas.openheadun" +
+      "it.aap.protocol.proto.Service\022\014\n\004make\030\002 " +
+      "\002(\t\022\r\n\005model\030\003 \002(\t\022\014\n\004year\030\004 \002(\t\022\022\n\nvehi" +
+      "cle_id\030\005 \002(\t\022W\n\017driver_position\030\006 \002(\0162>." +
       "com.andrerinas.openheadunit.aap.protocol" +
-      ".proto.ConnectedDevice\"\241\003\n\020UserSwitchSta" +
-      "tus\022\"\n\025ERROR_REQUEST_TIMEOUT\020\367\377\377\377\377\377\377\377\377\001\022" +
-      "\"\n\025ERROR_INVALID_REQUEST\020\370\377\377\377\377\377\377\377\377\001\022\036\n\021E" +
-      "RROR_HU_INTERNAL\020\371\377\377\377\377\377\377\377\377\001\022/\n\"ERROR_MUL" +
-      "TIPLE_USER_SWITCH_REQUEST\020\372\377\377\377\377\377\377\377\377\001\022/\n\"" +
-      "ERROR_PHONE_UNABLE_TO_CONNECT_WIFI\020\373\377\377\377\377" +
-      "\377\377\377\377\001\0226\n)ERROR_INCOMPATIBLE_PHONE_PROTOC" +
-      "OL_VERSION\020\374\377\377\377\377\377\377\377\377\001\022(\n\033ERROR_BT_CLOSED" +
-      "_AFTER_START\020\375\377\377\377\377\377\377\377\377\001\022)\n\034ERROR_BT_CLOS" +
-      "ED_BEFORE_START\020\376\377\377\377\377\377\377\377\377\001\022\'\n\032ERROR_NO_R" +
-      "FCOMM_CONNECTION\020\377\377\377\377\377\377\377\377\377\001\022\r\n\tSTATUS_OK" +
-      "\020\000\"0\n\026CallAvailabilityStatus\022\026\n\016call_ava" +
-      "ilable\030\001 \001(\010*\255\007\n\016ControlMsgType\022\033\n\027MESSA" +
-      "GE_VERSION_REQUEST\020\001\022\034\n\030MESSAGE_VERSION_" +
-      "RESPONSE\020\002\022\034\n\030MESSAGE_ENCAPSULATED_SSL\020\003" +
-      "\022\031\n\025MESSAGE_AUTH_COMPLETE\020\004\022%\n!MESSAGE_S" +
-      "ERVICE_DISCOVERY_REQUEST\020\005\022&\n\"MESSAGE_SE" +
-      "RVICE_DISCOVERY_RESPONSE\020\006\022 \n\034MESSAGE_CH" +
-      "ANNEL_OPEN_REQUEST\020\007\022!\n\035MESSAGE_CHANNEL_" +
-      "OPEN_RESPONSE\020\010\022&\n\"MESSAGE_CHANNEL_CLOSE" +
-      "_NOTIFICATION\020\t\022\030\n\024MESSAGE_PING_REQUEST\020" +
-      "\013\022\031\n\025MESSAGE_PING_RESPONSE\020\014\022\035\n\031MESSAGE_" +
-      "NAV_FOCUS_REQUEST\020\r\022\"\n\036MESSAGE_NAV_FOCUS" +
-      "_NOTIFICATION\020\016\022\032\n\026MESSAGE_BYEBYE_REQUES" +
-      "T\020\017\022\033\n\027MESSAGE_BYEBYE_RESPONSE\020\020\022&\n\"MESS" +
-      "AGE_VOICE_SESSION_NOTIFICATION\020\021\022\037\n\033MESS" +
-      "AGE_AUDIO_FOCUS_REQUEST\020\022\022$\n MESSAGE_AUD" +
-      "IO_FOCUS_NOTIFICATION\020\023\022)\n%MESSAGE_CAR_C" +
-      "ONNECTED_DEVICES_REQUEST\020\024\022*\n&MESSAGE_CA" +
-      "R_CONNECTED_DEVICES_RESPONSE\020\025\022\037\n\033MESSAG" +
-      "E_USER_SWITCH_REQUEST\020\026\022\'\n#MESSAGE_BATTE" +
-      "RY_STATUS_NOTIFICATION\020\027\022$\n MESSAGE_CALL" +
-      "_AVAILABILITY_STATUS\020\030\022 \n\034MESSAGE_USER_S" +
-      "WITCH_RESPONSE\020\031\022$\n MESSAGE_SERVICE_DISC" +
-      "OVERY_UPDATE\020\032\022\037\n\032MESSAGE_UNEXPECTED_MES" +
-      "SAGE\020\377\001\022\033\n\025MESSAGE_FRAMING_ERROR\020\377\377\003*\311\001\n" +
-      "\026BluetoothPairingMethod\022*\n\035BLUETOOTH_PAI" +
-      "RING_UNAVAILABLE\020\377\377\377\377\377\377\377\377\377\001\022\031\n\025BLUETOOTH" +
-      "_PAIRING_OOB\020\001\022(\n$BLUETOOTH_PAIRING_NUME" +
-      "RIC_COMPARISON\020\002\022#\n\037BLUETOOTH_PAIRING_PA" +
-      "SSKEY_ENTRY\020\003\022\031\n\025BLUETOOTH_PAIRING_PIN\020\004" +
-      "*z\n\014ByeByeReason\022\022\n\016USER_SELECTION\020\001\022\021\n\r" +
-      "DEVICE_SWITCH\020\002\022\021\n\rNOT_SUPPORTED\020\003\022\033\n\027NO" +
-      "T_CURRENTLY_SUPPORTED\020\004\022\023\n\017PROBE_SUPPORT" +
-      "ED\020\005*~\n\016DriverPosition\022\030\n\024DRIVER_POSITIO" +
-      "N_LEFT\020\000\022\031\n\025DRIVER_POSITION_RIGHT\020\001\022\032\n\026D" +
-      "RIVER_POSITION_CENTER\020\002\022\033\n\027DRIVER_POSITI" +
-      "ON_UNKNOWN\020\003*=\n\014NavFocusType\022\024\n\020NAV_FOCU" +
-      "S_NATIVE\020\001\022\027\n\023NAV_FOCUS_PROJECTED\020\002B\tB\007C" +
-      "ontrol"
+      ".proto.DriverPosition\022\026\n\016head_unit_make\030" +
+      "\007 \002(\t\022\027\n\017head_unit_model\030\010 \002(\t\022 \n\030head_u" +
+      "nit_software_build\030\t \002(\t\022\"\n\032head_unit_so" +
+      "ftware_version\030\n \002(\t\022\'\n\037can_play_native_" +
+      "media_during_vr\030\013 \002(\010\022\034\n\024hide_projected_" +
+      "clock\030\014 \001(\010\022\035\n\025session_configuration\030\r \001" +
+      "(\005\022\024\n\014display_name\030\016 \001(\t\022\031\n\021probe_for_su" +
+      "pport\030\017 \001(\010\022i\n\030connection_configuration\030" +
+      "\020 \001(\0132G.com.andrerinas.openheadunit.aap." +
+      "protocol.proto.ConnectionConfiguration\022S" +
+      "\n\rheadunit_info\030\021 \001(\0132<.com.andrerinas.o" +
+      "penheadunit.aap.protocol.proto.HeadUnitI" +
+      "nfo\"{\n\021PingConfiguration\022\022\n\ntimeout_ms\030\001" +
+      " \001(\r\022\023\n\013interval_ms\030\002 \001(\r\022!\n\031high_latenc" +
+      "y_threshold_ms\030\003 \001(\r\022\032\n\022tracked_ping_cou" +
+      "nt\030\004 \001(\r\"\322\001\n\030WirelessTcpConfiguration\022)\n" +
+      "\035socket_receive_buffer_size_kb\030\001 \001(\rB\002\030\001" +
+      "\022&\n\032socket_send_buffer_size_kb\030\002 \001(\rB\002\030\001" +
+      "\022\036\n\026socket_read_timeout_ms\030\003 \001(\r\022\"\n\032sock" +
+      "et_receive_buffer_size\030\004 \001(\r\022\037\n\027socket_s" +
+      "end_buffer_size\030\005 \001(\r\"\346\001\n\027ConnectionConf" +
+      "iguration\022]\n\022ping_configuration\030\001 \001(\0132A." +
+      "com.andrerinas.openheadunit.aap.protocol" +
+      ".proto.PingConfiguration\022l\n\032wireless_tcp" +
+      "_configuration\030\002 \001(\0132H.com.andrerinas.op" +
+      "enheadunit.aap.protocol.proto.WirelessTc" +
+      "pConfiguration\"1\n\025VersionRequestOptions\022" +
+      "\030\n\020snapshot_version\030\001 \001(\003\"\203\001\n\026VersionRes" +
+      "ponseOptions\022i\n\030connection_configuration" +
+      "\030\001 \001(\0132G.com.andrerinas.openheadunit.aap" +
+      ".protocol.proto.ConnectionConfiguration\"" +
+      "b\n\026ServiceDiscoveryUpdate\022H\n\007service\030\001 \001" +
+      "(\01327.com.andrerinas.openheadunit.aap.pro" +
+      "tocol.proto.Service\":\n\022ChannelOpenReques" +
+      "t\022\020\n\010priority\030\001 \002(\021\022\022\n\nservice_id\030\002 \002(\005\"" +
+      "d\n\023ChannelOpenResponse\022M\n\006status\030\001 \002(\0162=" +
+      ".com.andrerinas.openheadunit.aap.protoco" +
+      "l.proto.MessageStatus\"4\n\013PingRequest\022\021\n\t" +
+      "timestamp\030\001 \002(\003\022\022\n\nbug_report\030\002 \001(\005\"!\n\014P" +
+      "ingResponse\022\021\n\ttimestamp\030\001 \002(\003\"]\n\rByeBye" +
+      "Request\022L\n\006reason\030\001 \002(\0162<.com.andrerinas" +
+      ".openheadunit.aap.protocol.proto.ByeByeR" +
+      "eason\"\020\n\016ByeByeResponse\"\314\001\n\030VoiceSession" +
+      "Notification\022k\n\006status\030\001 \002(\0162[.com.andre" +
+      "rinas.openheadunit.aap.protocol.proto.Vo" +
+      "iceSessionNotification.VoiceSessionStatu" +
+      "s\"C\n\022VoiceSessionStatus\022\026\n\022VOICE_STATUS_" +
+      "START\020\001\022\025\n\021VOICE_STATUS_STOP\020\002\"\200\002\n\035Audio" +
+      "FocusRequestNotification\022t\n\007request\030\001 \001(" +
+      "\0162c.com.andrerinas.openheadunit.aap.prot" +
+      "ocol.proto.AudioFocusRequestNotification" +
+      ".AudioFocusRequestType\"i\n\025AudioFocusRequ" +
+      "estType\022\010\n\004NONE\020\000\022\010\n\004GAIN\020\001\022\022\n\016GAIN_TRAN" +
+      "SIENT\020\002\022\033\n\027GAIN_TRANSIENT_MAY_DUCK\020\003\022\013\n\007" +
+      "RELEASE\020\004\"\360\002\n\026AudioFocusNotification\022o\n\013" +
+      "focus_state\030\001 \002(\0162Z.com.andrerinas.openh" +
+      "eadunit.aap.protocol.proto.AudioFocusNot" +
+      "ification.AudioFocusStateType\022\023\n\013unsolic" +
+      "ited\030\002 \001(\010\"\317\001\n\023AudioFocusStateType\022\016\n\nST" +
+      "ATE_GAIN\020\001\022\030\n\024STATE_GAIN_TRANSIENT\020\002\022\016\n\n" +
+      "STATE_LOSS\020\003\022!\n\035STATE_LOSS_TRANSIENT_CAN" +
+      "_DUCK\020\004\022\030\n\024STATE_LOSS_TRANSIENT\020\005\022\031\n\025STA" +
+      "TE_GAIN_MEDIA_ONLY\020\006\022&\n\"STATE_GAIN_TRANS" +
+      "IENT_GUIDANCE_ONLY\020\007\"o\n\033NavFocusRequestN" +
+      "otification\022P\n\nfocus_type\030\001 \001(\0162<.com.an" +
+      "drerinas.openheadunit.aap.protocol.proto" +
+      ".NavFocusType\"h\n\024NavFocusNotification\022P\n" +
+      "\nfocus_type\030\001 \002(\0162<.com.andrerinas.openh" +
+      "eadunit.aap.protocol.proto.NavFocusType\"" +
+      "f\n\031BatteryStatusNotification\022\025\n\rbattery_" +
+      "level\030\001 \002(\r\022\030\n\020time_remaining_s\030\002 \001(\r\022\030\n" +
+      "\020critical_battery\030\003 \001(\010\"9\n\017ConnectedDevi" +
+      "ce\022\023\n\013device_name\030\001 \001(\t\022\021\n\tdevice_id\030\002 \001" +
+      "(\005\"\240\001\n\023CarConnectedDevices\022Z\n\021connected_" +
+      "devices\030\001 \003(\0132?.com.andrerinas.openheadu" +
+      "nit.aap.protocol.proto.ConnectedDevice\022\023" +
+      "\n\013unsolicited\030\002 \001(\010\022\030\n\nfinal_list\030\003 \001(\010:" +
+      "\004true\"\367\004\n\022UserSwitchResponse\022c\n\006status\030\001" +
+      " \001(\0162S.com.andrerinas.openheadunit.aap.p" +
+      "rotocol.proto.UserSwitchResponse.UserSwi" +
+      "tchStatus\022X\n\017selected_device\030\002 \001(\0132?.com" +
+      ".andrerinas.openheadunit.aap.protocol.pr" +
+      "oto.ConnectedDevice\"\241\003\n\020UserSwitchStatus" +
+      "\022\"\n\025ERROR_REQUEST_TIMEOUT\020\367\377\377\377\377\377\377\377\377\001\022\"\n\025" +
+      "ERROR_INVALID_REQUEST\020\370\377\377\377\377\377\377\377\377\001\022\036\n\021ERRO" +
+      "R_HU_INTERNAL\020\371\377\377\377\377\377\377\377\377\001\022/\n\"ERROR_MULTIP" +
+      "LE_USER_SWITCH_REQUEST\020\372\377\377\377\377\377\377\377\377\001\022/\n\"ERR" +
+      "OR_PHONE_UNABLE_TO_CONNECT_WIFI\020\373\377\377\377\377\377\377\377" +
+      "\377\001\0226\n)ERROR_INCOMPATIBLE_PHONE_PROTOCOL_" +
+      "VERSION\020\374\377\377\377\377\377\377\377\377\001\022(\n\033ERROR_BT_CLOSED_AF" +
+      "TER_START\020\375\377\377\377\377\377\377\377\377\001\022)\n\034ERROR_BT_CLOSED_" +
+      "BEFORE_START\020\376\377\377\377\377\377\377\377\377\001\022\'\n\032ERROR_NO_RFCO" +
+      "MM_CONNECTION\020\377\377\377\377\377\377\377\377\377\001\022\r\n\tSTATUS_OK\020\000\"" +
+      "0\n\026CallAvailabilityStatus\022\026\n\016call_availa" +
+      "ble\030\001 \001(\010*\255\007\n\016ControlMsgType\022\033\n\027MESSAGE_" +
+      "VERSION_REQUEST\020\001\022\034\n\030MESSAGE_VERSION_RES" +
+      "PONSE\020\002\022\034\n\030MESSAGE_ENCAPSULATED_SSL\020\003\022\031\n" +
+      "\025MESSAGE_AUTH_COMPLETE\020\004\022%\n!MESSAGE_SERV" +
+      "ICE_DISCOVERY_REQUEST\020\005\022&\n\"MESSAGE_SERVI" +
+      "CE_DISCOVERY_RESPONSE\020\006\022 \n\034MESSAGE_CHANN" +
+      "EL_OPEN_REQUEST\020\007\022!\n\035MESSAGE_CHANNEL_OPE" +
+      "N_RESPONSE\020\010\022&\n\"MESSAGE_CHANNEL_CLOSE_NO" +
+      "TIFICATION\020\t\022\030\n\024MESSAGE_PING_REQUEST\020\013\022\031" +
+      "\n\025MESSAGE_PING_RESPONSE\020\014\022\035\n\031MESSAGE_NAV" +
+      "_FOCUS_REQUEST\020\r\022\"\n\036MESSAGE_NAV_FOCUS_NO" +
+      "TIFICATION\020\016\022\032\n\026MESSAGE_BYEBYE_REQUEST\020\017" +
+      "\022\033\n\027MESSAGE_BYEBYE_RESPONSE\020\020\022&\n\"MESSAGE" +
+      "_VOICE_SESSION_NOTIFICATION\020\021\022\037\n\033MESSAGE" +
+      "_AUDIO_FOCUS_REQUEST\020\022\022$\n MESSAGE_AUDIO_" +
+      "FOCUS_NOTIFICATION\020\023\022)\n%MESSAGE_CAR_CONN" +
+      "ECTED_DEVICES_REQUEST\020\024\022*\n&MESSAGE_CAR_C" +
+      "ONNECTED_DEVICES_RESPONSE\020\025\022\037\n\033MESSAGE_U" +
+      "SER_SWITCH_REQUEST\020\026\022\'\n#MESSAGE_BATTERY_" +
+      "STATUS_NOTIFICATION\020\027\022$\n MESSAGE_CALL_AV" +
+      "AILABILITY_STATUS\020\030\022 \n\034MESSAGE_USER_SWIT" +
+      "CH_RESPONSE\020\031\022$\n MESSAGE_SERVICE_DISCOVE" +
+      "RY_UPDATE\020\032\022\037\n\032MESSAGE_UNEXPECTED_MESSAG" +
+      "E\020\377\001\022\033\n\025MESSAGE_FRAMING_ERROR\020\377\377\003*\311\001\n\026Bl" +
+      "uetoothPairingMethod\022*\n\035BLUETOOTH_PAIRIN" +
+      "G_UNAVAILABLE\020\377\377\377\377\377\377\377\377\377\001\022\031\n\025BLUETOOTH_PA" +
+      "IRING_OOB\020\001\022(\n$BLUETOOTH_PAIRING_NUMERIC" +
+      "_COMPARISON\020\002\022#\n\037BLUETOOTH_PAIRING_PASSK" +
+      "EY_ENTRY\020\003\022\031\n\025BLUETOOTH_PAIRING_PIN\020\004*z\n" +
+      "\014ByeByeReason\022\022\n\016USER_SELECTION\020\001\022\021\n\rDEV" +
+      "ICE_SWITCH\020\002\022\021\n\rNOT_SUPPORTED\020\003\022\033\n\027NOT_C" +
+      "URRENTLY_SUPPORTED\020\004\022\023\n\017PROBE_SUPPORTED\020" +
+      "\005*~\n\016DriverPosition\022\030\n\024DRIVER_POSITION_L" +
+      "EFT\020\000\022\031\n\025DRIVER_POSITION_RIGHT\020\001\022\032\n\026DRIV" +
+      "ER_POSITION_CENTER\020\002\022\033\n\027DRIVER_POSITION_" +
+      "UNKNOWN\020\003*=\n\014NavFocusType\022\024\n\020NAV_FOCUS_N" +
+      "ATIVE\020\001\022\027\n\023NAV_FOCUS_PROJECTED\020\002B\tB\007Cont" +
+      "rol"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -37697,7 +37904,7 @@ public final class Control {
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_Service_MediaSinkService_VideoConfiguration_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_com_andrerinas_openheadunit_aap_protocol_proto_Service_MediaSinkService_VideoConfiguration_descriptor,
-        new java.lang.String[] { "CodecResolution", "FrameRate", "MarginWidth", "MarginHeight", "Density", "DecoderAdditionalDepth", "ViewingDistance", "PixelAspectRatioE4", "RealDensity", "VideoCodecType", });
+        new java.lang.String[] { "CodecResolution", "FrameRate", "MarginWidth", "MarginHeight", "Density", "DecoderAdditionalDepth", "ViewingDistance", "PixelAspectRatioE4", "RealDensity", "VideoCodecType", "UiConfig", });
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_Service_InputSourceService_descriptor =
       internal_static_com_andrerinas_openheadunit_aap_protocol_proto_Service_descriptor.getNestedTypes().get(2);
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_Service_InputSourceService_fieldAccessorTable = new
