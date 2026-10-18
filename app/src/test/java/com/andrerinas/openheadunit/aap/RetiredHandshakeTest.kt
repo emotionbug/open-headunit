@@ -8,8 +8,15 @@ import org.mockito.Mockito.*
 import org.mockito.kotlin.any
 
 class RetiredHandshakeTest {
+    private lateinit var log: org.mockito.MockedStatic<android.util.Log>
+    @org.junit.Before fun stubLog() {
+        log = mockStatic(android.util.Log::class.java)
+        log.`when`<String> { android.util.Log.getStackTraceString(any<Throwable>()) }.thenReturn("test exception")
+    }
+    @org.junit.After fun restoreLog() { log.close() }
     private fun handshake(connection: ProjectionConnection): AapTransport {
         val transport = mock(AapTransport::class.java, CALLS_REAL_METHODS)
+        AapTransport::class.java.getDeclaredField("maximumGalProfile").apply { isAccessible = true }.set(transport, GalProfile.COMPATIBILITY)
         val method = AapTransport::class.java.getDeclaredMethod("handshake", ProjectionConnection::class.java)
             .apply { isAccessible = true }
         assertEquals(false, method.invoke(transport, connection))

@@ -10,7 +10,6 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.os.Process
 import android.os.SystemClock
-import android.util.SparseIntArray
 import android.view.KeyEvent
 import com.andrerinas.openheadunit.aap.protocol.Channel
 import com.andrerinas.openheadunit.aap.protocol.messages.KeyCodeEvent
@@ -125,7 +124,6 @@ class AapTransport(
     // Messages refused because the backlog was already at its ceiling. See VIDEO_BACKLOG_LIMIT.
     private val videoShedTotal = java.util.concurrent.atomic.AtomicLong(0)
     private val micRecorder: MicRecorder = MicRecorder(context)
-    private val sessionIds = SparseIntArray(4)
     private val startedSensors = HashSet<Int>(4)
     private val droppedSensorEvents = HashMap<Int, Int>(4)
     private var lastSensorDropLogMs = 0L
@@ -178,9 +176,14 @@ class AapTransport(
     var onAudioFocusStateChanged: ((Boolean) -> Unit)? = null
     var onUpdateUiConfigReplyReceived: (() -> Unit)? = null
 
-    /** What the phone selected in the version handshake, or null before it has answered. */
-    var negotiatedVersion: AapVersionNegotiation.Result? = null
+    // Settings are a maximum, captured once. A successful final request freezes the session's
+    // contract; a larger response constant must never enable features by itself.
+    private val maximumGalProfile = GalProfile.fromSetting(settings.galProfile)
+    private val displaySettings = GalDisplaySettings(settings.hideClock, settings.hideBatteryLevel, settings.hidePhoneSignal)
+    @Volatile internal var galContract: GalConnectionContract? = null
         private set
+    internal val mediaSessions = GalMediaSessions()
+
     private var pollHandler: Handler? = null
     private val pollHandlerCallback = Handler.Callback {
         val readInstance = aapRead
@@ -899,13 +902,13 @@ class AapTransport(
      */
     internal fun dispatchVideo(message: AapMessage): Boolean {
         val isPayload = aapVideo.isPayload(message)
-        val acks = AapMessageFraming.completesMediaData(message.type, message.flags.toInt())
-        // Capture ownership at receipt. A later MediaStart can replace the channel's session
-        // while video is queued; its eventual ACK still belongs to this message's original one.
-        val ackSession = getSessionId(message.channel)
+        // Capture ID and mode together. A later Start cannot transfer this queued credit to
+        // another session or suppress it by changing the channel to ackless mode.
+        val ackSession = if (AapMessageFraming.completesMediaData(message.type, message.flags.toInt()))
+            captureMediaAck(message.channel) else null
         val handler = videoHandler
         if (handler == null) {
-            if (acks) sendMediaAck(message.channel, ackSession)
+            if (ackSession != null) sendMediaAck(message.channel, ackSession)
             return isPayload
         }
         val channel = message.channel
@@ -919,7 +922,7 @@ class AapTransport(
                     "shedding - see videoShed= on the transport dispatch line for how many")
             }
             if (isPayload) dispatchVideoRunHoled(true)
-            if (acks) sendMediaAck(channel, ackSession)
+            if (ackSession != null) sendMediaAck(channel, ackSession)
             return isPayload
         }
         val size = message.size
@@ -929,13 +932,16 @@ class AapTransport(
         videoBacklog.incrementAndGet()
         handler.post {
             try {
+                // Keep FIFO media order, including CSD before Start and the received Stop tail.
+                // Only ACK ownership was captured above; poll-thread Start must not discard
+                // earlier work that is still ordered ahead of it on this worker.
                 aapVideo.process(queued)
             } catch (e: Exception) {
                 AppLog.e("Error processing video message", e)
             } finally {
                 videoBacklog.decrementAndGet()
                 recycleVideoBuffer(copy)
-                if (acks) sendMediaAck(channel, ackSession)
+                if (ackSession != null) sendMediaAck(channel, ackSession)
             }
         }
         return isPayload
@@ -1046,6 +1052,8 @@ class AapTransport(
 
     private fun handshake(connection: ProjectionConnection): Boolean {
         lastHandshakeFailure = HandshakeFailure.OTHER
+        galContract = null
+        if (!connection.isConnected) return false
         try {
             val isUsb = connection !is SocketProjectionConnection && !connection.isSingleMessage
             // Increased delay for AA 16.4+ stability on USB - skip for Sockets
@@ -1069,113 +1077,37 @@ class AapTransport(
                 }
             }
 
-            AppLog.d("Handshake: Starting version request. TS: ${SystemClock.elapsedRealtime()}")
-            val version = Messages.versionRequest
-            var ret = -1
-            var attempt = 0
-            var received = false
-            // Separates "the peer is not answering" from "our own link broke". Only the first
-            // is worth reporting upwards: it is the one the user can do something about.
+            var ret: Int
             var peerSentBytes = false
             var transportError = false
-            // Outer deadline prevents the loop from running for minutes on an unresponsive device.
-            // Each send+recv pair uses 2 s per operation; 3 attempts × 4 s ≈ 12 s worst-case,
-            // capped here at HANDSHAKE_TIMEOUT_MS so a stuck device fails fast.
             val versionDeadline = SystemClock.elapsedRealtime() + HANDSHAKE_TIMEOUT_MS
-            while (attempt < 3 && connection.isConnected) {
-                if (SystemClock.elapsedRealtime() >= versionDeadline) {
-                    AppLog.e("Handshake: Version exchange timed out after $attempt attempt(s).")
-                    return false
-                }
-                attempt++
-                ret = connection.sendBlocking(version, version.size, 2000)
-                AppLog.d("Handshake: Version request sent. ret: $ret. attempt: $attempt. TS: ${SystemClock.elapsedRealtime()}")
-                if (ret < 0) {
-                    AppLog.w("Handshake: Version request send failed (ret=$ret), attempt $attempt")
+            val frames = HandshakeFrameReader(SystemClock::elapsedRealtime, if (isUsb) 100 else 1) { bytes, length, timeout ->
+                val started = SystemClock.elapsedRealtime()
+                val count = connection.recvBlocking(bytes, length, timeout, false)
+                if (count > 0) peerSentBytes = true
+                if (HandshakeMessagePolicy.isReadError(count, SystemClock.elapsedRealtime() - started,
+                        timeout, timeoutLooksLikeError = connection !is SocketProjectionConnection)) {
                     transportError = true
-                    SystemClock.sleep(200)
-                    continue
                 }
-
-                AppLog.d("Handshake: Waiting for version response. TS: ${SystemClock.elapsedRealtime()}")
-                // Inner loop: drain messages until we see channel=0 type=2 (VERSION_RESPONSE).
-                // On first connection the phone may send a proactive message (e.g. a ping or a
-                // status) before the version response arrives. Accepting any non-empty read as
-                // "version response received" would hand a random payload to the SSL layer and
-                // cause a 15 s timeout. Instead, discard unexpected messages and keep reading
-                // until the deadline expires.
-                // The last request waits out the whole budget: a USB dongle relaying over WiFi can
-                // answer after 6 s, and giving up there leaves its answers for the next attempt.
-                val recvDeadline = if (attempt < 3) SystemClock.elapsedRealtime() + 2000
-                    else maxOf(versionDeadline, SystemClock.elapsedRealtime() + 2000)
-                while (SystemClock.elapsedRealtime() < recvDeadline) {
-                    val remaining = (recvDeadline - SystemClock.elapsedRealtime())
-                        .toInt().coerceAtLeast(100)
-                    val readStart = SystemClock.elapsedRealtime()
-                    ret = connection.recvBlocking(buffer, buffer.size, remaining, false)
-                    val readMs = SystemClock.elapsedRealtime() - readStart
-                    if (HandshakeMessagePolicy.isReadError(ret, readMs, remaining,
-                            timeoutLooksLikeError = connection !is SocketProjectionConnection)) {
-                        transportError = true
-                    }
-                    if (ret > 0) peerSentBytes = true
-                    if (ret <= 0) break  // timeout or error — fall through to outer retry
-                    if (ret >= 6
-                        && buffer[0] == 0.toByte()
-                        && buffer[4] == 0.toByte()
-                        && buffer[5] == 2.toByte()) {
-                        val negotiated = AapVersionNegotiation.parse(buffer, ret)
-                        if (negotiated != null) {
-                            negotiatedVersion = negotiated
-                            AppLog.i("Handshake: Version response received: the phone selected " +
-                                    "${negotiated.major}.${negotiated.minor} " +
-                                    "(we asked for ${AapVersionNegotiation.ANNOUNCED_MAJOR}." +
-                                    "${AapVersionNegotiation.ANNOUNCED_MINOR}), " +
-                                    "status ${negotiated.statusName}")
-                            negotiated.requestedConfig?.let {
-                                AppLog.i("Handshake: the phone asks for ping timeout " +
-                                        "${it.pingConfiguration.timeoutMs}ms, read timeout " +
-                                        "${it.wirelessTcpConfiguration.socketReadTimeoutMs}ms")
-                            }
-                        } else {
-                            AppLog.i("Handshake: Version response received (ret=$ret, attempt=$attempt).")
-                        }
-                        received = true
-                        break
-                    }
-                    // Wrong message — log and keep draining.
-                    val ch   = buffer[0].toInt() and 0xFF
-                    val type = ((buffer[4].toInt() and 0xFF) shl 8) or (buffer[5].toInt() and 0xFF)
-                    AppLog.w("Handshake: Ignoring unexpected message " +
-                             "(ch=$ch, type=0x${type.toString(16)}, len=$ret). " +
-                             "Waiting for VERSION_RESPONSE.")
-                }
-                if (received) break
-                AppLog.w("Handshake: No VERSION_RESPONSE within ${if (attempt < 3) "2s" else "the handshake budget"} (attempt $attempt), ret=$ret")
-                SystemClock.sleep(200)
+                count
             }
-
-            if (!received) {
-                AppLog.e("Handshake: Version request/response failed after $attempt attempt(s). last ret: $ret")
-                lastHandshakeFailure = HandshakeMessagePolicy.versionFailure(peerSentBytes, transportError)
-                // A tunnel can retire before the first send, or between timed-out reads.
-                // Silence describes a live link on which a request was actually attempted.
-                if (lastHandshakeFailure == HandshakeFailure.PEER_SILENT && !(attempt > 0 && connection.isConnected)) {
+            val exchange = GalVersionExchange(frames, SystemClock::elapsedRealtime,
+                send = { bytes, timeout ->
+                    connection.sendBlocking(bytes, bytes.size, timeout)
+                }, log = { AppLog.i(it) })
+            try {
+                val negotiation = exchange.negotiate(maximumGalProfile, versionDeadline)
+                galContract = GalConnectionContract.resolve(negotiation, displaySettings)
+            } catch (e: java.io.IOException) {
+                lastHandshakeFailure = if (e is java.io.InterruptedIOException) HandshakeFailure.OTHER
+                    else HandshakeMessagePolicy.versionFailure(peerSentBytes, transportError || exchange.requestWriteIncomplete)
+                if (lastHandshakeFailure == HandshakeFailure.PEER_SILENT &&
+                    (!exchange.sentRequest || !connection.isConnected)) {
                     lastHandshakeFailure = HandshakeFailure.OTHER
                 }
-                if (lastHandshakeFailure == HandshakeFailure.PEER_SILENT) {
-                    AppLog.e(
-                        "Handshake: the peer accepted the connection and then sent nothing at all. " +
-                            "Our link is fine: every read timed out rather than failing. On the head " +
-                            "unit server path this is Android Auto's own side. It hands each accepted " +
-                            "connection to its car service and waits there with no timeout, so " +
-                            "restarting the server does not clear it. Force stop Android Auto on the " +
-                            "phone, and reboot it if that does not help."
-                    )
-                }
+                AppLog.e("GAL ${exchange.phase} failed; retire this connection before retrying", e)
                 return false
             }
-            AppLog.i("Handshake: Version response recv ret: %d", ret)
             lastHandshakeFailure = HandshakeFailure.SSL
 
             AppLog.d("Handshake: Starting SSL handshake via performHandshake(). TS: ${SystemClock.elapsedRealtime()}")
@@ -1289,20 +1221,12 @@ class AapTransport(
         context.sendBroadcast(ProjectionActivityRequest())
     }
 
-    internal fun sendMediaAck(channel: Int, sessionId: Int = getSessionId(channel)) {
+    internal fun captureMediaAck(channel: Int): Int? = mediaSessions.ackSession(channel)
+
+    // Callers capture ownership at receipt; never consult a later session while sending its ACK.
+    internal fun sendMediaAck(channel: Int, sessionId: Int) {
         send(MediaAck(channel, sessionId))
     }
-
-    internal fun setSessionId(channel: Int, sessionId: Int) {
-        sessionIds.put(channel, sessionId)
-    }
-
-    /**
-     * The session id a MediaStart left for [channel], or 0 if the phone never sent one.
-     *
-     * MicrophoneRequest uses a capture-session identity, separate from this sink table.
-     */
-    internal fun getSessionId(channel: Int): Int = sessionIds.get(channel)
 
     /**
      * A monotonic microsecond clock, which is the unit every other AAP media producer stamps with.

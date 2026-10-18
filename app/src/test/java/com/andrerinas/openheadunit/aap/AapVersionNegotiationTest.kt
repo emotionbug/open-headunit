@@ -13,12 +13,12 @@ class AapVersionNegotiationTest {
     private fun frame(major: Int, minor: Int, status: Int, tail: ByteArray = ByteArray(0)): ByteArray {
         fun hi(v: Int) = ((v shr 8) and 0xFF).toByte()
         fun lo(v: Int) = (v and 0xFF).toByte()
-        return byteArrayOf(0, 3, 0, 8, 0, 2, hi(major), lo(major), hi(minor), lo(minor),
+        return byteArrayOf(0, 3, hi(8 + tail.size), lo(8 + tail.size), 0, 2, hi(major), lo(major), hi(minor), lo(minor),
             hi(status), lo(status)) + tail
     }
 
     @Test
-    fun `reads the version the phone selected, not the one we asked for`() {
+    fun `reads the version reported by the phone independently of the request`() {
         val r = AapVersionNegotiation.parse(frame(1, 6, 0), 12)!!
         assertEquals(1, r.major)
         assertEquals(6, r.minor)
@@ -33,20 +33,11 @@ class AapVersionNegotiationTest {
         assertEquals("STATUS_NO_COMPATIBLE_VERSION", r.statusName)
     }
 
-    @Test
-    fun `the one six feature set is gated on the negotiated minor`() {
-        assertFalse(AapVersionNegotiation.parse(frame(1, 2, 0), 12)!!.supports16)
-        assertFalse(AapVersionNegotiation.parse(frame(1, 5, 0), 12)!!.supports16)
-        assertTrue(AapVersionNegotiation.parse(frame(1, 6, 0), 12)!!.supports16)
-        assertTrue(AapVersionNegotiation.parse(frame(2, 0, 0), 12)!!.supports16)
-    }
-
-    @Test
-    fun `what we announce today does not reach the one six feature set`() {
-        val announced = AapVersionNegotiation.parse(
-            frame(AapVersionNegotiation.ANNOUNCED_MAJOR, AapVersionNegotiation.ANNOUNCED_MINOR, 0), 12
-        )!!
-        assertFalse(announced.supports16)
+    @Test fun `feature gates belong to the requested profile not the response`() {
+        assertEquals(GalVersion(1, 7), AapVersionNegotiation.parse(frame(1, 7, 0), 12)!!.version)
+        val contract = galTestContract(GalProfile.COMPATIBILITY)
+        assertEquals(GalVersion(1, 2), contract.negotiation.requestedVersion)
+        assertNull(contract.display.initial(0, 0))
     }
 
     @Test
@@ -68,15 +59,31 @@ class AapVersionNegotiationTest {
     }
 
     @Test
-    fun `trailing bytes that are not the options proto do not lose the version`() {
+    fun `malformed options refuse the response`() {
         val f = frame(1, 4, 0, byteArrayOf(-1, -1, -1, -1))
-        val r = AapVersionNegotiation.parse(f, f.size)!!
-        assertEquals(4, r.minor)
-        assertNull(r.requestedConfig)
+        assertNull(AapVersionNegotiation.parse(f, f.size))
     }
 
     @Test
     fun `a frame too short to hold a version is refused`() {
         assertNull(AapVersionNegotiation.parse(frame(1, 2, 0), 11))
+    }
+    @Test
+    fun `parser rejects incomplete extra or wrongly framed bytes`() {
+        val good = frame(1, 7, 0)
+        assertNull(AapVersionNegotiation.parse(good, good.size + 1))
+        assertNull(AapVersionNegotiation.parse(good + byteArrayOf(0), good.size + 1))
+        for (index in listOf(0, 1, 2, 3, 4, 5)) {
+            val bad = good.copyOf().also { it[index] = (it[index] + 1).toByte() }
+            assertNull(AapVersionNegotiation.parse(bad, bad.size))
+        }
+        assertTrue(AapVersionNegotiation.parse(frame(1, 1, 0), 12)!!.accepted)
+        assertTrue(AapVersionNegotiation.parse(frame(6, 1, 0), 12)!!.accepted)
+    }
+
+    @Test fun `only successful status permits TLS`() {
+        assertTrue(AapVersionNegotiation.parse(frame(1, 7, 0), 12)!!.accepted)
+        assertFalse(AapVersionNegotiation.parse(frame(1, 7, -1), 12)!!.accepted)
+        assertFalse(AapVersionNegotiation.parse(frame(1, 7, 1), 12)!!.accepted)
     }
 }

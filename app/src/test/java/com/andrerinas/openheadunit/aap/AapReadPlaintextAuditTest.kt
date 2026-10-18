@@ -236,7 +236,7 @@ class AapReadPlaintextAuditTest {
             }
         }
 
-    private fun mediaHandler(process: (AapMessage) -> Boolean = { true }): Pair<AapMessageHandlerType, AapTransport> {
+    private fun mediaHandler(ackless: Boolean = false, process: (AapMessage) -> Boolean = { true }): Pair<AapMessageHandlerType, AapTransport> {
         val transport = mock<AapTransport>(defaultAnswer = org.mockito.Mockito.CALLS_REAL_METHODS)
         val audio = mock<AapAudio>()
         whenever(audio.process(any())).thenAnswer { process(it.getArgument(0)) }
@@ -244,11 +244,18 @@ class AapReadPlaintextAuditTest {
         whenever(video.isPayload(any())).thenReturn(true)
         fun field(target: Any, name: String, value: Any) = target.javaClass.getDeclaredField(name)
             .apply { isAccessible = true }.set(target, value)
+        val sessions = galTestSessions()
+        for (channel in listOf(Channel.ID_AUD, Channel.ID_AU1, Channel.ID_AU2, Channel.ID_VID)) {
+            sessions.start(channel, com.andrerinas.openheadunit.aap.protocol.proto.Media.Start.newBuilder()
+                .setSessionId(23).setConfigurationIndex(0)
+                .setFlowControl(if (ackless) com.andrerinas.openheadunit.aap.protocol.proto.Media.Start.FlowControl.ACKLESS
+                    else com.andrerinas.openheadunit.aap.protocol.proto.Media.Start.FlowControl.MODE_0).build())
+        }
+        field(transport, "mediaSessions", sessions)
         field(transport, "aapVideo", video) // No video worker: the production drop path ACKs directly.
         doNothing().whenever(transport).noteMessageReceived(any(), any())
         doReturn(0).whenever(transport).videoQueueDepth()
         doReturn(0L).whenever(transport).videoShedCount()
-        doReturn(23).whenever(transport).getSessionId(any())
         doNothing().whenever(transport).sendMediaAck(any(), any())
         val handler = mock<AapMessageHandlerType>(defaultAnswer = org.mockito.Mockito.CALLS_REAL_METHODS)
         field(handler, "transport", transport)
@@ -256,6 +263,18 @@ class AapReadPlaintextAuditTest {
         field(handler, "dispatchMonitor", TransportDispatchMonitor())
         return handler to transport
     }
+
+    @Test fun `ackless DATA and reassembly rejection emit no legacy credit in either reader`() =
+        mockStatic(SystemClock::class.java).use {
+            for (bulk in listOf(false, true)) for (channel in listOf(Channel.ID_AUD, Channel.ID_VID)) {
+                val (handler, transport) = mediaHandler(ackless = true)
+                val packets = listOf(Packet(9, ByteArray(10), 15, channel = channel),
+                    Packet(10, ByteArray(4), channel = channel), Packet(11, ByteArray(16), channel = channel))
+                val result = read(packets, bulk, delegate = handler)
+                assertEquals(1, result.payloads.size)
+                verify(transport, never()).sendMediaAck(any(), any())
+            }
+        }
 
     @Test fun `discarded DATA returns one real transport credit and leaves normal DATA ack intact`() =
         mockStatic(SystemClock::class.java).use {

@@ -40,13 +40,24 @@ internal class AapControlMedia(
         when (message.type) {
             Media.MsgType.MEDIA_MESSAGE_SETUP_VALUE -> {
                 val setupRequest = message.parse(Media.MediaSetupRequest.newBuilder()).build()
-                return mediaSinkSetupRequest(setupRequest, message.channel)
+                return mediaSetupRequest(setupRequest, message.channel)
             }
             Media.MsgType.MEDIA_MESSAGE_START_VALUE -> {
+                if (message.size > 16 * 1024) {
+                    aapTransport.quit()
+                    return -1
+                }
                 val startRequest = message.parse(Media.Start.newBuilder()).build()
                 return mediaStartRequest(startRequest, message.channel)
             }
             Media.MsgType.MEDIA_MESSAGE_STOP_VALUE -> return mediaSinkStopRequest(message.channel)
+            Media.MsgType.MEDIA_MESSAGE_OPTIONS_VALUE -> {
+                if (aapTransport.mediaSessions.acceptsUpdate(message.channel) && message.size <= 16 * 1024) {
+                    val options = message.parse(Media.MediaOptions.newBuilder()).build()
+                    if (aapTransport.mediaSessions.update(message.channel, options)) noteMediaOptions(options)
+                }
+                return 0
+            }
             Media.MsgType.MEDIA_MESSAGE_VIDEO_FOCUS_REQUEST_VALUE -> {
                 val focusRequest = message.parse(Media.VideoFocusRequestNotification.newBuilder()).build()
                 AppLog.i("RX: Video Focus Request - mode: %s, reason: %s", focusRequest.mode, focusRequest.reason)
@@ -96,29 +107,55 @@ internal class AapControlMedia(
     private fun mediaStartRequest(request: Media.Start, channel: Int): Int {
         AppLog.i("Media Start Request %s: session=%d, config_index=%d", Channel.name(channel), request.sessionId, request.configurationIndex)
 
-        // The phone's pick must reach the geometry before the first frame is laid out.
-        if (channel == Channel.ID_VID &&
-            VideoFallbackPolicy.adopts(request.configurationIndex, HeadUnitScreenConfig.hasOfferedFallback())) {
+        val session = aapTransport.mediaSessions.start(channel, request)
+        if (session == null) {
+            // Validate against the exact discovery offer, including whether this sink existed.
+            AppLog.e("Media Start rejected: unadvertised sink/configuration $channel/${request.configurationIndex}")
+            aapTransport.quit()
+            return -1
+        }
+        session.options?.let { noteMediaOptions(it) }
+
+        // Geometry follows the selected advertised format before the first frame is laid out.
+        if (session.format is GalMediaFormat.Video && session.configurationIndex == VideoFallbackPolicy.FALLBACK_INDEX) {
             HeadUnitScreenConfig.adoptFallback()
         }
 
-        aapTransport.setSessionId(channel, request.sessionId)
         aapTransport.noteAudioSinkStarted(channel)
         aapAudio.preparePlayback(channel)
         return 0
     }
 
-    private fun mediaSinkSetupRequest(request: Media.MediaSetupRequest, channel: Int): Int {
+    private fun noteMediaOptions(options: Media.MediaOptions) {
+        // Sender-only code establishes the schema, not an HU AV clock mapping or controller.
+        // Retain the requested snapshot for diagnostics; do not invent resampling, drop audio,
+        // or shrink the user's buffer to the sender's audio_buffer_limit. Local playback and
+        // bounded queues remain authoritative until a presentation-clock contract is implemented.
+        AppLog.d("Media options received: %s", options)
+        val unsupported = checkNotNull(aapTransport.galContract).media.unimplementedRequests(options)
+        if (unsupported.isNotEmpty()) AppLog.i("GAL requested unimplemented features: ${unsupported.joinToString()}")
+    }
 
-        AppLog.i("Media Sink Setup Request: %d on channel %s", request.type, Channel.name(channel))
+    private fun mediaSetupRequest(request: Media.MediaSetupRequest, channel: Int): Int {
 
+        AppLog.i("Media Setup Request: %d on channel %s", request.type, Channel.name(channel))
+        aapTransport.mediaSessions.stop(channel)
+
+        // The microphone is a source, not a sink. Preserve its existing Setup response;
+        // capture identity and credits are owned by MicrophoneRequest/MicSessionController.
+        val indices = if (channel == Channel.ID_MIC) listOf(0)
+            else aapTransport.mediaSessions.configurationIndices(channel)
+        if (indices.isEmpty()) {
+            AppLog.e("Media Setup rejected: sink $channel was not advertised")
+            aapTransport.quit()
+            return -1
+        }
         val maxUnacked = maxUnackedFor(channel)
         val configResponse = Media.Config.newBuilder().apply {
             status = Media.Config.ConfigStatus.STATUS_READY
             this.maxUnacked = maxUnacked
 
-            val offered = channel == Channel.ID_VID && HeadUnitScreenConfig.hasOfferedFallback()
-            VideoFallbackPolicy.configurationIndices(offered).forEach { addConfigurationIndices(it) }
+            addAllConfigurationIndices(indices)
         }.build()
         AppLog.i("Config response: %s (maxUnacked=%d)", configResponse, maxUnacked)
         val msg = AapMessage(channel, Media.MsgType.MEDIA_MESSAGE_CONFIG_VALUE, configResponse)
@@ -168,6 +205,9 @@ internal class AapControlMedia(
 
     private fun mediaSinkStopRequest(channel: Int): Int {
         AppLog.i("Media Sink Stop Request: " + Channel.name(channel))
+        // A focus-cycle Stop still ends the wire session even when playback handling ignores
+        // it. Reject later option updates until Start, while retaining the tail's ACK policy.
+        aapTransport.mediaSessions.stop(channel)
         if (Channel.isAudio(channel)) {
             // Before the sink goes: this silence is one the phone asked for.
             aapTransport.noteAudioSinkStopped(channel)
@@ -307,6 +347,10 @@ internal class AapControlService(
         private val settings: Settings,
         private val context: Context): AapControl {
 
+    // Discovery fixes the connection's offer. Repeated requests reuse it rather than re-reading
+    // mutable settings and changing the meaning of a previously advertised configuration index.
+    private var discoveryResponse: ServiceDiscoveryResponse? = null
+
     override fun execute(message: AapMessage): Int {
 
         when (message.type) {
@@ -340,6 +384,7 @@ internal class AapControlService(
             }
             Control.ControlMsgType.MESSAGE_CHANNEL_CLOSE_NOTIFICATION_VALUE -> {
                 AppLog.i("RX: Channel Close Notification on chan ${message.channel}")
+                aapTransport.mediaSessions.stop(message.channel)
                 return 0
             }
             else -> AppLog.e("Unsupported Control message type: ${message.type}")
@@ -351,7 +396,13 @@ internal class AapControlService(
     private fun serviceDiscoveryRequest(request: Control.ServiceDiscoveryRequest): Int {
         AppLog.i("Service Discovery Request: %s", request.phoneName)
 
-        val msg = ServiceDiscoveryResponse(context, aapAudio.sessionConfig)
+        val msg = discoveryResponse ?: run {
+            val contract = checkNotNull(aapTransport.galContract) { "Service discovery before GAL agreement" }
+            ServiceDiscoveryResponse(context, aapAudio.sessionConfig, contract).also {
+                aapTransport.mediaSessions.advertise(contract.media, it.mediaOffer)
+                discoveryResponse = it
+            }
+        }
         aapTransport.send(msg)
         return 0
     }

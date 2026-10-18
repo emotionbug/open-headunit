@@ -18,14 +18,19 @@ import com.andrerinas.openheadunit.decoder.video.VideoDecoder
 import com.andrerinas.openheadunit.utils.AppLog
 import com.andrerinas.openheadunit.utils.HeadUnitScreenConfig
 import com.andrerinas.openheadunit.utils.VideoFallbackPolicy
+import com.andrerinas.openheadunit.aap.GalConnectionContract
+import com.andrerinas.openheadunit.aap.GalMediaOffer
 import com.andrerinas.openheadunit.aap.AudioSessionConfig
-import com.google.protobuf.Message
 
-internal class ServiceDiscoveryResponse(context: Context, audioConfig: AudioSessionConfig)
-    : AapMessage(Channel.ID_CTR, Control.ControlMsgType.MESSAGE_SERVICE_DISCOVERY_RESPONSE_VALUE, makeProto(context, audioConfig)) {
+internal class ServiceDiscoveryResponse private constructor(proto: Control.ServiceDiscoveryResponse)
+    : AapMessage(Channel.ID_CTR, Control.ControlMsgType.MESSAGE_SERVICE_DISCOVERY_RESPONSE_VALUE, proto) {
+    constructor(context: Context, audioConfig: AudioSessionConfig, contract: GalConnectionContract)
+        : this(makeProto(context, audioConfig, contract))
+
+    val mediaOffer = GalMediaOffer.from(proto)
 
     companion object {
-        private fun makeProto(context: Context, audioConfig: AudioSessionConfig): Message {
+        private fun makeProto(context: Context, audioConfig: AudioSessionConfig, contract: GalConnectionContract): Control.ServiceDiscoveryResponse {
             val settings = App.provide(context).settings
             // Initialize HeadUnitScreenConfig with actual physical screen dimensions
             HeadUnitScreenConfig.init(context, context.resources.displayMetrics, settings)
@@ -143,6 +148,7 @@ internal class ServiceDiscoveryResponse(context: Context, audioConfig: AudioSess
                         setPixelAspectRatioE4(announcedPar)
                         setMarginWidth(phoneWidthMargin)
                         setMarginHeight(phoneHeightMargin)
+                        contract.display.initial(phoneWidthMargin, phoneHeightMargin)?.let { setUiConfig(it) }
                         setVideoCodecType(effectiveCodec)
                     }.build())
 
@@ -165,6 +171,7 @@ internal class ServiceDiscoveryResponse(context: Context, audioConfig: AudioSess
                             setPixelAspectRatioE4(announcedPar)
                             setMarginWidth(margins.width)
                             setMarginHeight(margins.height)
+                            contract.display.initial(margins.width, margins.height)?.let { setUiConfig(it) }
                             setVideoCodecType(effectiveCodec)
                         }.build())
                     }
@@ -327,11 +334,6 @@ internal class ServiceDiscoveryResponse(context: Context, audioConfig: AudioSess
             }.build()
             services.add(navigationStatus)
 
-            val sessionConfig = (if (settings.hideClock) 0x01 else 0) or
-                (if (settings.hidePhoneSignal) 0x02 else 0) or
-                (if (settings.hideBatteryLevel) 0x04 else 0)
-            // 0x08 is "CAN_PLAY_NATIVE_MEDIA_DURING_VR"
-
             // Every type gets its own announced id. The phone looks its stored record up by
             // make/model/year and a hash of this id, and on a hit it stamps the stored vehicle type
             // over the one we declare. A different id misses that lookup, so our claim survives;
@@ -351,8 +353,7 @@ internal class ServiceDiscoveryResponse(context: Context, audioConfig: AudioSess
                 headUnitSoftwareVersion = "0.1.0"
                 driverPosition = if (settings.rightHandDrive) Control.DriverPosition.DRIVER_POSITION_RIGHT else Control.DriverPosition.DRIVER_POSITION_LEFT
                 canPlayNativeMediaDuringVr = false
-                hideProjectedClock = settings.hideClock
-                sessionConfiguration = sessionConfig
+                contract.display.applyDiscoveryVisibility(this)
                 setDisplayName(settings.vehicleDisplayName)
 
                 setHeadunitInfo(com.andrerinas.openheadunit.aap.protocol.proto.Common.HeadUnitInfo.newBuilder().apply {

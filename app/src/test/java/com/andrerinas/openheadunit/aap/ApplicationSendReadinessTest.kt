@@ -24,13 +24,20 @@ class ApplicationSendReadinessTest {
                 val handler = mock<Handler>()
                 val writes = mutableListOf<ByteArray>()
                 val writer = AapTlsWriter(ssl) { bytes, length -> writes.add(bytes.copyOf(length)); length }
+                field(transport, "maximumGalProfile", GalProfile.COMPATIBILITY)
+                field(transport, "displaySettings", GalDisplaySettings(false, false, false))
                 field(transport, "ssl", ssl)
                 field(transport, "tlsWriter", writer)
                 field(transport, "sendHandler", handler)
                 whenever(connection.isSingleMessage).thenReturn(true)
                 whenever(connection.isConnected).thenReturn(true)
+                val response = byteArrayOf(0, 3, 0, 8, 0, 2, 0, 1, 0, 7, 0, 0)
+                var position = 0
                 whenever(connection.recvBlocking(any(), any(), any(), any())).thenAnswer {
-                    byteArrayOf(0, 3, 0, 2, 0, 2).copyInto(it.getArgument(0)); 6
+                    val count = minOf(it.getArgument<Int>(1), response.size - position)
+                    response.copyInto(it.getArgument(0), 0, position, position + count)
+                    position += count
+                    count
                 }
                 whenever(ssl.performHandshake(connection)).thenReturn(true)
                 whenever(ssl.drainControlRecords()).thenReturn(emptyList())

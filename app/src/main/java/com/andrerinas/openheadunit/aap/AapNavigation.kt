@@ -100,6 +100,7 @@ class AapNavigation(
                     snapshot.navigationState = AapNavigationHelper.TimedMessage(state, helper.nowElapsedRealtimeMs())
                     AppLog.d("Nav: NavigationState steps=${state.stepsCount} maneuverRoad=${NavigationRoadPolicy.maneuverRoad(state, null) ?: "(none)"}")
                     scheduleDebouncedBroadcast(NAV_EVENT_TYPE_STATE)
+                    showModernNotification()
                     true
                 } catch (e: Exception) {
                     AppLog.e("Nav: failed to parse NavigationState", e)
@@ -112,17 +113,30 @@ class AapNavigation(
                     snapshot.currentPosition = AapNavigationHelper.TimedMessage(position, helper.nowElapsedRealtimeMs())
                     AppLog.d("Nav: CurrentPosition currentRoad=${NavigationRoadPolicy.currentRoad(position) ?: "(none)"}")
                     scheduleDebouncedBroadcast(NAV_EVENT_TYPE_CURRENT_POSITION)
+                    showModernNotification()
                     true
                 } catch (e: Exception) {
                     AppLog.e("Nav: failed to parse NavigationCurrentPosition", e)
                     true
                 }
             }
+            // GAL>5.0 can send an energy forecast (optional bytes field1). There is no
+            // receiver energy UI or response contract here; consume it without a media ACK.
+            0x8008 -> true
             else -> {
                 AppLog.d("Nav: passthrough type ${message.type}")
                 false
             }
         }
+    }
+
+    private fun showModernNotification() {
+        if (!settings.showNavigationNotifications) return
+        val position = snapshot.currentPosition?.payload
+        val distance = position?.takeIf { it.hasStepDistance() }?.stepDistance
+            ?.takeIf { it.hasDistance() && it.distance.hasMeters() }?.distance?.meters
+            ?.takeIf { it >= 0 }
+        helper.showNotificationForSnapshot(snapshot, distanceMeters = distance)
     }
 
     private fun clearAccumulatedData() {

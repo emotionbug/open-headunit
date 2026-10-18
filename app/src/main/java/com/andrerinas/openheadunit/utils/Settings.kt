@@ -1295,6 +1295,11 @@ class Settings(private val context: Context) {
         get() = prefs.getBoolean("mic-auto-gain-control", false)
         set(value) { prefs.edit().putBoolean("mic-auto-gain-control", value).apply() }
 
+    /** Upper bound for a new GAL session. Existing installations keep their 1.2 request. */
+    var galProfile: String
+        get() = prefs.getString("gal-profile", "1.2") ?: "1.2"
+        set(value) { prefs.edit().putString("gal-profile", value).apply() }
+
     var useNativeSsl: Boolean
         get() = prefs.getBoolean("use-native-ssl", false)
         set(value) { prefs.edit().putBoolean("use-native-ssl", value).apply() }
