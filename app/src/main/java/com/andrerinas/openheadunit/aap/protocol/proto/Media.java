@@ -77,6 +77,14 @@ public final class Media {
      */
     MEDIA_MESSAGE_AUDIO_UNDERFLOW_NOTIFICATION(32779),
     /**
+     * <pre>
+     * HU -&gt; phone; independent of DATA acknowledgements.
+     * </pre>
+     *
+     * <code>MEDIA_MESSAGE_STATS = 32787;</code>
+     */
+    MEDIA_MESSAGE_STATS(32787),
+    /**
      * <code>MEDIA_MESSAGE_OPTIONS = 32788;</code>
      */
     MEDIA_MESSAGE_OPTIONS(32788),
@@ -139,6 +147,14 @@ public final class Media {
      */
     public static final int MEDIA_MESSAGE_AUDIO_UNDERFLOW_NOTIFICATION_VALUE = 32779;
     /**
+     * <pre>
+     * HU -&gt; phone; independent of DATA acknowledgements.
+     * </pre>
+     *
+     * <code>MEDIA_MESSAGE_STATS = 32787;</code>
+     */
+    public static final int MEDIA_MESSAGE_STATS_VALUE = 32787;
+    /**
      * <code>MEDIA_MESSAGE_OPTIONS = 32788;</code>
      */
     public static final int MEDIA_MESSAGE_OPTIONS_VALUE = 32788;
@@ -178,6 +194,7 @@ public final class Media {
         case 32777: return MEDIA_MESSAGE_UPDATE_UI_CONFIG_REQUEST;
         case 32778: return MEDIA_MESSAGE_UPDATE_UI_CONFIG_REPLY;
         case 32779: return MEDIA_MESSAGE_AUDIO_UNDERFLOW_NOTIFICATION;
+        case 32787: return MEDIA_MESSAGE_STATS;
         case 32788: return MEDIA_MESSAGE_OPTIONS;
         default: return null;
       }
@@ -5629,6 +5646,3545 @@ public final class Media {
 
     @java.lang.Override
     public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaOptions getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface MediaDistributionOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional int64 average = 1;</code>
+     * @return Whether the average field is set.
+     */
+    boolean hasAverage();
+    /**
+     * <code>optional int64 average = 1;</code>
+     * @return The average.
+     */
+    long getAverage();
+
+    /**
+     * <code>optional int64 minimum = 2;</code>
+     * @return Whether the minimum field is set.
+     */
+    boolean hasMinimum();
+    /**
+     * <code>optional int64 minimum = 2;</code>
+     * @return The minimum.
+     */
+    long getMinimum();
+
+    /**
+     * <code>optional int64 maximum = 3;</code>
+     * @return Whether the maximum field is set.
+     */
+    boolean hasMaximum();
+    /**
+     * <code>optional int64 maximum = 3;</code>
+     * @return The maximum.
+     */
+    long getMaximum();
+
+    /**
+     * <code>optional int64 count = 4;</code>
+     * @return Whether the count field is set.
+     */
+    boolean hasCount();
+    /**
+     * <code>optional int64 count = 4;</code>
+     * @return The count.
+     */
+    long getCount();
+  }
+  /**
+   * <pre>
+   * AA18 xum descriptor and jes.s/jtb.a consumers: ordinary signed int64 values,
+   * in microseconds. Count is the number of observations, not audio sample frames.
+   * </pre>
+   *
+   * Protobuf type {@code com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution}
+   */
+  public static final class MediaDistribution extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution)
+      MediaDistributionOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use MediaDistribution.newBuilder() to construct.
+    private MediaDistribution(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private MediaDistribution() {
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new MediaDistribution();
+    }
+
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return com.andrerinas.openheadunit.aap.protocol.proto.Media.internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MediaDistribution_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.andrerinas.openheadunit.aap.protocol.proto.Media.internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MediaDistribution_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.class, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder.class);
+    }
+
+    private int bitField0_;
+    public static final int AVERAGE_FIELD_NUMBER = 1;
+    private long average_ = 0L;
+    /**
+     * <code>optional int64 average = 1;</code>
+     * @return Whether the average field is set.
+     */
+    @java.lang.Override
+    public boolean hasAverage() {
+      return ((bitField0_ & 0x00000001) != 0);
+    }
+    /**
+     * <code>optional int64 average = 1;</code>
+     * @return The average.
+     */
+    @java.lang.Override
+    public long getAverage() {
+      return average_;
+    }
+
+    public static final int MINIMUM_FIELD_NUMBER = 2;
+    private long minimum_ = 0L;
+    /**
+     * <code>optional int64 minimum = 2;</code>
+     * @return Whether the minimum field is set.
+     */
+    @java.lang.Override
+    public boolean hasMinimum() {
+      return ((bitField0_ & 0x00000002) != 0);
+    }
+    /**
+     * <code>optional int64 minimum = 2;</code>
+     * @return The minimum.
+     */
+    @java.lang.Override
+    public long getMinimum() {
+      return minimum_;
+    }
+
+    public static final int MAXIMUM_FIELD_NUMBER = 3;
+    private long maximum_ = 0L;
+    /**
+     * <code>optional int64 maximum = 3;</code>
+     * @return Whether the maximum field is set.
+     */
+    @java.lang.Override
+    public boolean hasMaximum() {
+      return ((bitField0_ & 0x00000004) != 0);
+    }
+    /**
+     * <code>optional int64 maximum = 3;</code>
+     * @return The maximum.
+     */
+    @java.lang.Override
+    public long getMaximum() {
+      return maximum_;
+    }
+
+    public static final int COUNT_FIELD_NUMBER = 4;
+    private long count_ = 0L;
+    /**
+     * <code>optional int64 count = 4;</code>
+     * @return Whether the count field is set.
+     */
+    @java.lang.Override
+    public boolean hasCount() {
+      return ((bitField0_ & 0x00000008) != 0);
+    }
+    /**
+     * <code>optional int64 count = 4;</code>
+     * @return The count.
+     */
+    @java.lang.Override
+    public long getCount() {
+      return count_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (((bitField0_ & 0x00000001) != 0)) {
+        output.writeInt64(1, average_);
+      }
+      if (((bitField0_ & 0x00000002) != 0)) {
+        output.writeInt64(2, minimum_);
+      }
+      if (((bitField0_ & 0x00000004) != 0)) {
+        output.writeInt64(3, maximum_);
+      }
+      if (((bitField0_ & 0x00000008) != 0)) {
+        output.writeInt64(4, count_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(1, average_);
+      }
+      if (((bitField0_ & 0x00000002) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(2, minimum_);
+      }
+      if (((bitField0_ & 0x00000004) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(3, maximum_);
+      }
+      if (((bitField0_ & 0x00000008) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(4, count_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution)) {
+        return super.equals(obj);
+      }
+      com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution other = (com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution) obj;
+
+      if (hasAverage() != other.hasAverage()) return false;
+      if (hasAverage()) {
+        if (getAverage()
+            != other.getAverage()) return false;
+      }
+      if (hasMinimum() != other.hasMinimum()) return false;
+      if (hasMinimum()) {
+        if (getMinimum()
+            != other.getMinimum()) return false;
+      }
+      if (hasMaximum() != other.hasMaximum()) return false;
+      if (hasMaximum()) {
+        if (getMaximum()
+            != other.getMaximum()) return false;
+      }
+      if (hasCount() != other.hasCount()) return false;
+      if (hasCount()) {
+        if (getCount()
+            != other.getCount()) return false;
+      }
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      if (hasAverage()) {
+        hash = (37 * hash) + AVERAGE_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            getAverage());
+      }
+      if (hasMinimum()) {
+        hash = (37 * hash) + MINIMUM_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            getMinimum());
+      }
+      if (hasMaximum()) {
+        hash = (37 * hash) + MAXIMUM_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            getMaximum());
+      }
+      if (hasCount()) {
+        hash = (37 * hash) + COUNT_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            getCount());
+      }
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+
+    public static com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * <pre>
+     * AA18 xum descriptor and jes.s/jtb.a consumers: ordinary signed int64 values,
+     * in microseconds. Count is the number of observations, not audio sample frames.
+     * </pre>
+     *
+     * Protobuf type {@code com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution)
+        com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return com.andrerinas.openheadunit.aap.protocol.proto.Media.internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MediaDistribution_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return com.andrerinas.openheadunit.aap.protocol.proto.Media.internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MediaDistribution_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.class, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder.class);
+      }
+
+      // Construct using com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.newBuilder()
+      private Builder() {
+
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        bitField0_ = 0;
+        average_ = 0L;
+        minimum_ = 0L;
+        maximum_ = 0L;
+        count_ = 0L;
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return com.andrerinas.openheadunit.aap.protocol.proto.Media.internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MediaDistribution_descriptor;
+      }
+
+      @java.lang.Override
+      public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution getDefaultInstanceForType() {
+        return com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution build() {
+        com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution buildPartial() {
+        com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution result = new com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution(this);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartial0(com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution result) {
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.average_ = average_;
+          to_bitField0_ |= 0x00000001;
+        }
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.minimum_ = minimum_;
+          to_bitField0_ |= 0x00000002;
+        }
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          result.maximum_ = maximum_;
+          to_bitField0_ |= 0x00000004;
+        }
+        if (((from_bitField0_ & 0x00000008) != 0)) {
+          result.count_ = count_;
+          to_bitField0_ |= 0x00000008;
+        }
+        result.bitField0_ |= to_bitField0_;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution) {
+          return mergeFrom((com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution other) {
+        if (other == com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance()) return this;
+        if (other.hasAverage()) {
+          setAverage(other.getAverage());
+        }
+        if (other.hasMinimum()) {
+          setMinimum(other.getMinimum());
+        }
+        if (other.hasMaximum()) {
+          setMaximum(other.getMaximum());
+        }
+        if (other.hasCount()) {
+          setCount(other.getCount());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 8: {
+                average_ = input.readInt64();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 8
+              case 16: {
+                minimum_ = input.readInt64();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 16
+              case 24: {
+                maximum_ = input.readInt64();
+                bitField0_ |= 0x00000004;
+                break;
+              } // case 24
+              case 32: {
+                count_ = input.readInt64();
+                bitField0_ |= 0x00000008;
+                break;
+              } // case 32
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
+        return this;
+      }
+      private int bitField0_;
+
+      private long average_ ;
+      /**
+       * <code>optional int64 average = 1;</code>
+       * @return Whether the average field is set.
+       */
+      @java.lang.Override
+      public boolean hasAverage() {
+        return ((bitField0_ & 0x00000001) != 0);
+      }
+      /**
+       * <code>optional int64 average = 1;</code>
+       * @return The average.
+       */
+      @java.lang.Override
+      public long getAverage() {
+        return average_;
+      }
+      /**
+       * <code>optional int64 average = 1;</code>
+       * @param value The average to set.
+       * @return This builder for chaining.
+       */
+      public Builder setAverage(long value) {
+
+        average_ = value;
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 average = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearAverage() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        average_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      private long minimum_ ;
+      /**
+       * <code>optional int64 minimum = 2;</code>
+       * @return Whether the minimum field is set.
+       */
+      @java.lang.Override
+      public boolean hasMinimum() {
+        return ((bitField0_ & 0x00000002) != 0);
+      }
+      /**
+       * <code>optional int64 minimum = 2;</code>
+       * @return The minimum.
+       */
+      @java.lang.Override
+      public long getMinimum() {
+        return minimum_;
+      }
+      /**
+       * <code>optional int64 minimum = 2;</code>
+       * @param value The minimum to set.
+       * @return This builder for chaining.
+       */
+      public Builder setMinimum(long value) {
+
+        minimum_ = value;
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 minimum = 2;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearMinimum() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        minimum_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      private long maximum_ ;
+      /**
+       * <code>optional int64 maximum = 3;</code>
+       * @return Whether the maximum field is set.
+       */
+      @java.lang.Override
+      public boolean hasMaximum() {
+        return ((bitField0_ & 0x00000004) != 0);
+      }
+      /**
+       * <code>optional int64 maximum = 3;</code>
+       * @return The maximum.
+       */
+      @java.lang.Override
+      public long getMaximum() {
+        return maximum_;
+      }
+      /**
+       * <code>optional int64 maximum = 3;</code>
+       * @param value The maximum to set.
+       * @return This builder for chaining.
+       */
+      public Builder setMaximum(long value) {
+
+        maximum_ = value;
+        bitField0_ |= 0x00000004;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 maximum = 3;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearMaximum() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        maximum_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      private long count_ ;
+      /**
+       * <code>optional int64 count = 4;</code>
+       * @return Whether the count field is set.
+       */
+      @java.lang.Override
+      public boolean hasCount() {
+        return ((bitField0_ & 0x00000008) != 0);
+      }
+      /**
+       * <code>optional int64 count = 4;</code>
+       * @return The count.
+       */
+      @java.lang.Override
+      public long getCount() {
+        return count_;
+      }
+      /**
+       * <code>optional int64 count = 4;</code>
+       * @param value The count to set.
+       * @return This builder for chaining.
+       */
+      public Builder setCount(long value) {
+
+        count_ = value;
+        bitField0_ |= 0x00000008;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 count = 4;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearCount() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        count_ = 0L;
+        onChanged();
+        return this;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution)
+    }
+
+    // @@protoc_insertion_point(class_scope:com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution)
+    private static final com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution();
+    }
+
+    public static com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<MediaDistribution>
+        PARSER = new com.google.protobuf.AbstractParser<MediaDistribution>() {
+      @java.lang.Override
+      public MediaDistribution parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
+      }
+    };
+
+    public static com.google.protobuf.Parser<MediaDistribution> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<MediaDistribution> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface MediaStatsOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:com.andrerinas.openheadunit.aap.protocol.proto.MediaStats)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDuration observation_window = 1;</code>
+     * @return Whether the observationWindow field is set.
+     */
+    boolean hasObservationWindow();
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDuration observation_window = 1;</code>
+     * @return The observationWindow.
+     */
+    com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDuration getObservationWindow();
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDuration observation_window = 1;</code>
+     */
+    com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDurationOrBuilder getObservationWindowOrBuilder();
+
+    /**
+     * <code>optional int64 frames = 2;</code>
+     * @return Whether the frames field is set.
+     */
+    boolean hasFrames();
+    /**
+     * <code>optional int64 frames = 2;</code>
+     * @return The frames.
+     */
+    long getFrames();
+
+    /**
+     * <code>optional int64 audio_overflow_count = 3;</code>
+     * @return Whether the audioOverflowCount field is set.
+     */
+    boolean hasAudioOverflowCount();
+    /**
+     * <code>optional int64 audio_overflow_count = 3;</code>
+     * @return The audioOverflowCount.
+     */
+    long getAudioOverflowCount();
+
+    /**
+     * <code>optional int64 audio_underrun_count = 4;</code>
+     * @return Whether the audioUnderrunCount field is set.
+     */
+    boolean hasAudioUnderrunCount();
+    /**
+     * <code>optional int64 audio_underrun_count = 4;</code>
+     * @return The audioUnderrunCount.
+     */
+    long getAudioUnderrunCount();
+
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution estimated_audio_buffer_us = 5;</code>
+     * @return Whether the estimatedAudioBufferUs field is set.
+     */
+    boolean hasEstimatedAudioBufferUs();
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution estimated_audio_buffer_us = 5;</code>
+     * @return The estimatedAudioBufferUs.
+     */
+    com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution getEstimatedAudioBufferUs();
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution estimated_audio_buffer_us = 5;</code>
+     */
+    com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder getEstimatedAudioBufferUsOrBuilder();
+
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution av_lag_us = 6;</code>
+     * @return Whether the avLagUs field is set.
+     */
+    boolean hasAvLagUs();
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution av_lag_us = 6;</code>
+     * @return The avLagUs.
+     */
+    com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution getAvLagUs();
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution av_lag_us = 6;</code>
+     */
+    com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder getAvLagUsOrBuilder();
+
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution audio_delay_us = 7;</code>
+     * @return Whether the audioDelayUs field is set.
+     */
+    boolean hasAudioDelayUs();
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution audio_delay_us = 7;</code>
+     * @return The audioDelayUs.
+     */
+    com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution getAudioDelayUs();
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution audio_delay_us = 7;</code>
+     */
+    com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder getAudioDelayUsOrBuilder();
+
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_delay_us = 8;</code>
+     * @return Whether the videoDelayUs field is set.
+     */
+    boolean hasVideoDelayUs();
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_delay_us = 8;</code>
+     * @return The videoDelayUs.
+     */
+    com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution getVideoDelayUs();
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_delay_us = 8;</code>
+     */
+    com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder getVideoDelayUsOrBuilder();
+
+    /**
+     * <code>optional int64 audio_output_latency_offset_us = 9;</code>
+     * @return Whether the audioOutputLatencyOffsetUs field is set.
+     */
+    boolean hasAudioOutputLatencyOffsetUs();
+    /**
+     * <code>optional int64 audio_output_latency_offset_us = 9;</code>
+     * @return The audioOutputLatencyOffsetUs.
+     */
+    long getAudioOutputLatencyOffsetUs();
+
+    /**
+     * <code>optional int64 video_overflow_count = 10;</code>
+     * @return Whether the videoOverflowCount field is set.
+     */
+    boolean hasVideoOverflowCount();
+    /**
+     * <code>optional int64 video_overflow_count = 10;</code>
+     * @return The videoOverflowCount.
+     */
+    long getVideoOverflowCount();
+
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_overflow_duration_us = 11;</code>
+     * @return Whether the videoOverflowDurationUs field is set.
+     */
+    boolean hasVideoOverflowDurationUs();
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_overflow_duration_us = 11;</code>
+     * @return The videoOverflowDurationUs.
+     */
+    com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution getVideoOverflowDurationUs();
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_overflow_duration_us = 11;</code>
+     */
+    com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder getVideoOverflowDurationUsOrBuilder();
+
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_frame_jitter_us = 12;</code>
+     * @return Whether the videoFrameJitterUs field is set.
+     */
+    boolean hasVideoFrameJitterUs();
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_frame_jitter_us = 12;</code>
+     * @return The videoFrameJitterUs.
+     */
+    com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution getVideoFrameJitterUs();
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_frame_jitter_us = 12;</code>
+     */
+    com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder getVideoFrameJitterUsOrBuilder();
+
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_pacing_delay_us = 13;</code>
+     * @return Whether the videoPacingDelayUs field is set.
+     */
+    boolean hasVideoPacingDelayUs();
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_pacing_delay_us = 13;</code>
+     * @return The videoPacingDelayUs.
+     */
+    com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution getVideoPacingDelayUs();
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_pacing_delay_us = 13;</code>
+     */
+    com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder getVideoPacingDelayUsOrBuilder();
+
+    /**
+     * <code>optional int64 too_fast_frames = 14;</code>
+     * @return Whether the tooFastFrames field is set.
+     */
+    boolean hasTooFastFrames();
+    /**
+     * <code>optional int64 too_fast_frames = 14;</code>
+     * @return The tooFastFrames.
+     */
+    long getTooFastFrames();
+
+    /**
+     * <code>optional int64 too_slow_frames = 15;</code>
+     * @return Whether the tooSlowFrames field is set.
+     */
+    boolean hasTooSlowFrames();
+    /**
+     * <code>optional int64 too_slow_frames = 15;</code>
+     * @return The tooSlowFrames.
+     */
+    long getTooSlowFrames();
+  }
+  /**
+   * <pre>
+   * All fields are optional. Omit an unmeasured metric instead of reporting a synthetic zero.
+   * The phone's jqn.a dispatch maps wire 0x8013 to this schema (its enum helper adds one).
+   * </pre>
+   *
+   * Protobuf type {@code com.andrerinas.openheadunit.aap.protocol.proto.MediaStats}
+   */
+  public static final class MediaStats extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:com.andrerinas.openheadunit.aap.protocol.proto.MediaStats)
+      MediaStatsOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use MediaStats.newBuilder() to construct.
+    private MediaStats(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private MediaStats() {
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new MediaStats();
+    }
+
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return com.andrerinas.openheadunit.aap.protocol.proto.Media.internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MediaStats_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.andrerinas.openheadunit.aap.protocol.proto.Media.internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MediaStats_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats.class, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats.Builder.class);
+    }
+
+    private int bitField0_;
+    public static final int OBSERVATION_WINDOW_FIELD_NUMBER = 1;
+    private com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDuration observationWindow_;
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDuration observation_window = 1;</code>
+     * @return Whether the observationWindow field is set.
+     */
+    @java.lang.Override
+    public boolean hasObservationWindow() {
+      return ((bitField0_ & 0x00000001) != 0);
+    }
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDuration observation_window = 1;</code>
+     * @return The observationWindow.
+     */
+    @java.lang.Override
+    public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDuration getObservationWindow() {
+      return observationWindow_ == null ? com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDuration.getDefaultInstance() : observationWindow_;
+    }
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDuration observation_window = 1;</code>
+     */
+    @java.lang.Override
+    public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDurationOrBuilder getObservationWindowOrBuilder() {
+      return observationWindow_ == null ? com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDuration.getDefaultInstance() : observationWindow_;
+    }
+
+    public static final int FRAMES_FIELD_NUMBER = 2;
+    private long frames_ = 0L;
+    /**
+     * <code>optional int64 frames = 2;</code>
+     * @return Whether the frames field is set.
+     */
+    @java.lang.Override
+    public boolean hasFrames() {
+      return ((bitField0_ & 0x00000002) != 0);
+    }
+    /**
+     * <code>optional int64 frames = 2;</code>
+     * @return The frames.
+     */
+    @java.lang.Override
+    public long getFrames() {
+      return frames_;
+    }
+
+    public static final int AUDIO_OVERFLOW_COUNT_FIELD_NUMBER = 3;
+    private long audioOverflowCount_ = 0L;
+    /**
+     * <code>optional int64 audio_overflow_count = 3;</code>
+     * @return Whether the audioOverflowCount field is set.
+     */
+    @java.lang.Override
+    public boolean hasAudioOverflowCount() {
+      return ((bitField0_ & 0x00000004) != 0);
+    }
+    /**
+     * <code>optional int64 audio_overflow_count = 3;</code>
+     * @return The audioOverflowCount.
+     */
+    @java.lang.Override
+    public long getAudioOverflowCount() {
+      return audioOverflowCount_;
+    }
+
+    public static final int AUDIO_UNDERRUN_COUNT_FIELD_NUMBER = 4;
+    private long audioUnderrunCount_ = 0L;
+    /**
+     * <code>optional int64 audio_underrun_count = 4;</code>
+     * @return Whether the audioUnderrunCount field is set.
+     */
+    @java.lang.Override
+    public boolean hasAudioUnderrunCount() {
+      return ((bitField0_ & 0x00000008) != 0);
+    }
+    /**
+     * <code>optional int64 audio_underrun_count = 4;</code>
+     * @return The audioUnderrunCount.
+     */
+    @java.lang.Override
+    public long getAudioUnderrunCount() {
+      return audioUnderrunCount_;
+    }
+
+    public static final int ESTIMATED_AUDIO_BUFFER_US_FIELD_NUMBER = 5;
+    private com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution estimatedAudioBufferUs_;
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution estimated_audio_buffer_us = 5;</code>
+     * @return Whether the estimatedAudioBufferUs field is set.
+     */
+    @java.lang.Override
+    public boolean hasEstimatedAudioBufferUs() {
+      return ((bitField0_ & 0x00000010) != 0);
+    }
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution estimated_audio_buffer_us = 5;</code>
+     * @return The estimatedAudioBufferUs.
+     */
+    @java.lang.Override
+    public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution getEstimatedAudioBufferUs() {
+      return estimatedAudioBufferUs_ == null ? com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance() : estimatedAudioBufferUs_;
+    }
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution estimated_audio_buffer_us = 5;</code>
+     */
+    @java.lang.Override
+    public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder getEstimatedAudioBufferUsOrBuilder() {
+      return estimatedAudioBufferUs_ == null ? com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance() : estimatedAudioBufferUs_;
+    }
+
+    public static final int AV_LAG_US_FIELD_NUMBER = 6;
+    private com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution avLagUs_;
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution av_lag_us = 6;</code>
+     * @return Whether the avLagUs field is set.
+     */
+    @java.lang.Override
+    public boolean hasAvLagUs() {
+      return ((bitField0_ & 0x00000020) != 0);
+    }
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution av_lag_us = 6;</code>
+     * @return The avLagUs.
+     */
+    @java.lang.Override
+    public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution getAvLagUs() {
+      return avLagUs_ == null ? com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance() : avLagUs_;
+    }
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution av_lag_us = 6;</code>
+     */
+    @java.lang.Override
+    public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder getAvLagUsOrBuilder() {
+      return avLagUs_ == null ? com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance() : avLagUs_;
+    }
+
+    public static final int AUDIO_DELAY_US_FIELD_NUMBER = 7;
+    private com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution audioDelayUs_;
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution audio_delay_us = 7;</code>
+     * @return Whether the audioDelayUs field is set.
+     */
+    @java.lang.Override
+    public boolean hasAudioDelayUs() {
+      return ((bitField0_ & 0x00000040) != 0);
+    }
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution audio_delay_us = 7;</code>
+     * @return The audioDelayUs.
+     */
+    @java.lang.Override
+    public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution getAudioDelayUs() {
+      return audioDelayUs_ == null ? com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance() : audioDelayUs_;
+    }
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution audio_delay_us = 7;</code>
+     */
+    @java.lang.Override
+    public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder getAudioDelayUsOrBuilder() {
+      return audioDelayUs_ == null ? com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance() : audioDelayUs_;
+    }
+
+    public static final int VIDEO_DELAY_US_FIELD_NUMBER = 8;
+    private com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution videoDelayUs_;
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_delay_us = 8;</code>
+     * @return Whether the videoDelayUs field is set.
+     */
+    @java.lang.Override
+    public boolean hasVideoDelayUs() {
+      return ((bitField0_ & 0x00000080) != 0);
+    }
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_delay_us = 8;</code>
+     * @return The videoDelayUs.
+     */
+    @java.lang.Override
+    public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution getVideoDelayUs() {
+      return videoDelayUs_ == null ? com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance() : videoDelayUs_;
+    }
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_delay_us = 8;</code>
+     */
+    @java.lang.Override
+    public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder getVideoDelayUsOrBuilder() {
+      return videoDelayUs_ == null ? com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance() : videoDelayUs_;
+    }
+
+    public static final int AUDIO_OUTPUT_LATENCY_OFFSET_US_FIELD_NUMBER = 9;
+    private long audioOutputLatencyOffsetUs_ = 0L;
+    /**
+     * <code>optional int64 audio_output_latency_offset_us = 9;</code>
+     * @return Whether the audioOutputLatencyOffsetUs field is set.
+     */
+    @java.lang.Override
+    public boolean hasAudioOutputLatencyOffsetUs() {
+      return ((bitField0_ & 0x00000100) != 0);
+    }
+    /**
+     * <code>optional int64 audio_output_latency_offset_us = 9;</code>
+     * @return The audioOutputLatencyOffsetUs.
+     */
+    @java.lang.Override
+    public long getAudioOutputLatencyOffsetUs() {
+      return audioOutputLatencyOffsetUs_;
+    }
+
+    public static final int VIDEO_OVERFLOW_COUNT_FIELD_NUMBER = 10;
+    private long videoOverflowCount_ = 0L;
+    /**
+     * <code>optional int64 video_overflow_count = 10;</code>
+     * @return Whether the videoOverflowCount field is set.
+     */
+    @java.lang.Override
+    public boolean hasVideoOverflowCount() {
+      return ((bitField0_ & 0x00000200) != 0);
+    }
+    /**
+     * <code>optional int64 video_overflow_count = 10;</code>
+     * @return The videoOverflowCount.
+     */
+    @java.lang.Override
+    public long getVideoOverflowCount() {
+      return videoOverflowCount_;
+    }
+
+    public static final int VIDEO_OVERFLOW_DURATION_US_FIELD_NUMBER = 11;
+    private com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution videoOverflowDurationUs_;
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_overflow_duration_us = 11;</code>
+     * @return Whether the videoOverflowDurationUs field is set.
+     */
+    @java.lang.Override
+    public boolean hasVideoOverflowDurationUs() {
+      return ((bitField0_ & 0x00000400) != 0);
+    }
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_overflow_duration_us = 11;</code>
+     * @return The videoOverflowDurationUs.
+     */
+    @java.lang.Override
+    public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution getVideoOverflowDurationUs() {
+      return videoOverflowDurationUs_ == null ? com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance() : videoOverflowDurationUs_;
+    }
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_overflow_duration_us = 11;</code>
+     */
+    @java.lang.Override
+    public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder getVideoOverflowDurationUsOrBuilder() {
+      return videoOverflowDurationUs_ == null ? com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance() : videoOverflowDurationUs_;
+    }
+
+    public static final int VIDEO_FRAME_JITTER_US_FIELD_NUMBER = 12;
+    private com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution videoFrameJitterUs_;
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_frame_jitter_us = 12;</code>
+     * @return Whether the videoFrameJitterUs field is set.
+     */
+    @java.lang.Override
+    public boolean hasVideoFrameJitterUs() {
+      return ((bitField0_ & 0x00000800) != 0);
+    }
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_frame_jitter_us = 12;</code>
+     * @return The videoFrameJitterUs.
+     */
+    @java.lang.Override
+    public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution getVideoFrameJitterUs() {
+      return videoFrameJitterUs_ == null ? com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance() : videoFrameJitterUs_;
+    }
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_frame_jitter_us = 12;</code>
+     */
+    @java.lang.Override
+    public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder getVideoFrameJitterUsOrBuilder() {
+      return videoFrameJitterUs_ == null ? com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance() : videoFrameJitterUs_;
+    }
+
+    public static final int VIDEO_PACING_DELAY_US_FIELD_NUMBER = 13;
+    private com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution videoPacingDelayUs_;
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_pacing_delay_us = 13;</code>
+     * @return Whether the videoPacingDelayUs field is set.
+     */
+    @java.lang.Override
+    public boolean hasVideoPacingDelayUs() {
+      return ((bitField0_ & 0x00001000) != 0);
+    }
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_pacing_delay_us = 13;</code>
+     * @return The videoPacingDelayUs.
+     */
+    @java.lang.Override
+    public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution getVideoPacingDelayUs() {
+      return videoPacingDelayUs_ == null ? com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance() : videoPacingDelayUs_;
+    }
+    /**
+     * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_pacing_delay_us = 13;</code>
+     */
+    @java.lang.Override
+    public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder getVideoPacingDelayUsOrBuilder() {
+      return videoPacingDelayUs_ == null ? com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance() : videoPacingDelayUs_;
+    }
+
+    public static final int TOO_FAST_FRAMES_FIELD_NUMBER = 14;
+    private long tooFastFrames_ = 0L;
+    /**
+     * <code>optional int64 too_fast_frames = 14;</code>
+     * @return Whether the tooFastFrames field is set.
+     */
+    @java.lang.Override
+    public boolean hasTooFastFrames() {
+      return ((bitField0_ & 0x00002000) != 0);
+    }
+    /**
+     * <code>optional int64 too_fast_frames = 14;</code>
+     * @return The tooFastFrames.
+     */
+    @java.lang.Override
+    public long getTooFastFrames() {
+      return tooFastFrames_;
+    }
+
+    public static final int TOO_SLOW_FRAMES_FIELD_NUMBER = 15;
+    private long tooSlowFrames_ = 0L;
+    /**
+     * <code>optional int64 too_slow_frames = 15;</code>
+     * @return Whether the tooSlowFrames field is set.
+     */
+    @java.lang.Override
+    public boolean hasTooSlowFrames() {
+      return ((bitField0_ & 0x00004000) != 0);
+    }
+    /**
+     * <code>optional int64 too_slow_frames = 15;</code>
+     * @return The tooSlowFrames.
+     */
+    @java.lang.Override
+    public long getTooSlowFrames() {
+      return tooSlowFrames_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (((bitField0_ & 0x00000001) != 0)) {
+        output.writeMessage(1, getObservationWindow());
+      }
+      if (((bitField0_ & 0x00000002) != 0)) {
+        output.writeInt64(2, frames_);
+      }
+      if (((bitField0_ & 0x00000004) != 0)) {
+        output.writeInt64(3, audioOverflowCount_);
+      }
+      if (((bitField0_ & 0x00000008) != 0)) {
+        output.writeInt64(4, audioUnderrunCount_);
+      }
+      if (((bitField0_ & 0x00000010) != 0)) {
+        output.writeMessage(5, getEstimatedAudioBufferUs());
+      }
+      if (((bitField0_ & 0x00000020) != 0)) {
+        output.writeMessage(6, getAvLagUs());
+      }
+      if (((bitField0_ & 0x00000040) != 0)) {
+        output.writeMessage(7, getAudioDelayUs());
+      }
+      if (((bitField0_ & 0x00000080) != 0)) {
+        output.writeMessage(8, getVideoDelayUs());
+      }
+      if (((bitField0_ & 0x00000100) != 0)) {
+        output.writeInt64(9, audioOutputLatencyOffsetUs_);
+      }
+      if (((bitField0_ & 0x00000200) != 0)) {
+        output.writeInt64(10, videoOverflowCount_);
+      }
+      if (((bitField0_ & 0x00000400) != 0)) {
+        output.writeMessage(11, getVideoOverflowDurationUs());
+      }
+      if (((bitField0_ & 0x00000800) != 0)) {
+        output.writeMessage(12, getVideoFrameJitterUs());
+      }
+      if (((bitField0_ & 0x00001000) != 0)) {
+        output.writeMessage(13, getVideoPacingDelayUs());
+      }
+      if (((bitField0_ & 0x00002000) != 0)) {
+        output.writeInt64(14, tooFastFrames_);
+      }
+      if (((bitField0_ & 0x00004000) != 0)) {
+        output.writeInt64(15, tooSlowFrames_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, getObservationWindow());
+      }
+      if (((bitField0_ & 0x00000002) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(2, frames_);
+      }
+      if (((bitField0_ & 0x00000004) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(3, audioOverflowCount_);
+      }
+      if (((bitField0_ & 0x00000008) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(4, audioUnderrunCount_);
+      }
+      if (((bitField0_ & 0x00000010) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(5, getEstimatedAudioBufferUs());
+      }
+      if (((bitField0_ & 0x00000020) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(6, getAvLagUs());
+      }
+      if (((bitField0_ & 0x00000040) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(7, getAudioDelayUs());
+      }
+      if (((bitField0_ & 0x00000080) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(8, getVideoDelayUs());
+      }
+      if (((bitField0_ & 0x00000100) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(9, audioOutputLatencyOffsetUs_);
+      }
+      if (((bitField0_ & 0x00000200) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(10, videoOverflowCount_);
+      }
+      if (((bitField0_ & 0x00000400) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(11, getVideoOverflowDurationUs());
+      }
+      if (((bitField0_ & 0x00000800) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(12, getVideoFrameJitterUs());
+      }
+      if (((bitField0_ & 0x00001000) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(13, getVideoPacingDelayUs());
+      }
+      if (((bitField0_ & 0x00002000) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(14, tooFastFrames_);
+      }
+      if (((bitField0_ & 0x00004000) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(15, tooSlowFrames_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats)) {
+        return super.equals(obj);
+      }
+      com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats other = (com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats) obj;
+
+      if (hasObservationWindow() != other.hasObservationWindow()) return false;
+      if (hasObservationWindow()) {
+        if (!getObservationWindow()
+            .equals(other.getObservationWindow())) return false;
+      }
+      if (hasFrames() != other.hasFrames()) return false;
+      if (hasFrames()) {
+        if (getFrames()
+            != other.getFrames()) return false;
+      }
+      if (hasAudioOverflowCount() != other.hasAudioOverflowCount()) return false;
+      if (hasAudioOverflowCount()) {
+        if (getAudioOverflowCount()
+            != other.getAudioOverflowCount()) return false;
+      }
+      if (hasAudioUnderrunCount() != other.hasAudioUnderrunCount()) return false;
+      if (hasAudioUnderrunCount()) {
+        if (getAudioUnderrunCount()
+            != other.getAudioUnderrunCount()) return false;
+      }
+      if (hasEstimatedAudioBufferUs() != other.hasEstimatedAudioBufferUs()) return false;
+      if (hasEstimatedAudioBufferUs()) {
+        if (!getEstimatedAudioBufferUs()
+            .equals(other.getEstimatedAudioBufferUs())) return false;
+      }
+      if (hasAvLagUs() != other.hasAvLagUs()) return false;
+      if (hasAvLagUs()) {
+        if (!getAvLagUs()
+            .equals(other.getAvLagUs())) return false;
+      }
+      if (hasAudioDelayUs() != other.hasAudioDelayUs()) return false;
+      if (hasAudioDelayUs()) {
+        if (!getAudioDelayUs()
+            .equals(other.getAudioDelayUs())) return false;
+      }
+      if (hasVideoDelayUs() != other.hasVideoDelayUs()) return false;
+      if (hasVideoDelayUs()) {
+        if (!getVideoDelayUs()
+            .equals(other.getVideoDelayUs())) return false;
+      }
+      if (hasAudioOutputLatencyOffsetUs() != other.hasAudioOutputLatencyOffsetUs()) return false;
+      if (hasAudioOutputLatencyOffsetUs()) {
+        if (getAudioOutputLatencyOffsetUs()
+            != other.getAudioOutputLatencyOffsetUs()) return false;
+      }
+      if (hasVideoOverflowCount() != other.hasVideoOverflowCount()) return false;
+      if (hasVideoOverflowCount()) {
+        if (getVideoOverflowCount()
+            != other.getVideoOverflowCount()) return false;
+      }
+      if (hasVideoOverflowDurationUs() != other.hasVideoOverflowDurationUs()) return false;
+      if (hasVideoOverflowDurationUs()) {
+        if (!getVideoOverflowDurationUs()
+            .equals(other.getVideoOverflowDurationUs())) return false;
+      }
+      if (hasVideoFrameJitterUs() != other.hasVideoFrameJitterUs()) return false;
+      if (hasVideoFrameJitterUs()) {
+        if (!getVideoFrameJitterUs()
+            .equals(other.getVideoFrameJitterUs())) return false;
+      }
+      if (hasVideoPacingDelayUs() != other.hasVideoPacingDelayUs()) return false;
+      if (hasVideoPacingDelayUs()) {
+        if (!getVideoPacingDelayUs()
+            .equals(other.getVideoPacingDelayUs())) return false;
+      }
+      if (hasTooFastFrames() != other.hasTooFastFrames()) return false;
+      if (hasTooFastFrames()) {
+        if (getTooFastFrames()
+            != other.getTooFastFrames()) return false;
+      }
+      if (hasTooSlowFrames() != other.hasTooSlowFrames()) return false;
+      if (hasTooSlowFrames()) {
+        if (getTooSlowFrames()
+            != other.getTooSlowFrames()) return false;
+      }
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      if (hasObservationWindow()) {
+        hash = (37 * hash) + OBSERVATION_WINDOW_FIELD_NUMBER;
+        hash = (53 * hash) + getObservationWindow().hashCode();
+      }
+      if (hasFrames()) {
+        hash = (37 * hash) + FRAMES_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            getFrames());
+      }
+      if (hasAudioOverflowCount()) {
+        hash = (37 * hash) + AUDIO_OVERFLOW_COUNT_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            getAudioOverflowCount());
+      }
+      if (hasAudioUnderrunCount()) {
+        hash = (37 * hash) + AUDIO_UNDERRUN_COUNT_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            getAudioUnderrunCount());
+      }
+      if (hasEstimatedAudioBufferUs()) {
+        hash = (37 * hash) + ESTIMATED_AUDIO_BUFFER_US_FIELD_NUMBER;
+        hash = (53 * hash) + getEstimatedAudioBufferUs().hashCode();
+      }
+      if (hasAvLagUs()) {
+        hash = (37 * hash) + AV_LAG_US_FIELD_NUMBER;
+        hash = (53 * hash) + getAvLagUs().hashCode();
+      }
+      if (hasAudioDelayUs()) {
+        hash = (37 * hash) + AUDIO_DELAY_US_FIELD_NUMBER;
+        hash = (53 * hash) + getAudioDelayUs().hashCode();
+      }
+      if (hasVideoDelayUs()) {
+        hash = (37 * hash) + VIDEO_DELAY_US_FIELD_NUMBER;
+        hash = (53 * hash) + getVideoDelayUs().hashCode();
+      }
+      if (hasAudioOutputLatencyOffsetUs()) {
+        hash = (37 * hash) + AUDIO_OUTPUT_LATENCY_OFFSET_US_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            getAudioOutputLatencyOffsetUs());
+      }
+      if (hasVideoOverflowCount()) {
+        hash = (37 * hash) + VIDEO_OVERFLOW_COUNT_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            getVideoOverflowCount());
+      }
+      if (hasVideoOverflowDurationUs()) {
+        hash = (37 * hash) + VIDEO_OVERFLOW_DURATION_US_FIELD_NUMBER;
+        hash = (53 * hash) + getVideoOverflowDurationUs().hashCode();
+      }
+      if (hasVideoFrameJitterUs()) {
+        hash = (37 * hash) + VIDEO_FRAME_JITTER_US_FIELD_NUMBER;
+        hash = (53 * hash) + getVideoFrameJitterUs().hashCode();
+      }
+      if (hasVideoPacingDelayUs()) {
+        hash = (37 * hash) + VIDEO_PACING_DELAY_US_FIELD_NUMBER;
+        hash = (53 * hash) + getVideoPacingDelayUs().hashCode();
+      }
+      if (hasTooFastFrames()) {
+        hash = (37 * hash) + TOO_FAST_FRAMES_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            getTooFastFrames());
+      }
+      if (hasTooSlowFrames()) {
+        hash = (37 * hash) + TOO_SLOW_FRAMES_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            getTooSlowFrames());
+      }
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+
+    public static com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * <pre>
+     * All fields are optional. Omit an unmeasured metric instead of reporting a synthetic zero.
+     * The phone's jqn.a dispatch maps wire 0x8013 to this schema (its enum helper adds one).
+     * </pre>
+     *
+     * Protobuf type {@code com.andrerinas.openheadunit.aap.protocol.proto.MediaStats}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:com.andrerinas.openheadunit.aap.protocol.proto.MediaStats)
+        com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStatsOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return com.andrerinas.openheadunit.aap.protocol.proto.Media.internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MediaStats_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return com.andrerinas.openheadunit.aap.protocol.proto.Media.internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MediaStats_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats.class, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats.Builder.class);
+      }
+
+      // Construct using com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+          getObservationWindowFieldBuilder();
+          getEstimatedAudioBufferUsFieldBuilder();
+          getAvLagUsFieldBuilder();
+          getAudioDelayUsFieldBuilder();
+          getVideoDelayUsFieldBuilder();
+          getVideoOverflowDurationUsFieldBuilder();
+          getVideoFrameJitterUsFieldBuilder();
+          getVideoPacingDelayUsFieldBuilder();
+        }
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        bitField0_ = 0;
+        observationWindow_ = null;
+        if (observationWindowBuilder_ != null) {
+          observationWindowBuilder_.dispose();
+          observationWindowBuilder_ = null;
+        }
+        frames_ = 0L;
+        audioOverflowCount_ = 0L;
+        audioUnderrunCount_ = 0L;
+        estimatedAudioBufferUs_ = null;
+        if (estimatedAudioBufferUsBuilder_ != null) {
+          estimatedAudioBufferUsBuilder_.dispose();
+          estimatedAudioBufferUsBuilder_ = null;
+        }
+        avLagUs_ = null;
+        if (avLagUsBuilder_ != null) {
+          avLagUsBuilder_.dispose();
+          avLagUsBuilder_ = null;
+        }
+        audioDelayUs_ = null;
+        if (audioDelayUsBuilder_ != null) {
+          audioDelayUsBuilder_.dispose();
+          audioDelayUsBuilder_ = null;
+        }
+        videoDelayUs_ = null;
+        if (videoDelayUsBuilder_ != null) {
+          videoDelayUsBuilder_.dispose();
+          videoDelayUsBuilder_ = null;
+        }
+        audioOutputLatencyOffsetUs_ = 0L;
+        videoOverflowCount_ = 0L;
+        videoOverflowDurationUs_ = null;
+        if (videoOverflowDurationUsBuilder_ != null) {
+          videoOverflowDurationUsBuilder_.dispose();
+          videoOverflowDurationUsBuilder_ = null;
+        }
+        videoFrameJitterUs_ = null;
+        if (videoFrameJitterUsBuilder_ != null) {
+          videoFrameJitterUsBuilder_.dispose();
+          videoFrameJitterUsBuilder_ = null;
+        }
+        videoPacingDelayUs_ = null;
+        if (videoPacingDelayUsBuilder_ != null) {
+          videoPacingDelayUsBuilder_.dispose();
+          videoPacingDelayUsBuilder_ = null;
+        }
+        tooFastFrames_ = 0L;
+        tooSlowFrames_ = 0L;
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return com.andrerinas.openheadunit.aap.protocol.proto.Media.internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MediaStats_descriptor;
+      }
+
+      @java.lang.Override
+      public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats getDefaultInstanceForType() {
+        return com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats build() {
+        com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats buildPartial() {
+        com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats result = new com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats(this);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartial0(com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats result) {
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.observationWindow_ = observationWindowBuilder_ == null
+              ? observationWindow_
+              : observationWindowBuilder_.build();
+          to_bitField0_ |= 0x00000001;
+        }
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.frames_ = frames_;
+          to_bitField0_ |= 0x00000002;
+        }
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          result.audioOverflowCount_ = audioOverflowCount_;
+          to_bitField0_ |= 0x00000004;
+        }
+        if (((from_bitField0_ & 0x00000008) != 0)) {
+          result.audioUnderrunCount_ = audioUnderrunCount_;
+          to_bitField0_ |= 0x00000008;
+        }
+        if (((from_bitField0_ & 0x00000010) != 0)) {
+          result.estimatedAudioBufferUs_ = estimatedAudioBufferUsBuilder_ == null
+              ? estimatedAudioBufferUs_
+              : estimatedAudioBufferUsBuilder_.build();
+          to_bitField0_ |= 0x00000010;
+        }
+        if (((from_bitField0_ & 0x00000020) != 0)) {
+          result.avLagUs_ = avLagUsBuilder_ == null
+              ? avLagUs_
+              : avLagUsBuilder_.build();
+          to_bitField0_ |= 0x00000020;
+        }
+        if (((from_bitField0_ & 0x00000040) != 0)) {
+          result.audioDelayUs_ = audioDelayUsBuilder_ == null
+              ? audioDelayUs_
+              : audioDelayUsBuilder_.build();
+          to_bitField0_ |= 0x00000040;
+        }
+        if (((from_bitField0_ & 0x00000080) != 0)) {
+          result.videoDelayUs_ = videoDelayUsBuilder_ == null
+              ? videoDelayUs_
+              : videoDelayUsBuilder_.build();
+          to_bitField0_ |= 0x00000080;
+        }
+        if (((from_bitField0_ & 0x00000100) != 0)) {
+          result.audioOutputLatencyOffsetUs_ = audioOutputLatencyOffsetUs_;
+          to_bitField0_ |= 0x00000100;
+        }
+        if (((from_bitField0_ & 0x00000200) != 0)) {
+          result.videoOverflowCount_ = videoOverflowCount_;
+          to_bitField0_ |= 0x00000200;
+        }
+        if (((from_bitField0_ & 0x00000400) != 0)) {
+          result.videoOverflowDurationUs_ = videoOverflowDurationUsBuilder_ == null
+              ? videoOverflowDurationUs_
+              : videoOverflowDurationUsBuilder_.build();
+          to_bitField0_ |= 0x00000400;
+        }
+        if (((from_bitField0_ & 0x00000800) != 0)) {
+          result.videoFrameJitterUs_ = videoFrameJitterUsBuilder_ == null
+              ? videoFrameJitterUs_
+              : videoFrameJitterUsBuilder_.build();
+          to_bitField0_ |= 0x00000800;
+        }
+        if (((from_bitField0_ & 0x00001000) != 0)) {
+          result.videoPacingDelayUs_ = videoPacingDelayUsBuilder_ == null
+              ? videoPacingDelayUs_
+              : videoPacingDelayUsBuilder_.build();
+          to_bitField0_ |= 0x00001000;
+        }
+        if (((from_bitField0_ & 0x00002000) != 0)) {
+          result.tooFastFrames_ = tooFastFrames_;
+          to_bitField0_ |= 0x00002000;
+        }
+        if (((from_bitField0_ & 0x00004000) != 0)) {
+          result.tooSlowFrames_ = tooSlowFrames_;
+          to_bitField0_ |= 0x00004000;
+        }
+        result.bitField0_ |= to_bitField0_;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats) {
+          return mergeFrom((com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats other) {
+        if (other == com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats.getDefaultInstance()) return this;
+        if (other.hasObservationWindow()) {
+          mergeObservationWindow(other.getObservationWindow());
+        }
+        if (other.hasFrames()) {
+          setFrames(other.getFrames());
+        }
+        if (other.hasAudioOverflowCount()) {
+          setAudioOverflowCount(other.getAudioOverflowCount());
+        }
+        if (other.hasAudioUnderrunCount()) {
+          setAudioUnderrunCount(other.getAudioUnderrunCount());
+        }
+        if (other.hasEstimatedAudioBufferUs()) {
+          mergeEstimatedAudioBufferUs(other.getEstimatedAudioBufferUs());
+        }
+        if (other.hasAvLagUs()) {
+          mergeAvLagUs(other.getAvLagUs());
+        }
+        if (other.hasAudioDelayUs()) {
+          mergeAudioDelayUs(other.getAudioDelayUs());
+        }
+        if (other.hasVideoDelayUs()) {
+          mergeVideoDelayUs(other.getVideoDelayUs());
+        }
+        if (other.hasAudioOutputLatencyOffsetUs()) {
+          setAudioOutputLatencyOffsetUs(other.getAudioOutputLatencyOffsetUs());
+        }
+        if (other.hasVideoOverflowCount()) {
+          setVideoOverflowCount(other.getVideoOverflowCount());
+        }
+        if (other.hasVideoOverflowDurationUs()) {
+          mergeVideoOverflowDurationUs(other.getVideoOverflowDurationUs());
+        }
+        if (other.hasVideoFrameJitterUs()) {
+          mergeVideoFrameJitterUs(other.getVideoFrameJitterUs());
+        }
+        if (other.hasVideoPacingDelayUs()) {
+          mergeVideoPacingDelayUs(other.getVideoPacingDelayUs());
+        }
+        if (other.hasTooFastFrames()) {
+          setTooFastFrames(other.getTooFastFrames());
+        }
+        if (other.hasTooSlowFrames()) {
+          setTooSlowFrames(other.getTooSlowFrames());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10: {
+                input.readMessage(
+                    getObservationWindowFieldBuilder().getBuilder(),
+                    extensionRegistry);
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
+              case 16: {
+                frames_ = input.readInt64();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 16
+              case 24: {
+                audioOverflowCount_ = input.readInt64();
+                bitField0_ |= 0x00000004;
+                break;
+              } // case 24
+              case 32: {
+                audioUnderrunCount_ = input.readInt64();
+                bitField0_ |= 0x00000008;
+                break;
+              } // case 32
+              case 42: {
+                input.readMessage(
+                    getEstimatedAudioBufferUsFieldBuilder().getBuilder(),
+                    extensionRegistry);
+                bitField0_ |= 0x00000010;
+                break;
+              } // case 42
+              case 50: {
+                input.readMessage(
+                    getAvLagUsFieldBuilder().getBuilder(),
+                    extensionRegistry);
+                bitField0_ |= 0x00000020;
+                break;
+              } // case 50
+              case 58: {
+                input.readMessage(
+                    getAudioDelayUsFieldBuilder().getBuilder(),
+                    extensionRegistry);
+                bitField0_ |= 0x00000040;
+                break;
+              } // case 58
+              case 66: {
+                input.readMessage(
+                    getVideoDelayUsFieldBuilder().getBuilder(),
+                    extensionRegistry);
+                bitField0_ |= 0x00000080;
+                break;
+              } // case 66
+              case 72: {
+                audioOutputLatencyOffsetUs_ = input.readInt64();
+                bitField0_ |= 0x00000100;
+                break;
+              } // case 72
+              case 80: {
+                videoOverflowCount_ = input.readInt64();
+                bitField0_ |= 0x00000200;
+                break;
+              } // case 80
+              case 90: {
+                input.readMessage(
+                    getVideoOverflowDurationUsFieldBuilder().getBuilder(),
+                    extensionRegistry);
+                bitField0_ |= 0x00000400;
+                break;
+              } // case 90
+              case 98: {
+                input.readMessage(
+                    getVideoFrameJitterUsFieldBuilder().getBuilder(),
+                    extensionRegistry);
+                bitField0_ |= 0x00000800;
+                break;
+              } // case 98
+              case 106: {
+                input.readMessage(
+                    getVideoPacingDelayUsFieldBuilder().getBuilder(),
+                    extensionRegistry);
+                bitField0_ |= 0x00001000;
+                break;
+              } // case 106
+              case 112: {
+                tooFastFrames_ = input.readInt64();
+                bitField0_ |= 0x00002000;
+                break;
+              } // case 112
+              case 120: {
+                tooSlowFrames_ = input.readInt64();
+                bitField0_ |= 0x00004000;
+                break;
+              } // case 120
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
+        return this;
+      }
+      private int bitField0_;
+
+      private com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDuration observationWindow_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDuration, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDuration.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDurationOrBuilder> observationWindowBuilder_;
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDuration observation_window = 1;</code>
+       * @return Whether the observationWindow field is set.
+       */
+      public boolean hasObservationWindow() {
+        return ((bitField0_ & 0x00000001) != 0);
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDuration observation_window = 1;</code>
+       * @return The observationWindow.
+       */
+      public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDuration getObservationWindow() {
+        if (observationWindowBuilder_ == null) {
+          return observationWindow_ == null ? com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDuration.getDefaultInstance() : observationWindow_;
+        } else {
+          return observationWindowBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDuration observation_window = 1;</code>
+       */
+      public Builder setObservationWindow(com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDuration value) {
+        if (observationWindowBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          observationWindow_ = value;
+        } else {
+          observationWindowBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDuration observation_window = 1;</code>
+       */
+      public Builder setObservationWindow(
+          com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDuration.Builder builderForValue) {
+        if (observationWindowBuilder_ == null) {
+          observationWindow_ = builderForValue.build();
+        } else {
+          observationWindowBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDuration observation_window = 1;</code>
+       */
+      public Builder mergeObservationWindow(com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDuration value) {
+        if (observationWindowBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) != 0) &&
+            observationWindow_ != null &&
+            observationWindow_ != com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDuration.getDefaultInstance()) {
+            getObservationWindowBuilder().mergeFrom(value);
+          } else {
+            observationWindow_ = value;
+          }
+        } else {
+          observationWindowBuilder_.mergeFrom(value);
+        }
+        if (observationWindow_ != null) {
+          bitField0_ |= 0x00000001;
+          onChanged();
+        }
+        return this;
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDuration observation_window = 1;</code>
+       */
+      public Builder clearObservationWindow() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        observationWindow_ = null;
+        if (observationWindowBuilder_ != null) {
+          observationWindowBuilder_.dispose();
+          observationWindowBuilder_ = null;
+        }
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDuration observation_window = 1;</code>
+       */
+      public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDuration.Builder getObservationWindowBuilder() {
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return getObservationWindowFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDuration observation_window = 1;</code>
+       */
+      public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDurationOrBuilder getObservationWindowOrBuilder() {
+        if (observationWindowBuilder_ != null) {
+          return observationWindowBuilder_.getMessageOrBuilder();
+        } else {
+          return observationWindow_ == null ?
+              com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDuration.getDefaultInstance() : observationWindow_;
+        }
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDuration observation_window = 1;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDuration, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDuration.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDurationOrBuilder>
+          getObservationWindowFieldBuilder() {
+        if (observationWindowBuilder_ == null) {
+          observationWindowBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDuration, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDuration.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDurationOrBuilder>(
+                  getObservationWindow(),
+                  getParentForChildren(),
+                  isClean());
+          observationWindow_ = null;
+        }
+        return observationWindowBuilder_;
+      }
+
+      private long frames_ ;
+      /**
+       * <code>optional int64 frames = 2;</code>
+       * @return Whether the frames field is set.
+       */
+      @java.lang.Override
+      public boolean hasFrames() {
+        return ((bitField0_ & 0x00000002) != 0);
+      }
+      /**
+       * <code>optional int64 frames = 2;</code>
+       * @return The frames.
+       */
+      @java.lang.Override
+      public long getFrames() {
+        return frames_;
+      }
+      /**
+       * <code>optional int64 frames = 2;</code>
+       * @param value The frames to set.
+       * @return This builder for chaining.
+       */
+      public Builder setFrames(long value) {
+
+        frames_ = value;
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 frames = 2;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearFrames() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        frames_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      private long audioOverflowCount_ ;
+      /**
+       * <code>optional int64 audio_overflow_count = 3;</code>
+       * @return Whether the audioOverflowCount field is set.
+       */
+      @java.lang.Override
+      public boolean hasAudioOverflowCount() {
+        return ((bitField0_ & 0x00000004) != 0);
+      }
+      /**
+       * <code>optional int64 audio_overflow_count = 3;</code>
+       * @return The audioOverflowCount.
+       */
+      @java.lang.Override
+      public long getAudioOverflowCount() {
+        return audioOverflowCount_;
+      }
+      /**
+       * <code>optional int64 audio_overflow_count = 3;</code>
+       * @param value The audioOverflowCount to set.
+       * @return This builder for chaining.
+       */
+      public Builder setAudioOverflowCount(long value) {
+
+        audioOverflowCount_ = value;
+        bitField0_ |= 0x00000004;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 audio_overflow_count = 3;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearAudioOverflowCount() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        audioOverflowCount_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      private long audioUnderrunCount_ ;
+      /**
+       * <code>optional int64 audio_underrun_count = 4;</code>
+       * @return Whether the audioUnderrunCount field is set.
+       */
+      @java.lang.Override
+      public boolean hasAudioUnderrunCount() {
+        return ((bitField0_ & 0x00000008) != 0);
+      }
+      /**
+       * <code>optional int64 audio_underrun_count = 4;</code>
+       * @return The audioUnderrunCount.
+       */
+      @java.lang.Override
+      public long getAudioUnderrunCount() {
+        return audioUnderrunCount_;
+      }
+      /**
+       * <code>optional int64 audio_underrun_count = 4;</code>
+       * @param value The audioUnderrunCount to set.
+       * @return This builder for chaining.
+       */
+      public Builder setAudioUnderrunCount(long value) {
+
+        audioUnderrunCount_ = value;
+        bitField0_ |= 0x00000008;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 audio_underrun_count = 4;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearAudioUnderrunCount() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        audioUnderrunCount_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      private com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution estimatedAudioBufferUs_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder> estimatedAudioBufferUsBuilder_;
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution estimated_audio_buffer_us = 5;</code>
+       * @return Whether the estimatedAudioBufferUs field is set.
+       */
+      public boolean hasEstimatedAudioBufferUs() {
+        return ((bitField0_ & 0x00000010) != 0);
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution estimated_audio_buffer_us = 5;</code>
+       * @return The estimatedAudioBufferUs.
+       */
+      public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution getEstimatedAudioBufferUs() {
+        if (estimatedAudioBufferUsBuilder_ == null) {
+          return estimatedAudioBufferUs_ == null ? com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance() : estimatedAudioBufferUs_;
+        } else {
+          return estimatedAudioBufferUsBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution estimated_audio_buffer_us = 5;</code>
+       */
+      public Builder setEstimatedAudioBufferUs(com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution value) {
+        if (estimatedAudioBufferUsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          estimatedAudioBufferUs_ = value;
+        } else {
+          estimatedAudioBufferUsBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000010;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution estimated_audio_buffer_us = 5;</code>
+       */
+      public Builder setEstimatedAudioBufferUs(
+          com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder builderForValue) {
+        if (estimatedAudioBufferUsBuilder_ == null) {
+          estimatedAudioBufferUs_ = builderForValue.build();
+        } else {
+          estimatedAudioBufferUsBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000010;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution estimated_audio_buffer_us = 5;</code>
+       */
+      public Builder mergeEstimatedAudioBufferUs(com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution value) {
+        if (estimatedAudioBufferUsBuilder_ == null) {
+          if (((bitField0_ & 0x00000010) != 0) &&
+            estimatedAudioBufferUs_ != null &&
+            estimatedAudioBufferUs_ != com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance()) {
+            getEstimatedAudioBufferUsBuilder().mergeFrom(value);
+          } else {
+            estimatedAudioBufferUs_ = value;
+          }
+        } else {
+          estimatedAudioBufferUsBuilder_.mergeFrom(value);
+        }
+        if (estimatedAudioBufferUs_ != null) {
+          bitField0_ |= 0x00000010;
+          onChanged();
+        }
+        return this;
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution estimated_audio_buffer_us = 5;</code>
+       */
+      public Builder clearEstimatedAudioBufferUs() {
+        bitField0_ = (bitField0_ & ~0x00000010);
+        estimatedAudioBufferUs_ = null;
+        if (estimatedAudioBufferUsBuilder_ != null) {
+          estimatedAudioBufferUsBuilder_.dispose();
+          estimatedAudioBufferUsBuilder_ = null;
+        }
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution estimated_audio_buffer_us = 5;</code>
+       */
+      public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder getEstimatedAudioBufferUsBuilder() {
+        bitField0_ |= 0x00000010;
+        onChanged();
+        return getEstimatedAudioBufferUsFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution estimated_audio_buffer_us = 5;</code>
+       */
+      public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder getEstimatedAudioBufferUsOrBuilder() {
+        if (estimatedAudioBufferUsBuilder_ != null) {
+          return estimatedAudioBufferUsBuilder_.getMessageOrBuilder();
+        } else {
+          return estimatedAudioBufferUs_ == null ?
+              com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance() : estimatedAudioBufferUs_;
+        }
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution estimated_audio_buffer_us = 5;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder>
+          getEstimatedAudioBufferUsFieldBuilder() {
+        if (estimatedAudioBufferUsBuilder_ == null) {
+          estimatedAudioBufferUsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder>(
+                  getEstimatedAudioBufferUs(),
+                  getParentForChildren(),
+                  isClean());
+          estimatedAudioBufferUs_ = null;
+        }
+        return estimatedAudioBufferUsBuilder_;
+      }
+
+      private com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution avLagUs_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder> avLagUsBuilder_;
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution av_lag_us = 6;</code>
+       * @return Whether the avLagUs field is set.
+       */
+      public boolean hasAvLagUs() {
+        return ((bitField0_ & 0x00000020) != 0);
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution av_lag_us = 6;</code>
+       * @return The avLagUs.
+       */
+      public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution getAvLagUs() {
+        if (avLagUsBuilder_ == null) {
+          return avLagUs_ == null ? com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance() : avLagUs_;
+        } else {
+          return avLagUsBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution av_lag_us = 6;</code>
+       */
+      public Builder setAvLagUs(com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution value) {
+        if (avLagUsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          avLagUs_ = value;
+        } else {
+          avLagUsBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000020;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution av_lag_us = 6;</code>
+       */
+      public Builder setAvLagUs(
+          com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder builderForValue) {
+        if (avLagUsBuilder_ == null) {
+          avLagUs_ = builderForValue.build();
+        } else {
+          avLagUsBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000020;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution av_lag_us = 6;</code>
+       */
+      public Builder mergeAvLagUs(com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution value) {
+        if (avLagUsBuilder_ == null) {
+          if (((bitField0_ & 0x00000020) != 0) &&
+            avLagUs_ != null &&
+            avLagUs_ != com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance()) {
+            getAvLagUsBuilder().mergeFrom(value);
+          } else {
+            avLagUs_ = value;
+          }
+        } else {
+          avLagUsBuilder_.mergeFrom(value);
+        }
+        if (avLagUs_ != null) {
+          bitField0_ |= 0x00000020;
+          onChanged();
+        }
+        return this;
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution av_lag_us = 6;</code>
+       */
+      public Builder clearAvLagUs() {
+        bitField0_ = (bitField0_ & ~0x00000020);
+        avLagUs_ = null;
+        if (avLagUsBuilder_ != null) {
+          avLagUsBuilder_.dispose();
+          avLagUsBuilder_ = null;
+        }
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution av_lag_us = 6;</code>
+       */
+      public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder getAvLagUsBuilder() {
+        bitField0_ |= 0x00000020;
+        onChanged();
+        return getAvLagUsFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution av_lag_us = 6;</code>
+       */
+      public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder getAvLagUsOrBuilder() {
+        if (avLagUsBuilder_ != null) {
+          return avLagUsBuilder_.getMessageOrBuilder();
+        } else {
+          return avLagUs_ == null ?
+              com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance() : avLagUs_;
+        }
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution av_lag_us = 6;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder>
+          getAvLagUsFieldBuilder() {
+        if (avLagUsBuilder_ == null) {
+          avLagUsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder>(
+                  getAvLagUs(),
+                  getParentForChildren(),
+                  isClean());
+          avLagUs_ = null;
+        }
+        return avLagUsBuilder_;
+      }
+
+      private com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution audioDelayUs_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder> audioDelayUsBuilder_;
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution audio_delay_us = 7;</code>
+       * @return Whether the audioDelayUs field is set.
+       */
+      public boolean hasAudioDelayUs() {
+        return ((bitField0_ & 0x00000040) != 0);
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution audio_delay_us = 7;</code>
+       * @return The audioDelayUs.
+       */
+      public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution getAudioDelayUs() {
+        if (audioDelayUsBuilder_ == null) {
+          return audioDelayUs_ == null ? com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance() : audioDelayUs_;
+        } else {
+          return audioDelayUsBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution audio_delay_us = 7;</code>
+       */
+      public Builder setAudioDelayUs(com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution value) {
+        if (audioDelayUsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          audioDelayUs_ = value;
+        } else {
+          audioDelayUsBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000040;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution audio_delay_us = 7;</code>
+       */
+      public Builder setAudioDelayUs(
+          com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder builderForValue) {
+        if (audioDelayUsBuilder_ == null) {
+          audioDelayUs_ = builderForValue.build();
+        } else {
+          audioDelayUsBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000040;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution audio_delay_us = 7;</code>
+       */
+      public Builder mergeAudioDelayUs(com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution value) {
+        if (audioDelayUsBuilder_ == null) {
+          if (((bitField0_ & 0x00000040) != 0) &&
+            audioDelayUs_ != null &&
+            audioDelayUs_ != com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance()) {
+            getAudioDelayUsBuilder().mergeFrom(value);
+          } else {
+            audioDelayUs_ = value;
+          }
+        } else {
+          audioDelayUsBuilder_.mergeFrom(value);
+        }
+        if (audioDelayUs_ != null) {
+          bitField0_ |= 0x00000040;
+          onChanged();
+        }
+        return this;
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution audio_delay_us = 7;</code>
+       */
+      public Builder clearAudioDelayUs() {
+        bitField0_ = (bitField0_ & ~0x00000040);
+        audioDelayUs_ = null;
+        if (audioDelayUsBuilder_ != null) {
+          audioDelayUsBuilder_.dispose();
+          audioDelayUsBuilder_ = null;
+        }
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution audio_delay_us = 7;</code>
+       */
+      public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder getAudioDelayUsBuilder() {
+        bitField0_ |= 0x00000040;
+        onChanged();
+        return getAudioDelayUsFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution audio_delay_us = 7;</code>
+       */
+      public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder getAudioDelayUsOrBuilder() {
+        if (audioDelayUsBuilder_ != null) {
+          return audioDelayUsBuilder_.getMessageOrBuilder();
+        } else {
+          return audioDelayUs_ == null ?
+              com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance() : audioDelayUs_;
+        }
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution audio_delay_us = 7;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder>
+          getAudioDelayUsFieldBuilder() {
+        if (audioDelayUsBuilder_ == null) {
+          audioDelayUsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder>(
+                  getAudioDelayUs(),
+                  getParentForChildren(),
+                  isClean());
+          audioDelayUs_ = null;
+        }
+        return audioDelayUsBuilder_;
+      }
+
+      private com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution videoDelayUs_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder> videoDelayUsBuilder_;
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_delay_us = 8;</code>
+       * @return Whether the videoDelayUs field is set.
+       */
+      public boolean hasVideoDelayUs() {
+        return ((bitField0_ & 0x00000080) != 0);
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_delay_us = 8;</code>
+       * @return The videoDelayUs.
+       */
+      public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution getVideoDelayUs() {
+        if (videoDelayUsBuilder_ == null) {
+          return videoDelayUs_ == null ? com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance() : videoDelayUs_;
+        } else {
+          return videoDelayUsBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_delay_us = 8;</code>
+       */
+      public Builder setVideoDelayUs(com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution value) {
+        if (videoDelayUsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          videoDelayUs_ = value;
+        } else {
+          videoDelayUsBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000080;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_delay_us = 8;</code>
+       */
+      public Builder setVideoDelayUs(
+          com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder builderForValue) {
+        if (videoDelayUsBuilder_ == null) {
+          videoDelayUs_ = builderForValue.build();
+        } else {
+          videoDelayUsBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000080;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_delay_us = 8;</code>
+       */
+      public Builder mergeVideoDelayUs(com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution value) {
+        if (videoDelayUsBuilder_ == null) {
+          if (((bitField0_ & 0x00000080) != 0) &&
+            videoDelayUs_ != null &&
+            videoDelayUs_ != com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance()) {
+            getVideoDelayUsBuilder().mergeFrom(value);
+          } else {
+            videoDelayUs_ = value;
+          }
+        } else {
+          videoDelayUsBuilder_.mergeFrom(value);
+        }
+        if (videoDelayUs_ != null) {
+          bitField0_ |= 0x00000080;
+          onChanged();
+        }
+        return this;
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_delay_us = 8;</code>
+       */
+      public Builder clearVideoDelayUs() {
+        bitField0_ = (bitField0_ & ~0x00000080);
+        videoDelayUs_ = null;
+        if (videoDelayUsBuilder_ != null) {
+          videoDelayUsBuilder_.dispose();
+          videoDelayUsBuilder_ = null;
+        }
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_delay_us = 8;</code>
+       */
+      public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder getVideoDelayUsBuilder() {
+        bitField0_ |= 0x00000080;
+        onChanged();
+        return getVideoDelayUsFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_delay_us = 8;</code>
+       */
+      public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder getVideoDelayUsOrBuilder() {
+        if (videoDelayUsBuilder_ != null) {
+          return videoDelayUsBuilder_.getMessageOrBuilder();
+        } else {
+          return videoDelayUs_ == null ?
+              com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance() : videoDelayUs_;
+        }
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_delay_us = 8;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder>
+          getVideoDelayUsFieldBuilder() {
+        if (videoDelayUsBuilder_ == null) {
+          videoDelayUsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder>(
+                  getVideoDelayUs(),
+                  getParentForChildren(),
+                  isClean());
+          videoDelayUs_ = null;
+        }
+        return videoDelayUsBuilder_;
+      }
+
+      private long audioOutputLatencyOffsetUs_ ;
+      /**
+       * <code>optional int64 audio_output_latency_offset_us = 9;</code>
+       * @return Whether the audioOutputLatencyOffsetUs field is set.
+       */
+      @java.lang.Override
+      public boolean hasAudioOutputLatencyOffsetUs() {
+        return ((bitField0_ & 0x00000100) != 0);
+      }
+      /**
+       * <code>optional int64 audio_output_latency_offset_us = 9;</code>
+       * @return The audioOutputLatencyOffsetUs.
+       */
+      @java.lang.Override
+      public long getAudioOutputLatencyOffsetUs() {
+        return audioOutputLatencyOffsetUs_;
+      }
+      /**
+       * <code>optional int64 audio_output_latency_offset_us = 9;</code>
+       * @param value The audioOutputLatencyOffsetUs to set.
+       * @return This builder for chaining.
+       */
+      public Builder setAudioOutputLatencyOffsetUs(long value) {
+
+        audioOutputLatencyOffsetUs_ = value;
+        bitField0_ |= 0x00000100;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 audio_output_latency_offset_us = 9;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearAudioOutputLatencyOffsetUs() {
+        bitField0_ = (bitField0_ & ~0x00000100);
+        audioOutputLatencyOffsetUs_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      private long videoOverflowCount_ ;
+      /**
+       * <code>optional int64 video_overflow_count = 10;</code>
+       * @return Whether the videoOverflowCount field is set.
+       */
+      @java.lang.Override
+      public boolean hasVideoOverflowCount() {
+        return ((bitField0_ & 0x00000200) != 0);
+      }
+      /**
+       * <code>optional int64 video_overflow_count = 10;</code>
+       * @return The videoOverflowCount.
+       */
+      @java.lang.Override
+      public long getVideoOverflowCount() {
+        return videoOverflowCount_;
+      }
+      /**
+       * <code>optional int64 video_overflow_count = 10;</code>
+       * @param value The videoOverflowCount to set.
+       * @return This builder for chaining.
+       */
+      public Builder setVideoOverflowCount(long value) {
+
+        videoOverflowCount_ = value;
+        bitField0_ |= 0x00000200;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 video_overflow_count = 10;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearVideoOverflowCount() {
+        bitField0_ = (bitField0_ & ~0x00000200);
+        videoOverflowCount_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      private com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution videoOverflowDurationUs_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder> videoOverflowDurationUsBuilder_;
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_overflow_duration_us = 11;</code>
+       * @return Whether the videoOverflowDurationUs field is set.
+       */
+      public boolean hasVideoOverflowDurationUs() {
+        return ((bitField0_ & 0x00000400) != 0);
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_overflow_duration_us = 11;</code>
+       * @return The videoOverflowDurationUs.
+       */
+      public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution getVideoOverflowDurationUs() {
+        if (videoOverflowDurationUsBuilder_ == null) {
+          return videoOverflowDurationUs_ == null ? com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance() : videoOverflowDurationUs_;
+        } else {
+          return videoOverflowDurationUsBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_overflow_duration_us = 11;</code>
+       */
+      public Builder setVideoOverflowDurationUs(com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution value) {
+        if (videoOverflowDurationUsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          videoOverflowDurationUs_ = value;
+        } else {
+          videoOverflowDurationUsBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000400;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_overflow_duration_us = 11;</code>
+       */
+      public Builder setVideoOverflowDurationUs(
+          com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder builderForValue) {
+        if (videoOverflowDurationUsBuilder_ == null) {
+          videoOverflowDurationUs_ = builderForValue.build();
+        } else {
+          videoOverflowDurationUsBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000400;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_overflow_duration_us = 11;</code>
+       */
+      public Builder mergeVideoOverflowDurationUs(com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution value) {
+        if (videoOverflowDurationUsBuilder_ == null) {
+          if (((bitField0_ & 0x00000400) != 0) &&
+            videoOverflowDurationUs_ != null &&
+            videoOverflowDurationUs_ != com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance()) {
+            getVideoOverflowDurationUsBuilder().mergeFrom(value);
+          } else {
+            videoOverflowDurationUs_ = value;
+          }
+        } else {
+          videoOverflowDurationUsBuilder_.mergeFrom(value);
+        }
+        if (videoOverflowDurationUs_ != null) {
+          bitField0_ |= 0x00000400;
+          onChanged();
+        }
+        return this;
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_overflow_duration_us = 11;</code>
+       */
+      public Builder clearVideoOverflowDurationUs() {
+        bitField0_ = (bitField0_ & ~0x00000400);
+        videoOverflowDurationUs_ = null;
+        if (videoOverflowDurationUsBuilder_ != null) {
+          videoOverflowDurationUsBuilder_.dispose();
+          videoOverflowDurationUsBuilder_ = null;
+        }
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_overflow_duration_us = 11;</code>
+       */
+      public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder getVideoOverflowDurationUsBuilder() {
+        bitField0_ |= 0x00000400;
+        onChanged();
+        return getVideoOverflowDurationUsFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_overflow_duration_us = 11;</code>
+       */
+      public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder getVideoOverflowDurationUsOrBuilder() {
+        if (videoOverflowDurationUsBuilder_ != null) {
+          return videoOverflowDurationUsBuilder_.getMessageOrBuilder();
+        } else {
+          return videoOverflowDurationUs_ == null ?
+              com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance() : videoOverflowDurationUs_;
+        }
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_overflow_duration_us = 11;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder>
+          getVideoOverflowDurationUsFieldBuilder() {
+        if (videoOverflowDurationUsBuilder_ == null) {
+          videoOverflowDurationUsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder>(
+                  getVideoOverflowDurationUs(),
+                  getParentForChildren(),
+                  isClean());
+          videoOverflowDurationUs_ = null;
+        }
+        return videoOverflowDurationUsBuilder_;
+      }
+
+      private com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution videoFrameJitterUs_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder> videoFrameJitterUsBuilder_;
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_frame_jitter_us = 12;</code>
+       * @return Whether the videoFrameJitterUs field is set.
+       */
+      public boolean hasVideoFrameJitterUs() {
+        return ((bitField0_ & 0x00000800) != 0);
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_frame_jitter_us = 12;</code>
+       * @return The videoFrameJitterUs.
+       */
+      public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution getVideoFrameJitterUs() {
+        if (videoFrameJitterUsBuilder_ == null) {
+          return videoFrameJitterUs_ == null ? com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance() : videoFrameJitterUs_;
+        } else {
+          return videoFrameJitterUsBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_frame_jitter_us = 12;</code>
+       */
+      public Builder setVideoFrameJitterUs(com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution value) {
+        if (videoFrameJitterUsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          videoFrameJitterUs_ = value;
+        } else {
+          videoFrameJitterUsBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000800;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_frame_jitter_us = 12;</code>
+       */
+      public Builder setVideoFrameJitterUs(
+          com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder builderForValue) {
+        if (videoFrameJitterUsBuilder_ == null) {
+          videoFrameJitterUs_ = builderForValue.build();
+        } else {
+          videoFrameJitterUsBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000800;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_frame_jitter_us = 12;</code>
+       */
+      public Builder mergeVideoFrameJitterUs(com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution value) {
+        if (videoFrameJitterUsBuilder_ == null) {
+          if (((bitField0_ & 0x00000800) != 0) &&
+            videoFrameJitterUs_ != null &&
+            videoFrameJitterUs_ != com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance()) {
+            getVideoFrameJitterUsBuilder().mergeFrom(value);
+          } else {
+            videoFrameJitterUs_ = value;
+          }
+        } else {
+          videoFrameJitterUsBuilder_.mergeFrom(value);
+        }
+        if (videoFrameJitterUs_ != null) {
+          bitField0_ |= 0x00000800;
+          onChanged();
+        }
+        return this;
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_frame_jitter_us = 12;</code>
+       */
+      public Builder clearVideoFrameJitterUs() {
+        bitField0_ = (bitField0_ & ~0x00000800);
+        videoFrameJitterUs_ = null;
+        if (videoFrameJitterUsBuilder_ != null) {
+          videoFrameJitterUsBuilder_.dispose();
+          videoFrameJitterUsBuilder_ = null;
+        }
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_frame_jitter_us = 12;</code>
+       */
+      public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder getVideoFrameJitterUsBuilder() {
+        bitField0_ |= 0x00000800;
+        onChanged();
+        return getVideoFrameJitterUsFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_frame_jitter_us = 12;</code>
+       */
+      public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder getVideoFrameJitterUsOrBuilder() {
+        if (videoFrameJitterUsBuilder_ != null) {
+          return videoFrameJitterUsBuilder_.getMessageOrBuilder();
+        } else {
+          return videoFrameJitterUs_ == null ?
+              com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance() : videoFrameJitterUs_;
+        }
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_frame_jitter_us = 12;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder>
+          getVideoFrameJitterUsFieldBuilder() {
+        if (videoFrameJitterUsBuilder_ == null) {
+          videoFrameJitterUsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder>(
+                  getVideoFrameJitterUs(),
+                  getParentForChildren(),
+                  isClean());
+          videoFrameJitterUs_ = null;
+        }
+        return videoFrameJitterUsBuilder_;
+      }
+
+      private com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution videoPacingDelayUs_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder> videoPacingDelayUsBuilder_;
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_pacing_delay_us = 13;</code>
+       * @return Whether the videoPacingDelayUs field is set.
+       */
+      public boolean hasVideoPacingDelayUs() {
+        return ((bitField0_ & 0x00001000) != 0);
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_pacing_delay_us = 13;</code>
+       * @return The videoPacingDelayUs.
+       */
+      public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution getVideoPacingDelayUs() {
+        if (videoPacingDelayUsBuilder_ == null) {
+          return videoPacingDelayUs_ == null ? com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance() : videoPacingDelayUs_;
+        } else {
+          return videoPacingDelayUsBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_pacing_delay_us = 13;</code>
+       */
+      public Builder setVideoPacingDelayUs(com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution value) {
+        if (videoPacingDelayUsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          videoPacingDelayUs_ = value;
+        } else {
+          videoPacingDelayUsBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00001000;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_pacing_delay_us = 13;</code>
+       */
+      public Builder setVideoPacingDelayUs(
+          com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder builderForValue) {
+        if (videoPacingDelayUsBuilder_ == null) {
+          videoPacingDelayUs_ = builderForValue.build();
+        } else {
+          videoPacingDelayUsBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00001000;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_pacing_delay_us = 13;</code>
+       */
+      public Builder mergeVideoPacingDelayUs(com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution value) {
+        if (videoPacingDelayUsBuilder_ == null) {
+          if (((bitField0_ & 0x00001000) != 0) &&
+            videoPacingDelayUs_ != null &&
+            videoPacingDelayUs_ != com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance()) {
+            getVideoPacingDelayUsBuilder().mergeFrom(value);
+          } else {
+            videoPacingDelayUs_ = value;
+          }
+        } else {
+          videoPacingDelayUsBuilder_.mergeFrom(value);
+        }
+        if (videoPacingDelayUs_ != null) {
+          bitField0_ |= 0x00001000;
+          onChanged();
+        }
+        return this;
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_pacing_delay_us = 13;</code>
+       */
+      public Builder clearVideoPacingDelayUs() {
+        bitField0_ = (bitField0_ & ~0x00001000);
+        videoPacingDelayUs_ = null;
+        if (videoPacingDelayUsBuilder_ != null) {
+          videoPacingDelayUsBuilder_.dispose();
+          videoPacingDelayUsBuilder_ = null;
+        }
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_pacing_delay_us = 13;</code>
+       */
+      public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder getVideoPacingDelayUsBuilder() {
+        bitField0_ |= 0x00001000;
+        onChanged();
+        return getVideoPacingDelayUsFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_pacing_delay_us = 13;</code>
+       */
+      public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder getVideoPacingDelayUsOrBuilder() {
+        if (videoPacingDelayUsBuilder_ != null) {
+          return videoPacingDelayUsBuilder_.getMessageOrBuilder();
+        } else {
+          return videoPacingDelayUs_ == null ?
+              com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.getDefaultInstance() : videoPacingDelayUs_;
+        }
+      }
+      /**
+       * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.MediaDistribution video_pacing_delay_us = 13;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder>
+          getVideoPacingDelayUsFieldBuilder() {
+        if (videoPacingDelayUsBuilder_ == null) {
+          videoPacingDelayUsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistribution.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaDistributionOrBuilder>(
+                  getVideoPacingDelayUs(),
+                  getParentForChildren(),
+                  isClean());
+          videoPacingDelayUs_ = null;
+        }
+        return videoPacingDelayUsBuilder_;
+      }
+
+      private long tooFastFrames_ ;
+      /**
+       * <code>optional int64 too_fast_frames = 14;</code>
+       * @return Whether the tooFastFrames field is set.
+       */
+      @java.lang.Override
+      public boolean hasTooFastFrames() {
+        return ((bitField0_ & 0x00002000) != 0);
+      }
+      /**
+       * <code>optional int64 too_fast_frames = 14;</code>
+       * @return The tooFastFrames.
+       */
+      @java.lang.Override
+      public long getTooFastFrames() {
+        return tooFastFrames_;
+      }
+      /**
+       * <code>optional int64 too_fast_frames = 14;</code>
+       * @param value The tooFastFrames to set.
+       * @return This builder for chaining.
+       */
+      public Builder setTooFastFrames(long value) {
+
+        tooFastFrames_ = value;
+        bitField0_ |= 0x00002000;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 too_fast_frames = 14;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearTooFastFrames() {
+        bitField0_ = (bitField0_ & ~0x00002000);
+        tooFastFrames_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      private long tooSlowFrames_ ;
+      /**
+       * <code>optional int64 too_slow_frames = 15;</code>
+       * @return Whether the tooSlowFrames field is set.
+       */
+      @java.lang.Override
+      public boolean hasTooSlowFrames() {
+        return ((bitField0_ & 0x00004000) != 0);
+      }
+      /**
+       * <code>optional int64 too_slow_frames = 15;</code>
+       * @return The tooSlowFrames.
+       */
+      @java.lang.Override
+      public long getTooSlowFrames() {
+        return tooSlowFrames_;
+      }
+      /**
+       * <code>optional int64 too_slow_frames = 15;</code>
+       * @param value The tooSlowFrames to set.
+       * @return This builder for chaining.
+       */
+      public Builder setTooSlowFrames(long value) {
+
+        tooSlowFrames_ = value;
+        bitField0_ |= 0x00004000;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 too_slow_frames = 15;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearTooSlowFrames() {
+        bitField0_ = (bitField0_ & ~0x00004000);
+        tooSlowFrames_ = 0L;
+        onChanged();
+        return this;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:com.andrerinas.openheadunit.aap.protocol.proto.MediaStats)
+    }
+
+    // @@protoc_insertion_point(class_scope:com.andrerinas.openheadunit.aap.protocol.proto.MediaStats)
+    private static final com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats();
+    }
+
+    public static com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<MediaStats>
+        PARSER = new com.google.protobuf.AbstractParser<MediaStats>() {
+      @java.lang.Override
+      public MediaStats parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
+      }
+    };
+
+    public static com.google.protobuf.Parser<MediaStats> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<MediaStats> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.andrerinas.openheadunit.aap.protocol.proto.Media.MediaStats getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -13093,7 +16649,7 @@ public final class Media {
        * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.Insets margins = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.andrerinas.openheadunit.aap.protocol.proto.Media.Insets, com.andrerinas.openheadunit.aap.protocol.proto.Media.Insets.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.InsetsOrBuilder> 
+          com.andrerinas.openheadunit.aap.protocol.proto.Media.Insets, com.andrerinas.openheadunit.aap.protocol.proto.Media.Insets.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.InsetsOrBuilder>
           getMarginsFieldBuilder() {
         if (marginsBuilder_ == null) {
           marginsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
@@ -13214,7 +16770,7 @@ public final class Media {
        * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.Insets content_insets = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.andrerinas.openheadunit.aap.protocol.proto.Media.Insets, com.andrerinas.openheadunit.aap.protocol.proto.Media.Insets.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.InsetsOrBuilder> 
+          com.andrerinas.openheadunit.aap.protocol.proto.Media.Insets, com.andrerinas.openheadunit.aap.protocol.proto.Media.Insets.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.InsetsOrBuilder>
           getContentInsetsFieldBuilder() {
         if (contentInsetsBuilder_ == null) {
           contentInsetsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
@@ -13335,7 +16891,7 @@ public final class Media {
        * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.Insets stable_content_insets = 3;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.andrerinas.openheadunit.aap.protocol.proto.Media.Insets, com.andrerinas.openheadunit.aap.protocol.proto.Media.Insets.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.InsetsOrBuilder> 
+          com.andrerinas.openheadunit.aap.protocol.proto.Media.Insets, com.andrerinas.openheadunit.aap.protocol.proto.Media.Insets.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.InsetsOrBuilder>
           getStableContentInsetsFieldBuilder() {
         if (stableContentInsetsBuilder_ == null) {
           stableContentInsetsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
@@ -14080,7 +17636,7 @@ public final class Media {
        * <code>required .com.andrerinas.openheadunit.aap.protocol.proto.UiConfig ui_config = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfig, com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfig.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfigOrBuilder> 
+          com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfig, com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfig.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfigOrBuilder>
           getUiConfigFieldBuilder() {
         if (uiConfigBuilder_ == null) {
           uiConfigBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
@@ -14692,7 +18248,7 @@ public final class Media {
        * <code>optional .com.andrerinas.openheadunit.aap.protocol.proto.UiConfig ui_config = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfig, com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfig.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfigOrBuilder> 
+          com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfig, com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfig.Builder, com.andrerinas.openheadunit.aap.protocol.proto.Media.UiConfigOrBuilder>
           getUiConfigFieldBuilder() {
         if (uiConfigBuilder_ == null) {
           uiConfigBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
@@ -14770,12 +18326,12 @@ public final class Media {
 
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_AudioConfiguration_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_com_andrerinas_openheadunit_aap_protocol_proto_AudioConfiguration_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_Start_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_com_andrerinas_openheadunit_aap_protocol_proto_Start_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
@@ -14789,63 +18345,73 @@ public final class Media {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MediaOptions_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MediaDistribution_descriptor;
+  private static final
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MediaDistribution_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MediaStats_descriptor;
+  private static final
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MediaStats_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_Ack_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_com_andrerinas_openheadunit_aap_protocol_proto_Ack_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_AudioUnderflowNotification_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_com_andrerinas_openheadunit_aap_protocol_proto_AudioUnderflowNotification_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MicrophoneRequest_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MicrophoneRequest_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MicrophoneResponse_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MicrophoneResponse_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_VideoFocusRequestNotification_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_com_andrerinas_openheadunit_aap_protocol_proto_VideoFocusRequestNotification_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_VideoFocusNotification_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_com_andrerinas_openheadunit_aap_protocol_proto_VideoFocusNotification_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MediaSetupRequest_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MediaSetupRequest_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_Config_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_com_andrerinas_openheadunit_aap_protocol_proto_Config_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_Insets_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_com_andrerinas_openheadunit_aap_protocol_proto_Insets_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_UiConfig_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_com_andrerinas_openheadunit_aap_protocol_proto_UiConfig_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_UpdateUiConfigRequest_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_com_andrerinas_openheadunit_aap_protocol_proto_UpdateUiConfigRequest_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_UpdateUiConfigReply_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_com_andrerinas_openheadunit_aap_protocol_proto_UpdateUiConfigReply_fieldAccessorTable;
 
@@ -14894,77 +18460,105 @@ public final class Media {
       "proto.MediaDuration\022h\n!video_timing_cont" +
       "roller_max_delay\030\r \001(\0132=.com.andrerinas." +
       "openheadunit.aap.protocol.proto.MediaDur" +
-      "ation\"D\n\003Ack\022\022\n\nsession_id\030\001 \002(\005\022\013\n\003ack\030" +
-      "\002 \001(\r\022\034\n\024receive_timestamp_ns\030\003 \003(\004\"0\n\032A" +
-      "udioUnderflowNotification\022\022\n\nsession_id\030" +
-      "\001 \002(\005\"_\n\021MicrophoneRequest\022\014\n\004open\030\001 \002(\010" +
-      "\022\023\n\013anc_enabled\030\002 \001(\010\022\022\n\nec_enabled\030\003 \001(" +
-      "\010\022\023\n\013max_unacked\030\004 \001(\005\"8\n\022MicrophoneResp" +
-      "onse\022\016\n\006status\030\001 \002(\005\022\022\n\nsession_id\030\002 \002(\r" +
-      "\"\212\003\n\035VideoFocusRequestNotification\022\027\n\017di" +
-      "sp_channel_id\030\001 \001(\005\022L\n\004mode\030\002 \002(\0162>.com." +
-      "andrerinas.openheadunit.aap.protocol.pro" +
-      "to.VideoFocusMode\022n\n\006reason\030\003 \001(\0162^.com." +
-      "andrerinas.openheadunit.aap.protocol.pro" +
-      "to.VideoFocusRequestNotification.VideoFo" +
-      "cusReason\"\221\001\n\020VideoFocusReason\022\013\n\007UNKNOW" +
-      "N\020\000\022\024\n\020PHONE_SCREEN_OFF\020\001\022\021\n\rLAUNCH_NATI" +
-      "VE\020\002\022 \n\034VIDEO_FOCUS_REASON_LAST_MODE\020\003\022%" +
-      "\n!VIDEO_FOCUS_REASON_USER_SELECTION\020\004\"{\n" +
-      "\026VideoFocusNotification\022L\n\004mode\030\001 \002(\0162>." +
-      "com.andrerinas.openheadunit.aap.protocol" +
-      ".proto.VideoFocusMode\022\023\n\013unsolicited\030\002 \002" +
-      "(\010\"!\n\021MediaSetupRequest\022\014\n\004type\030\001 \002(\r\"\304\001" +
-      "\n\006Config\022S\n\006status\030\001 \002(\0162C.com.andrerina" +
-      "s.openheadunit.aap.protocol.proto.Config" +
-      ".ConfigStatus\022\023\n\013max_unacked\030\002 \002(\r\022\035\n\025co" +
-      "nfiguration_indices\030\003 \003(\r\"1\n\014ConfigStatu" +
-      "s\022\017\n\013STATUS_WAIT\020\001\022\020\n\014STATUS_READY\020\002\"B\n\006" +
-      "Insets\022\013\n\003top\030\001 \001(\005\022\016\n\006bottom\030\002 \001(\005\022\014\n\004l" +
-      "eft\030\003 \001(\005\022\r\n\005right\030\004 \001(\005\"\356\003\n\010UiConfig\022G\n" +
-      "\007margins\030\001 \001(\01326.com.andrerinas.openhead" +
-      "unit.aap.protocol.proto.Insets\022N\n\016conten" +
-      "t_insets\030\002 \001(\01326.com.andrerinas.openhead" +
-      "unit.aap.protocol.proto.Insets\022U\n\025stable" +
-      "_content_insets\030\003 \001(\01326.com.andrerinas.o" +
-      "penheadunit.aap.protocol.proto.Insets\022\020\n" +
-      "\010ui_theme\030\004 \001(\005\022W\n\013ui_elements\030\005 \003(\0162B.c" +
-      "om.andrerinas.openheadunit.aap.protocol." +
-      "proto.UiConfig.UiElement\"\206\001\n\tUiElement\022\013" +
-      "\n\007UNKNOWN\020\000\022\t\n\005CLOCK\020\001\022\021\n\rBATTERY_LEVEL\020" +
-      "\002\022\020\n\014PHONE_SIGNAL\020\003\022\030\n\024NATIVE_UI_AFFORDA" +
-      "NCE\020\004\022\"\n\036NAVIGATION_TURN_DATA_AVAILABLE\020" +
-      "\005\"d\n\025UpdateUiConfigRequest\022K\n\tui_config\030" +
-      "\001 \002(\01328.com.andrerinas.openheadunit.aap." +
-      "protocol.proto.UiConfig\"b\n\023UpdateUiConfi" +
-      "gReply\022K\n\tui_config\030\001 \001(\01328.com.andrerin" +
-      "as.openheadunit.aap.protocol.proto.UiCon" +
-      "fig*\227\004\n\007MsgType\022\026\n\022MEDIA_MESSAGE_DATA\020\000\022" +
-      "\036\n\032MEDIA_MESSAGE_CODEC_CONFIG\020\001\022\031\n\023MEDIA" +
-      "_MESSAGE_SETUP\020\200\200\002\022\031\n\023MEDIA_MESSAGE_STAR" +
-      "T\020\201\200\002\022\030\n\022MEDIA_MESSAGE_STOP\020\202\200\002\022\032\n\024MEDIA" +
-      "_MESSAGE_CONFIG\020\203\200\002\022\027\n\021MEDIA_MESSAGE_ACK" +
-      "\020\204\200\002\022&\n MEDIA_MESSAGE_MICROPHONE_REQUEST" +
-      "\020\205\200\002\022\'\n!MEDIA_MESSAGE_MICROPHONE_RESPONS" +
-      "E\020\206\200\002\022\'\n!MEDIA_MESSAGE_VIDEO_FOCUS_REQUE" +
-      "ST\020\207\200\002\022,\n&MEDIA_MESSAGE_VIDEO_FOCUS_NOTI" +
-      "FICATION\020\210\200\002\022,\n&MEDIA_MESSAGE_UPDATE_UI_" +
-      "CONFIG_REQUEST\020\211\200\002\022*\n$MEDIA_MESSAGE_UPDA" +
-      "TE_UI_CONFIG_REPLY\020\212\200\002\0220\n*MEDIA_MESSAGE_" +
-      "AUDIO_UNDERFLOW_NOTIFICATION\020\213\200\002\022\033\n\025MEDI" +
-      "A_MESSAGE_OPTIONS\020\224\200\002*\335\001\n\016MediaCodecType" +
-      "\022\031\n\025MEDIA_CODEC_AUDIO_PCM\020\001\022\034\n\030MEDIA_COD" +
-      "EC_AUDIO_AAC_LC\020\002\022\035\n\031MEDIA_CODEC_VIDEO_H" +
-      "264_BP\020\003\022!\n\035MEDIA_CODEC_AUDIO_AAC_LC_ADT" +
-      "S\020\004\022\031\n\025MEDIA_CODEC_VIDEO_VP9\020\005\022\031\n\025MEDIA_" +
-      "CODEC_VIDEO_AV1\020\006\022\032\n\026MEDIA_CODEC_VIDEO_H" +
-      "265\020\007*s\n\017AudioStreamType\022\010\n\004NONE\020\000\022\n\n\006SP" +
-      "EECH\020\001\022\n\n\006SYSTEM\020\002\022\t\n\005MEDIA\020\003\022\t\n\005ALARM\020\004" +
-      "\022\014\n\010GUIDANCE\020\005\022\020\n\014ANNOUNCEMENT\020\006\022\010\n\004RING" +
-      "\020\007*\217\001\n\016VideoFocusMode\022\031\n\025VIDEO_FOCUS_PRO" +
-      "JECTED\020\001\022\026\n\022VIDEO_FOCUS_NATIVE\020\002\022 \n\034VIDE" +
-      "O_FOCUS_NATIVE_TRANSIENT\020\003\022(\n$VIDEO_FOCU" +
-      "S_PROJECTED_NO_INPUT_FOCUS\020\004B\007B\005Media"
+      "ation\"U\n\021MediaDistribution\022\017\n\007average\030\001 " +
+      "\001(\003\022\017\n\007minimum\030\002 \001(\003\022\017\n\007maximum\030\003 \001(\003\022\r\n" +
+      "\005count\030\004 \001(\003\"\310\007\n\nMediaStats\022Y\n\022observati" +
+      "on_window\030\001 \001(\0132=.com.andrerinas.openhea" +
+      "dunit.aap.protocol.proto.MediaDuration\022\016" +
+      "\n\006frames\030\002 \001(\003\022\034\n\024audio_overflow_count\030\003" +
+      " \001(\003\022\034\n\024audio_underrun_count\030\004 \001(\003\022d\n\031es" +
+      "timated_audio_buffer_us\030\005 \001(\0132A.com.andr" +
+      "erinas.openheadunit.aap.protocol.proto.M" +
+      "ediaDistribution\022T\n\tav_lag_us\030\006 \001(\0132A.co" +
+      "m.andrerinas.openheadunit.aap.protocol.p" +
+      "roto.MediaDistribution\022Y\n\016audio_delay_us" +
+      "\030\007 \001(\0132A.com.andrerinas.openheadunit.aap" +
+      ".protocol.proto.MediaDistribution\022Y\n\016vid" +
+      "eo_delay_us\030\010 \001(\0132A.com.andrerinas.openh" +
+      "eadunit.aap.protocol.proto.MediaDistribu" +
+      "tion\022&\n\036audio_output_latency_offset_us\030\t" +
+      " \001(\003\022\034\n\024video_overflow_count\030\n \001(\003\022e\n\032vi" +
+      "deo_overflow_duration_us\030\013 \001(\0132A.com.and" +
+      "rerinas.openheadunit.aap.protocol.proto." +
+      "MediaDistribution\022`\n\025video_frame_jitter_" +
+      "us\030\014 \001(\0132A.com.andrerinas.openheadunit.a" +
+      "ap.protocol.proto.MediaDistribution\022`\n\025v" +
+      "ideo_pacing_delay_us\030\r \001(\0132A.com.andreri" +
+      "nas.openheadunit.aap.protocol.proto.Medi" +
+      "aDistribution\022\027\n\017too_fast_frames\030\016 \001(\003\022\027" +
+      "\n\017too_slow_frames\030\017 \001(\003\"D\n\003Ack\022\022\n\nsessio" +
+      "n_id\030\001 \002(\005\022\013\n\003ack\030\002 \001(\r\022\034\n\024receive_times" +
+      "tamp_ns\030\003 \003(\004\"0\n\032AudioUnderflowNotificat" +
+      "ion\022\022\n\nsession_id\030\001 \002(\005\"_\n\021MicrophoneReq" +
+      "uest\022\014\n\004open\030\001 \002(\010\022\023\n\013anc_enabled\030\002 \001(\010\022" +
+      "\022\n\nec_enabled\030\003 \001(\010\022\023\n\013max_unacked\030\004 \001(\005" +
+      "\"8\n\022MicrophoneResponse\022\016\n\006status\030\001 \002(\005\022\022" +
+      "\n\nsession_id\030\002 \002(\r\"\212\003\n\035VideoFocusRequest" +
+      "Notification\022\027\n\017disp_channel_id\030\001 \001(\005\022L\n" +
+      "\004mode\030\002 \002(\0162>.com.andrerinas.openheaduni" +
+      "t.aap.protocol.proto.VideoFocusMode\022n\n\006r" +
+      "eason\030\003 \001(\0162^.com.andrerinas.openheaduni" +
+      "t.aap.protocol.proto.VideoFocusRequestNo" +
+      "tification.VideoFocusReason\"\221\001\n\020VideoFoc" +
+      "usReason\022\013\n\007UNKNOWN\020\000\022\024\n\020PHONE_SCREEN_OF" +
+      "F\020\001\022\021\n\rLAUNCH_NATIVE\020\002\022 \n\034VIDEO_FOCUS_RE" +
+      "ASON_LAST_MODE\020\003\022%\n!VIDEO_FOCUS_REASON_U" +
+      "SER_SELECTION\020\004\"{\n\026VideoFocusNotificatio" +
+      "n\022L\n\004mode\030\001 \002(\0162>.com.andrerinas.openhea" +
+      "dunit.aap.protocol.proto.VideoFocusMode\022" +
+      "\023\n\013unsolicited\030\002 \002(\010\"!\n\021MediaSetupReques" +
+      "t\022\014\n\004type\030\001 \002(\r\"\304\001\n\006Config\022S\n\006status\030\001 \002" +
+      "(\0162C.com.andrerinas.openheadunit.aap.pro" +
+      "tocol.proto.Config.ConfigStatus\022\023\n\013max_u" +
+      "nacked\030\002 \002(\r\022\035\n\025configuration_indices\030\003 " +
+      "\003(\r\"1\n\014ConfigStatus\022\017\n\013STATUS_WAIT\020\001\022\020\n\014" +
+      "STATUS_READY\020\002\"B\n\006Insets\022\013\n\003top\030\001 \001(\005\022\016\n" +
+      "\006bottom\030\002 \001(\005\022\014\n\004left\030\003 \001(\005\022\r\n\005right\030\004 \001" +
+      "(\005\"\356\003\n\010UiConfig\022G\n\007margins\030\001 \001(\01326.com.a" +
+      "ndrerinas.openheadunit.aap.protocol.prot" +
+      "o.Insets\022N\n\016content_insets\030\002 \001(\01326.com.a" +
+      "ndrerinas.openheadunit.aap.protocol.prot" +
+      "o.Insets\022U\n\025stable_content_insets\030\003 \001(\0132" +
+      "6.com.andrerinas.openheadunit.aap.protoc" +
+      "ol.proto.Insets\022\020\n\010ui_theme\030\004 \001(\005\022W\n\013ui_" +
+      "elements\030\005 \003(\0162B.com.andrerinas.openhead" +
+      "unit.aap.protocol.proto.UiConfig.UiEleme" +
+      "nt\"\206\001\n\tUiElement\022\013\n\007UNKNOWN\020\000\022\t\n\005CLOCK\020\001" +
+      "\022\021\n\rBATTERY_LEVEL\020\002\022\020\n\014PHONE_SIGNAL\020\003\022\030\n" +
+      "\024NATIVE_UI_AFFORDANCE\020\004\022\"\n\036NAVIGATION_TU" +
+      "RN_DATA_AVAILABLE\020\005\"d\n\025UpdateUiConfigReq" +
+      "uest\022K\n\tui_config\030\001 \002(\01328.com.andrerinas" +
+      ".openheadunit.aap.protocol.proto.UiConfi" +
+      "g\"b\n\023UpdateUiConfigReply\022K\n\tui_config\030\001 " +
+      "\001(\01328.com.andrerinas.openheadunit.aap.pr" +
+      "otocol.proto.UiConfig*\262\004\n\007MsgType\022\026\n\022MED" +
+      "IA_MESSAGE_DATA\020\000\022\036\n\032MEDIA_MESSAGE_CODEC" +
+      "_CONFIG\020\001\022\031\n\023MEDIA_MESSAGE_SETUP\020\200\200\002\022\031\n\023" +
+      "MEDIA_MESSAGE_START\020\201\200\002\022\030\n\022MEDIA_MESSAGE" +
+      "_STOP\020\202\200\002\022\032\n\024MEDIA_MESSAGE_CONFIG\020\203\200\002\022\027\n" +
+      "\021MEDIA_MESSAGE_ACK\020\204\200\002\022&\n MEDIA_MESSAGE_" +
+      "MICROPHONE_REQUEST\020\205\200\002\022\'\n!MEDIA_MESSAGE_" +
+      "MICROPHONE_RESPONSE\020\206\200\002\022\'\n!MEDIA_MESSAGE" +
+      "_VIDEO_FOCUS_REQUEST\020\207\200\002\022,\n&MEDIA_MESSAG" +
+      "E_VIDEO_FOCUS_NOTIFICATION\020\210\200\002\022,\n&MEDIA_" +
+      "MESSAGE_UPDATE_UI_CONFIG_REQUEST\020\211\200\002\022*\n$" +
+      "MEDIA_MESSAGE_UPDATE_UI_CONFIG_REPLY\020\212\200\002" +
+      "\0220\n*MEDIA_MESSAGE_AUDIO_UNDERFLOW_NOTIFI" +
+      "CATION\020\213\200\002\022\031\n\023MEDIA_MESSAGE_STATS\020\223\200\002\022\033\n" +
+      "\025MEDIA_MESSAGE_OPTIONS\020\224\200\002*\335\001\n\016MediaCode" +
+      "cType\022\031\n\025MEDIA_CODEC_AUDIO_PCM\020\001\022\034\n\030MEDI" +
+      "A_CODEC_AUDIO_AAC_LC\020\002\022\035\n\031MEDIA_CODEC_VI" +
+      "DEO_H264_BP\020\003\022!\n\035MEDIA_CODEC_AUDIO_AAC_L" +
+      "C_ADTS\020\004\022\031\n\025MEDIA_CODEC_VIDEO_VP9\020\005\022\031\n\025M" +
+      "EDIA_CODEC_VIDEO_AV1\020\006\022\032\n\026MEDIA_CODEC_VI" +
+      "DEO_H265\020\007*s\n\017AudioStreamType\022\010\n\004NONE\020\000\022" +
+      "\n\n\006SPEECH\020\001\022\n\n\006SYSTEM\020\002\022\t\n\005MEDIA\020\003\022\t\n\005AL" +
+      "ARM\020\004\022\014\n\010GUIDANCE\020\005\022\020\n\014ANNOUNCEMENT\020\006\022\010\n" +
+      "\004RING\020\007*\217\001\n\016VideoFocusMode\022\031\n\025VIDEO_FOCU" +
+      "S_PROJECTED\020\001\022\026\n\022VIDEO_FOCUS_NATIVE\020\002\022 \n" +
+      "\034VIDEO_FOCUS_NATIVE_TRANSIENT\020\003\022(\n$VIDEO" +
+      "_FOCUS_PROJECTED_NO_INPUT_FOCUS\020\004B\007B\005Med" +
+      "ia"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -14994,74 +18588,86 @@ public final class Media {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MediaOptions_descriptor,
         new java.lang.String[] { "AudioBufferLimit", "EnableAvSync", "MaxLagTolerance", "SyncInterval", "MaxAudioDelayAllowed", "MaxVideoDelayAllowed", "AverageLagWeight", "SyncOffsetOverride", "EnableMediaStats", "MediaStatsReportInterval", "EnableVideoTimingController", "VideoTimingControllerMinDelay", "VideoTimingControllerMaxDelay", });
-    internal_static_com_andrerinas_openheadunit_aap_protocol_proto_Ack_descriptor =
+    internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MediaDistribution_descriptor =
       getDescriptor().getMessageTypes().get(4);
+    internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MediaDistribution_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MediaDistribution_descriptor,
+        new java.lang.String[] { "Average", "Minimum", "Maximum", "Count", });
+    internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MediaStats_descriptor =
+      getDescriptor().getMessageTypes().get(5);
+    internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MediaStats_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MediaStats_descriptor,
+        new java.lang.String[] { "ObservationWindow", "Frames", "AudioOverflowCount", "AudioUnderrunCount", "EstimatedAudioBufferUs", "AvLagUs", "AudioDelayUs", "VideoDelayUs", "AudioOutputLatencyOffsetUs", "VideoOverflowCount", "VideoOverflowDurationUs", "VideoFrameJitterUs", "VideoPacingDelayUs", "TooFastFrames", "TooSlowFrames", });
+    internal_static_com_andrerinas_openheadunit_aap_protocol_proto_Ack_descriptor =
+      getDescriptor().getMessageTypes().get(6);
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_Ack_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_com_andrerinas_openheadunit_aap_protocol_proto_Ack_descriptor,
         new java.lang.String[] { "SessionId", "Ack", "ReceiveTimestampNs", });
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_AudioUnderflowNotification_descriptor =
-      getDescriptor().getMessageTypes().get(5);
+      getDescriptor().getMessageTypes().get(7);
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_AudioUnderflowNotification_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_com_andrerinas_openheadunit_aap_protocol_proto_AudioUnderflowNotification_descriptor,
         new java.lang.String[] { "SessionId", });
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MicrophoneRequest_descriptor =
-      getDescriptor().getMessageTypes().get(6);
+      getDescriptor().getMessageTypes().get(8);
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MicrophoneRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MicrophoneRequest_descriptor,
         new java.lang.String[] { "Open", "AncEnabled", "EcEnabled", "MaxUnacked", });
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MicrophoneResponse_descriptor =
-      getDescriptor().getMessageTypes().get(7);
+      getDescriptor().getMessageTypes().get(9);
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MicrophoneResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MicrophoneResponse_descriptor,
         new java.lang.String[] { "Status", "SessionId", });
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_VideoFocusRequestNotification_descriptor =
-      getDescriptor().getMessageTypes().get(8);
+      getDescriptor().getMessageTypes().get(10);
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_VideoFocusRequestNotification_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_com_andrerinas_openheadunit_aap_protocol_proto_VideoFocusRequestNotification_descriptor,
         new java.lang.String[] { "DispChannelId", "Mode", "Reason", });
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_VideoFocusNotification_descriptor =
-      getDescriptor().getMessageTypes().get(9);
+      getDescriptor().getMessageTypes().get(11);
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_VideoFocusNotification_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_com_andrerinas_openheadunit_aap_protocol_proto_VideoFocusNotification_descriptor,
         new java.lang.String[] { "Mode", "Unsolicited", });
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MediaSetupRequest_descriptor =
-      getDescriptor().getMessageTypes().get(10);
+      getDescriptor().getMessageTypes().get(12);
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MediaSetupRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_com_andrerinas_openheadunit_aap_protocol_proto_MediaSetupRequest_descriptor,
         new java.lang.String[] { "Type", });
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_Config_descriptor =
-      getDescriptor().getMessageTypes().get(11);
+      getDescriptor().getMessageTypes().get(13);
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_Config_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_com_andrerinas_openheadunit_aap_protocol_proto_Config_descriptor,
         new java.lang.String[] { "Status", "MaxUnacked", "ConfigurationIndices", });
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_Insets_descriptor =
-      getDescriptor().getMessageTypes().get(12);
+      getDescriptor().getMessageTypes().get(14);
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_Insets_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_com_andrerinas_openheadunit_aap_protocol_proto_Insets_descriptor,
         new java.lang.String[] { "Top", "Bottom", "Left", "Right", });
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_UiConfig_descriptor =
-      getDescriptor().getMessageTypes().get(13);
+      getDescriptor().getMessageTypes().get(15);
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_UiConfig_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_com_andrerinas_openheadunit_aap_protocol_proto_UiConfig_descriptor,
         new java.lang.String[] { "Margins", "ContentInsets", "StableContentInsets", "UiTheme", "UiElements", });
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_UpdateUiConfigRequest_descriptor =
-      getDescriptor().getMessageTypes().get(14);
+      getDescriptor().getMessageTypes().get(16);
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_UpdateUiConfigRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_com_andrerinas_openheadunit_aap_protocol_proto_UpdateUiConfigRequest_descriptor,
         new java.lang.String[] { "UiConfig", });
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_UpdateUiConfigReply_descriptor =
-      getDescriptor().getMessageTypes().get(15);
+      getDescriptor().getMessageTypes().get(17);
     internal_static_com_andrerinas_openheadunit_aap_protocol_proto_UpdateUiConfigReply_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_com_andrerinas_openheadunit_aap_protocol_proto_UpdateUiConfigReply_descriptor,
