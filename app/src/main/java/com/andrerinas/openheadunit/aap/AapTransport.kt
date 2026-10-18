@@ -183,6 +183,39 @@ class AapTransport(
     @Volatile internal var galContract: GalConnectionContract? = null
         private set
     internal val mediaSessions = GalMediaSessions()
+    private val mediaStatistics = GalMediaStatistics()
+    private val mediaStatisticsTick = object : Runnable {
+        override fun run() {
+            if (closing) return
+            val active = mediaSessions.active().filterValues { it.runtime.statisticsIntervalMs != null }
+            mediaStatistics.retain(active.keys)
+            val now = SystemClock.elapsedRealtime()
+            for ((channel, session) in active) {
+                val sample = if (Channel.isAudio(channel)) aapAudio.galPlaybackSample(channel)
+                    else if (channel == Channel.ID_VID) videoDecoder.galPlaybackSample() else null
+                val report = mediaStatistics.observe(channel, session, sample, now) ?: continue
+                // No extra queued SEND: this callback already owns the writer. Options/Stop or
+                // a repeated wire ID must invalidate a prepared report before its write begins.
+                if (closing || mediaSessions.current(channel) !== session) continue
+                val message = AapMessage(channel, Media.MsgType.MEDIA_MESSAGE_STATS_VALUE, report)
+                if (sendEncryptedMessage(message.data, message.size) < 0) return
+            }
+            if (!closing && active.isNotEmpty()) sendHandler?.postDelayed(this, GalRuntimeOptions.MIN_REPORT_MS)
+        }
+    }
+
+    internal fun applyMediaRuntime(channel: Int) {
+        val session = mediaSessions.current(channel)
+        val runtime = session?.takeIf { it.active }?.runtime ?: GalRuntimeOptions()
+        if (Channel.isAudio(channel)) aapAudio.applyGalBufferLimit(channel, runtime.audioBufferLimitMs)
+        if (runtime.invalidFields.isNotEmpty()) AppLog.w("GAL ignored invalid options: ${runtime.invalidFields.joinToString()}")
+        // A single writer-owned tick samples at 4Hz only while telemetry was requested. Handler
+        // callbacks, not the receive/decode hot path, build and serialize protobuf reports.
+        sendHandler?.post {
+            sendHandler?.removeCallbacks(mediaStatisticsTick)
+            if (!closing) mediaStatisticsTick.run()
+        }
+    }
 
     private var pollHandler: Handler? = null
     private val pollHandlerCallback = Handler.Callback {
@@ -819,6 +852,7 @@ class AapTransport(
             // Notify promptly; CommManager keeps this owner until awaitTermination completes.
             cleanupStep("notify") { cb?.invoke(cleanEnd) }
             cleanupStep("microphone") { retireMicrophone() }
+            sendHandler?.removeCallbacks(mediaStatisticsTick)
             sendHandler?.removeCallbacks(focusCycleGainRunnable)
             sendHandler?.removeCallbacks(unrepairedCheckRunnable)
             pollThread?.quit()

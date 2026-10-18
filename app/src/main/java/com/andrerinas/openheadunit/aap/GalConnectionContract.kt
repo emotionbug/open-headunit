@@ -5,7 +5,7 @@ import com.andrerinas.openheadunit.aap.protocol.proto.Control
 import com.andrerinas.openheadunit.aap.protocol.proto.Media
 
 /** Parsing a request is not a promise to execute the feature it asks for. */
-internal enum class GalFeatureSupport { UNSUPPORTED, INSPECT_ONLY, IMPLEMENTED }
+internal enum class GalFeatureSupport { UNSUPPORTED, PARTIAL, IMPLEMENTED }
 
 internal data class GalOptionsPolicy(
     val embedded: GalFeatureSupport,
@@ -25,8 +25,9 @@ internal class GalMediaPolicy internal constructor(
     }
 
     fun unimplementedRequests(options: Media.MediaOptions): List<String> = buildList {
+        if (options.enableVideoTimingController) add("video timing controller")
         if (options.enableAvSync && avSynchronization != GalFeatureSupport.IMPLEMENTED) add("A/V synchronization")
-        if (options.enableMediaStats && mediaStatistics != GalFeatureSupport.IMPLEMENTED) add("media statistics")
+        if (options.enableMediaStats && mediaStatistics == GalFeatureSupport.UNSUPPORTED) add("media statistics")
     }
 
     companion object {
@@ -49,14 +50,14 @@ internal class GalConnectionContract private constructor(
             require(negotiation.finalResponse.accepted &&
                 negotiation.finalResponse.version >= negotiation.requestedVersion)
             val none = GalMediaPolicy.NO_OPTIONS
-            val embedded = GalOptionsPolicy(GalFeatureSupport.INSPECT_ONLY, GalFeatureSupport.UNSUPPORTED)
-            val updates = GalOptionsPolicy(GalFeatureSupport.INSPECT_ONLY, GalFeatureSupport.INSPECT_ONLY)
+            val embedded = GalOptionsPolicy(GalFeatureSupport.PARTIAL, GalFeatureSupport.UNSUPPORTED)
+            val updates = GalOptionsPolicy(GalFeatureSupport.PARTIAL, GalFeatureSupport.PARTIAL)
             // 6.1 has no distinct media/display branch in the inspected sender. Share its policy
             // with 6.0, but retain its negotiated identity. New versions need an explicit entry.
             val (media, modernDisplay) = when (negotiation.profile) {
                 GalProfile.COMPATIBILITY, GalProfile.GAL_1_6 -> GalMediaPolicy(none, none) to false
-                GalProfile.GAL_5_0 -> GalMediaPolicy(embedded, none) to true
-                GalProfile.GAL_6_0, GalProfile.GAL_6_1 -> GalMediaPolicy(updates, updates) to true
+                GalProfile.GAL_5_0 -> GalMediaPolicy(embedded, none, mediaStatistics = GalFeatureSupport.PARTIAL) to true
+                GalProfile.GAL_6_0, GalProfile.GAL_6_1 -> GalMediaPolicy(updates, updates, mediaStatistics = GalFeatureSupport.PARTIAL) to true
             }
             return GalConnectionContract(negotiation, media, GalDisplayContract(display, modernDisplay))
         }

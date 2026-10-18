@@ -11,7 +11,7 @@ connection; it does not change a running session.
 GalVersionExchange              serial version agreement; no service policy
         |
 GalConnectionContract.resolve   sole profile-to-policy mapping
-        |-- GalMediaPolicy      unsupported / inspect-only / implemented
+        |-- GalMediaPolicy      unsupported / partial / implemented
         |-- GalDisplayContract  discovery and replacement update encoding
         |
 ServiceDiscoveryResponse        prepare and cache the actual advertised protobuf
@@ -38,8 +38,8 @@ MicrophoneRequest credit window; it is never validated as a sink.
 
 A new profile is added to the version selection list and the contract factory's explicit policy
 matrix. Common handlers do not gain new version checks. Receiving an option is distinguished from
-executing it: current timing options are inspect-only, and AV synchronization and media statistics
-remain unsupported. Their presence cannot silently turn on a controller.
+executing it: supported requests have concrete consumers, while incomplete timing support remains marked partial.
+A/V synchronization is still unsupported; parsing its request does not enable a clock controller.
 
 ## Connection lifecycle
 
@@ -83,8 +83,8 @@ reading is assumed safe merely because the error returned quickly.
 | --- | --- | --- | --- |
 | 1.2 compatibility | Existing handling; honor an explicit ackless Start if sent | Existing handling | Legacy discovery and margin updates |
 | 1.6 fallback | Existing formats and buffers | Existing handling | Also handles modern navigation state/position notifications |
-| 5.0 experimental | Start options; sender normally selects ackless | Legacy credit path unless Start says otherwise | UiConfig discovery and replacement-safe updates |
-| 6.0 experimental | Start and standalone options | Sender normally selects ackless; Start and standalone options | Same UI contract; energy forecast consumed without a response |
+| 5.0 experimental | Start options, advisory bank limit and requested telemetry; sender normally selects ackless | Legacy credit path unless Start says otherwise | UiConfig discovery and replacement-safe updates |
+| 6.0 experimental | Start and standalone options | Sender normally selects ackless; options and requested telemetry; timing requests retained | Same UI contract; energy forecast consumed without a response |
 | 6.1 experimental | Same observed contract as 6.0 | Same observed contract as 6.0 | Separate version identity, shared implementation |
 
 Profiles below the user's maximum are selected only from this table. For example, a reported
@@ -120,14 +120,71 @@ remain in place. Sending legacy ACKs would not turn the phone's credit controlle
 MediaOptions is a 13-field optional schema, shared by embedded and standalone messages. Durations
 use ordinary signed protobuf seconds/nanos fields, not ZigZag encoding. Options are retained as
 immutable snapshots with field presence intact. The inspected sender sends complete snapshots;
-this receiver replaces its diagnostic snapshot rather than inheriting omitted fields. Sparse
+this receiver replaces its runtime snapshot rather than inheriting omitted fields. Sparse
 update semantics are not established by the sender analysis.
 
-**Not implemented:** a shared audio/video presentation clock, the requested timing controller,
-MediaStats telemetry, or applying the sender's audio buffer request to local playback. Parsing
-these options is not a claim that those features work. The receiver keeps its existing playback
-policy and logs requests for unsupported synchronization/telemetry. This is why the higher
-profiles are opt-in experiments rather than the default.
+## Runtime requests and measured statistics
+
+`MediaStats` is **0x8013, head unit to phone**. `MediaOptions` is **0x8014, phone to
+head unit**. The sender's enum helper adds one before dispatch; its internal case 32788
+therefore consumes wire 32787, not the options message. Stats are diagnostics, not DATA
+credits or evidence that the phone adjusts its bitrate.
+
+```text
+Start / Options -> active channel snapshot -> validated runtime requests
+                         |                           |
+                         |                     PCM bank / measured output counters
+                         |
+                 writer timer, only if stats requested
+                         |
+                 current owner + cumulative counters
+                         |
+                 0x8013: measured fields only
+```
+
+The wire distribution contains signed int64 average/minimum/maximum/count in fields 1..4.
+Durations use signed seconds/nanos with sign, protobuf range and Long overflow checks.
+Malformed individual requests fall back independently. A zero/negative statistics interval
+turns reporting off; valid intervals are locally bounded to 250ms..60s. The sender defaults
+observed in AA18 are 500ms for TTS and 5000ms for ordinary media. These bounds are a receiver
+resource policy, not recovered protocol limits.
+
+| Request | Receiver behavior | Boundary |
+| --- | --- | --- |
+| Audio buffer limit | Advisory ceiling on adaptive reserve | Saved preference, a full observed supply batch and underrun recovery take precedence; no immediate trim when a request arrives |
+| Media statistics | Per-active-channel reports with bounded storage and cadence | PCM bank estimate and bank overflow/underrun event deltas; MediaCodec output-buffer counts. Unavailable fields are omitted |
+| Video timing window | Validated and retained; controller unsupported | The sender does not establish the reference point of its min/max delay. Codec latency is not a safe substitute |
+| A/V synchronization and signed sync offset | Retained and reported as unsupported | Needs a shared source timeline through AAC, resampling and output playheads, plus a verified offset convention |
+
+An accepted Start creates a local generation even if its wire ID repeats. Changed options,
+Stop, owner replacement and counter reset invalidate telemetry windows. The timer samples every
+250ms only while requested, serializes on the existing writer and checks the same active session
+again before writing. Equal repeated options do not reset a window. Sampling avoids the decoder
+lifecycle monitor, so a track rebuild cannot block ACKs through that lock. It does not enqueue a historical report per media packet. Audio tails may
+continue after Stop, but no new report is generated for that stopped session. Reports describe
+receiver observation windows, not an inferred cohort of source packets.
+
+The audio buffer limit does not resize the ring or the Android device buffer. After ten quiet
+seconds it can lower the floor of the existing 5ms-per-second reserve decay. Receiving a new
+limit does not immediately lower today's learned reserve. Supply deficits and underruns still
+raise the reserve immediately; saved preference, startup warmup and the supply-batch invariant
+remain in force. Normal bounded overlap catch-up may still compress PCM as the reserve decays,
+just as without this hint; this is not a promise to preserve every input sample unchanged.
+
+Video timing-controller requests are not executed. In particular, the sender's usual 17ms maximum
+must not be compared to full decoder latency: that would discard ordinary frames on many head
+units. The optional message alone does not define the reference clock, presentation callback or
+pacing algorithm. Existing rendering and recovery remain unchanged. Video telemetry reports
+processed MediaCodec output buffers, including concealed or skipped decoded pictures. FFmpeg's
+available counter has different semantics, so its video report is omitted until a matching
+measurement exists. Neither counter is claimed to measure actual screen presentations.
+
+**Remaining unsupported functionality:** the video timing controller, full A/V presentation synchronization, signed sync-offset
+application and statistics requiring that clock (A/V lag, calibrated audio/video end-to-end delay).
+Phone-side builders do not establish the offset sign or the receiver controller, and the current
+PCM/AAC pipeline does not preserve source PTS through every trim/conversion/output transition.
+These profiles therefore remain experimental; this implementation is not a complete GAL 5/6
+specification. No separate 6.1 runtime feature was found in the inspected sender branches.
 
 ## Display contract
 

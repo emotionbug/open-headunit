@@ -54,7 +54,10 @@ internal class AapControlMedia(
             Media.MsgType.MEDIA_MESSAGE_OPTIONS_VALUE -> {
                 if (aapTransport.mediaSessions.acceptsUpdate(message.channel) && message.size <= 16 * 1024) {
                     val options = message.parse(Media.MediaOptions.newBuilder()).build()
-                    if (aapTransport.mediaSessions.update(message.channel, options)) noteMediaOptions(options)
+                    if (aapTransport.mediaSessions.update(message.channel, options)) {
+                        noteMediaOptions(options)
+                        aapTransport.applyMediaRuntime(message.channel)
+                    }
                 }
                 return 0
             }
@@ -122,15 +125,14 @@ internal class AapControlMedia(
         }
 
         aapTransport.noteAudioSinkStarted(channel)
+        aapTransport.applyMediaRuntime(channel)
         aapAudio.preparePlayback(channel)
         return 0
     }
 
     private fun noteMediaOptions(options: Media.MediaOptions) {
-        // Sender-only code establishes the schema, not an HU AV clock mapping or controller.
-        // Retain the requested snapshot for diagnostics; do not invent resampling, drop audio,
-        // or shrink the user's buffer to the sender's audio_buffer_limit. Local playback and
-        // bounded queues remain authoritative until a presentation-clock contract is implemented.
+        // Each concrete consumer applies its bounded policy; AV presentation synchronization
+        // is separate from local buffering, scheduling and diagnostic telemetry.
         AppLog.d("Media options received: %s", options)
         val unsupported = checkNotNull(aapTransport.galContract).media.unimplementedRequests(options)
         if (unsupported.isNotEmpty()) AppLog.i("GAL requested unimplemented features: ${unsupported.joinToString()}")
@@ -140,6 +142,7 @@ internal class AapControlMedia(
 
         AppLog.i("Media Setup Request: %d on channel %s", request.type, Channel.name(channel))
         aapTransport.mediaSessions.stop(channel)
+        aapTransport.applyMediaRuntime(channel)
 
         // The microphone is a source, not a sink. Preserve its existing Setup response;
         // capture identity and credits are owned by MicrophoneRequest/MicSessionController.
@@ -208,6 +211,7 @@ internal class AapControlMedia(
         // A focus-cycle Stop still ends the wire session even when playback handling ignores
         // it. Reject later option updates until Start, while retaining the tail's ACK policy.
         aapTransport.mediaSessions.stop(channel)
+        aapTransport.applyMediaRuntime(channel)
         if (Channel.isAudio(channel)) {
             // Before the sink goes: this silence is one the phone asked for.
             aapTransport.noteAudioSinkStopped(channel)

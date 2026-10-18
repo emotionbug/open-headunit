@@ -13,9 +13,13 @@ internal class GalMediaSessions {
         val format: GalMediaFormat,
         val ackless: Boolean,
         val active: Boolean,
-        val options: Media.MediaOptions?
-    )
+        val options: Media.MediaOptions?,
+        val generation: Long
+    ) {
+        val runtime = GalRuntimeOptions.from(options)
+    }
 
+    private var nextGeneration = 0L
     private val channels = mutableMapOf<Int, Session>()
     private var policy: GalMediaPolicy? = null
     private var offer: GalMediaOffer? = null
@@ -33,10 +37,12 @@ internal class GalMediaSessions {
         val inspect = policy!!.optionsFor(channel).embedded != GalFeatureSupport.UNSUPPORTED
         val session = Session(request.sessionId, request.configurationIndex, format,
             request.flowControl == Media.Start.FlowControl.ACKLESS, true,
-            if (inspect && request.hasOptions()) request.options else null)
+            if (inspect && request.hasOptions()) request.options else null, ++nextGeneration)
         channels[channel] = session
         return session
     }
+
+    @Synchronized fun active(): Map<Int, Session> = channels.filterValues { it.active }
 
     @Synchronized fun current(channel: Int): Session? = channels[channel]
 

@@ -19,6 +19,7 @@ class GalMediaControlTest {
         init {
             fun field(name: String, value: Any) = AapTransport::class.java.getDeclaredField(name)
                 .apply { isAccessible = true }.set(transport, value)
+            field("aapAudio", audio)
             field("mediaSessions", sessions)
             field("galContract", galTestContract(profile))
             doNothing().whenever(transport).noteAudioSinkStarted(any())

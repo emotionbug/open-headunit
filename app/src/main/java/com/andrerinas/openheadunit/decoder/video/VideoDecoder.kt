@@ -200,7 +200,7 @@ class VideoDecoder(
     }
 
     private var codec: MediaCodec? = null
-    private var softwareHevcDecoder: FfmpegHevcDecoder? = null
+    @Volatile private var softwareHevcDecoder: FfmpegHevcDecoder? = null
     private var codecBufferInfo: MediaCodec.BufferInfo? = null
     @Volatile private var mSurface: Surface? = null
     // The surface last detached, so a teardown callback arriving after the detach is not mistaken for a stale one.
@@ -216,6 +216,13 @@ class VideoDecoder(
     @Volatile private var outputThread: Thread? = null
     @Volatile private var running = false
     private var startTime = 0L
+    // MediaStats counts successfully processed MediaCodec output buffers, including decoded
+    // pictures withheld by recovery. This is not a SurfaceFlinger presentation measurement.
+    @Volatile private var galDecodedFrames = 0L
+    private val galMetricsOwner = Any()
+    internal fun galPlaybackSample(): com.andrerinas.openheadunit.aap.GalPlaybackSample? =
+        if (softwareHevcDecoder != null) null else com.andrerinas.openheadunit.aap.GalPlaybackSample(
+            galMetricsOwner, videoFrames = galDecodedFrames)
 
     private var mWidth = 0
     private var mHeight = 0
@@ -2385,6 +2392,7 @@ class VideoDecoder(
                     // Their eventual return is not output progress for a replacement decoder.
                     if (!running || outputThread !== self) break
                     publishOutput(self) {
+                        galDecodedFrames += readyCount
                         framesRendered += alsoRendered
                         frameCount += alsoRendered
                         framesRenderedThisSession += alsoRendered

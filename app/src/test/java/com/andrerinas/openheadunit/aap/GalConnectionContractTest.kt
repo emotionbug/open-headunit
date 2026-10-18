@@ -15,14 +15,14 @@ class GalConnectionContractTest {
             val video = contract.media.optionsFor(Channel.ID_VID)
             val audioEmbedded = profile in listOf(GalProfile.GAL_5_0, GalProfile.GAL_6_0, GalProfile.GAL_6_1)
             val modernMedia = profile in listOf(GalProfile.GAL_6_0, GalProfile.GAL_6_1)
-            assertEquals(if (audioEmbedded) GalFeatureSupport.INSPECT_ONLY else GalFeatureSupport.UNSUPPORTED, audio.embedded)
-            assertEquals(if (modernMedia) GalFeatureSupport.INSPECT_ONLY else GalFeatureSupport.UNSUPPORTED, audio.standalone)
-            assertEquals(if (modernMedia) GalFeatureSupport.INSPECT_ONLY else GalFeatureSupport.UNSUPPORTED, video.embedded)
+            assertEquals(if (audioEmbedded) GalFeatureSupport.PARTIAL else GalFeatureSupport.UNSUPPORTED, audio.embedded)
+            assertEquals(if (modernMedia) GalFeatureSupport.PARTIAL else GalFeatureSupport.UNSUPPORTED, audio.standalone)
+            assertEquals(if (modernMedia) GalFeatureSupport.PARTIAL else GalFeatureSupport.UNSUPPORTED, video.embedded)
             assertEquals(video.embedded, video.standalone)
             assertEquals(GalMediaPolicy.NO_OPTIONS, contract.media.optionsFor(Channel.ID_MIC))
             assertEquals(GalFeatureSupport.UNSUPPORTED, contract.media.avSynchronization)
-            assertEquals(GalFeatureSupport.UNSUPPORTED, contract.media.mediaStatistics)
-            assertEquals(listOf("A/V synchronization", "media statistics"), contract.media.unimplementedRequests(
+            assertEquals(if (audioEmbedded) GalFeatureSupport.PARTIAL else GalFeatureSupport.UNSUPPORTED, contract.media.mediaStatistics)
+            assertEquals(if (audioEmbedded) listOf("A/V synchronization") else listOf("A/V synchronization", "media statistics"), contract.media.unimplementedRequests(
                 Media.MediaOptions.newBuilder().setEnableAvSync(true).setEnableMediaStats(true).build()))
         }
     }
