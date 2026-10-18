@@ -32,7 +32,7 @@ class VideoTransportBoundaryTest {
                     val offset = call.arguments[1] as Int
                     decoded.add(data.copyOfRange(offset, offset + (call.arguments[2] as Int)))
                     null
-                }.whenever(decoder).decode(any<ByteArray>(), any(), any(), any(), any())
+                }.whenever(decoder).decode(any<ByteArray>(), any(), any(), any(), any(), any())
                 val video = AapVideo(decoder, Settings(context)) { fail("healthy split $split requested recovery") }
                 val reassembler = AapMessageReassembler()
                 var acks = 0

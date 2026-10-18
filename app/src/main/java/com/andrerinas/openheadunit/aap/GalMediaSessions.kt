@@ -32,8 +32,13 @@ internal class GalMediaSessions {
 
     @Synchronized fun configurationIndices(channel: Int): List<Int> = offer?.indices(channel) ?: emptyList()
 
+    @Synchronized fun codec(channel: Int): Int? = offer?.codec(channel)
+
+    @Synchronized fun format(channel: Int, index: Int): GalMediaFormat? = offer?.format(channel, index)
+
     @Synchronized fun start(channel: Int, request: Media.Start): Session? {
         val format = offer?.format(channel, request.configurationIndex) ?: return null
+        if (format is GalMediaFormat.Audio && !GalAudioFormat.supported(format.value)) return null
         val inspect = policy!!.optionsFor(channel).embedded != GalFeatureSupport.UNSUPPORTED
         val session = Session(request.sessionId, request.configurationIndex, format,
             request.flowControl == Media.Start.FlowControl.ACKLESS, true,

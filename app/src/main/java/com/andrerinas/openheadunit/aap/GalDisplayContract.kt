@@ -2,6 +2,7 @@ package com.andrerinas.openheadunit.aap
 
 import com.andrerinas.openheadunit.aap.protocol.proto.Media
 import com.andrerinas.openheadunit.aap.protocol.proto.Control
+import com.andrerinas.openheadunit.utils.ProjectionMargins
 
 internal data class GalDisplaySettings(val hideClock: Boolean, val hideBattery: Boolean, val hideSignal: Boolean)
 
@@ -23,7 +24,8 @@ internal class GalDisplayContract(private val settings: GalDisplaySettings, priv
     }
 
     fun initial(width: Int, height: Int): Media.UiConfig? =
-        if (modern) margins(width / 2, (height + 1) / 2, (width + 1) / 2, height / 2) else null
+        if (modern) margins(ProjectionMargins.left(width), ProjectionMargins.top(height),
+            ProjectionMargins.right(width), ProjectionMargins.bottom(height)) else null
 
     fun margins(left: Int, top: Int, right: Int, bottom: Int): Media.UiConfig =
         Media.UiConfig.newBuilder()

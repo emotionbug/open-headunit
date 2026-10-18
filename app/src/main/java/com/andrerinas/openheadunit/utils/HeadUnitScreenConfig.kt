@@ -76,6 +76,24 @@ object HeadUnitScreenConfig {
         return true
     }
 
+    /** Start may select either advertised entry, including primary after a fallback session. */
+    internal fun selectAnnouncedVideo(index: Int, format: Control.Service.MediaSinkService.VideoConfiguration): Boolean {
+        if (index == VideoFallbackPolicy.FALLBACK_INDEX) return adoptFallback()
+        if (index != 0) return false
+        val changed = synchronized(this) {
+            if (adoptedFallback == null) return@synchronized false
+            adoptedFallback = null
+            negotiatedResolutionType = format.codecResolution
+            announcedWidthMargin = format.marginWidth
+            announcedHeightMargin = format.marginHeight
+            true
+        }
+        // Reuse the layout notification for both directions. It updates touch mapping as well
+        // as the surface; accepting index 0 while retaining fallback geometry misplaces input.
+        if (changed) onFallbackAdopted?.invoke()
+        return changed
+    }
+
     private lateinit var currentSettings: Settings // Store settings instance
 
     /** Application context, so [recalculate] can ask the radio what band it has. Never an Activity. */
@@ -725,10 +743,10 @@ object HeadUnitScreenConfig {
 
 
     // These are half the total margin, distributed symmetrically.
-    fun getLeftMargin(): Int = getWidthMargin() / 2
-    fun getRightMargin(): Int = getWidthMargin() - getLeftMargin()
-    fun getTopMargin(): Int = getHeightMargin() / 2
-    fun getBottomMargin(): Int = getHeightMargin() - getTopMargin()
+    fun getLeftMargin(): Int = ProjectionMargins.left(getWidthMargin())
+    fun getRightMargin(): Int = ProjectionMargins.right(getWidthMargin())
+    fun getTopMargin(): Int = ProjectionMargins.top(getHeightMargin())
+    fun getBottomMargin(): Int = ProjectionMargins.bottom(getHeightMargin())
 
     /**
      * Called when the actual rendering surface dimensions become known (from onSurfaceChanged).

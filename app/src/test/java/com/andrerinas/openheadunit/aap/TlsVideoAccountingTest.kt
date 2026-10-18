@@ -74,6 +74,7 @@ class TlsVideoAccountingTest {
                 }
                 val settings = mock<Settings>()
                 whenever(settings.videoCodec).thenReturn("h264")
+        whenever(settings.softwareVideoDecoder).thenReturn(Settings.SoftwareVideoDecoder.DEVICE_MEDIACODEC)
                 whenever(settings.debugVideoFaultInjection).thenReturn(VideoFaultInjector.Mode.OFF)
                 val decoder = mock<VideoDecoder>()
                 val video = AapVideo(decoder, settings) {}
@@ -86,7 +87,7 @@ class TlsVideoAccountingTest {
                     else AapReadSingleMessage(connection, ssl, handler, repair)
                 while (position < wire.size) assertEquals(0, reader.read())
                 assertEquals(listOf(true), repairs)
-                verify(decoder, times(4)).decode(any(), any(), eq(1014), any(), any())
+                verify(decoder, times(4)).decode(any(), any(), eq(1014), any(), any(), any())
             }
         }
 }

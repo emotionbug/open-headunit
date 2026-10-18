@@ -417,6 +417,9 @@ class AapTransport(
         if (firstSink) audioGapMonitor.skipExpectedGap(SystemClock.elapsedRealtime())
     }
 
+    internal fun isAudioSinkStarted(channel: Int): Boolean =
+        synchronized(startedAudioChannels) { channel in startedAudioChannels }
+
     /** The phone stopped an audio sink. Called from [AapControlMedia.mediaSinkStopRequest]. */
     internal fun noteAudioSinkStopped(channel: Int) {
         if (!Channel.isAudio(channel)) return

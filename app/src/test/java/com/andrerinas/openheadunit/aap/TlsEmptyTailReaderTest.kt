@@ -20,6 +20,7 @@ class TlsEmptyTailReaderTest {
         val settings = mock<Settings>()
         whenever(settings.debugVideoFaultInjection).thenReturn(VideoFaultInjector.Mode.OFF)
         whenever(settings.videoCodec).thenReturn("h264")
+        whenever(settings.softwareVideoDecoder).thenReturn(Settings.SoftwareVideoDecoder.DEVICE_MEDIACODEC)
         val decoder = mock<VideoDecoder>()
         var corruptions = 0
         val video = AapVideo(decoder, settings) { corruptions++ }
@@ -30,7 +31,7 @@ class TlsEmptyTailReaderTest {
             val size = it.getArgument<Int>(2)
             decoded.add(data.copyOfRange(offset, offset + size).toList())
             null
-        }.whenever(decoder).decode(any(), any(), any(), any(), any())
+        }.whenever(decoder).decode(any(), any(), any(), any(), any(), any())
         val payload = byteArrayOf(0, 1, 0, 0, 0, 1, 0x65)
         val ssl = mock<AapSsl>()
         whenever(ssl.decrypt(any(), any(), any())).thenAnswer {

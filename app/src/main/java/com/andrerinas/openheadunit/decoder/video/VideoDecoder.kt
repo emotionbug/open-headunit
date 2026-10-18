@@ -939,7 +939,8 @@ class VideoDecoder(
      * for a keyframe - see [notifyFrameDropped] for the shape of that ask and why it stays silent
      * before the first rendered frame.
      */
-    fun decode(buffer: ByteArray, offset: Int, size: Int, forceSoftware: Boolean, codecName: String) {
+    fun decode(buffer: ByteArray, offset: Int, size: Int, forceSoftware: Boolean, codecName: String,
+               softwareDecoder: Settings.SoftwareVideoDecoder = settings.softwareVideoDecoder) {
         val frame = synchronized(this) {
             // Input-side liveness: bytes are arriving from the phone right now.
             lastInputBytesReceivedMs = elapsedRealtime()
@@ -1024,7 +1025,7 @@ class VideoDecoder(
                     val detectedType = detectCodecType(frameData, frameOffset, size)
                     val requestedType = if (codecName.contains("265")) CodecType.H265 else CodecType.H264
                     val hevcDetectable = isHevcSupported()
-                    val hevcUsable = hevcDetectable || bundledHevcSelected()
+                    val hevcUsable = hevcDetectable || bundledHevcSelected(forceSoftware, softwareDecoder)
                     val selected = CodecTypeSelectionPolicy.select(
                         detected = detectedType,
                         requested = requestedType,
@@ -1061,10 +1062,10 @@ class VideoDecoder(
                 if (mSurface == null || !mSurface!!.isValid) return
                 if (mWidth == 0 || mHeight == 0) return
 
-                if (shouldUseBundledHevc(typeToUse, settings.forceSoftwareDecoding || forceSoftware)) {
+                if (shouldUseBundledHevc(typeToUse, forceSoftware, softwareDecoder)) {
                     startBundledHevc(mWidth, mHeight)
                 } else {
-                    start(typeToUse.mimeType, settings.forceSoftwareDecoding || forceSoftware, mWidth, mHeight)
+                    start(typeToUse.mimeType, forceSoftware, mWidth, mHeight)
                 }
             }
 
@@ -1371,10 +1372,10 @@ class VideoDecoder(
         }
     }
 
-    private fun shouldUseBundledHevc(type: CodecType, forceSoftware: Boolean): Boolean {
+    private fun shouldUseBundledHevc(type: CodecType, forceSoftware: Boolean, softwareDecoder: Settings.SoftwareVideoDecoder): Boolean {
         return type == CodecType.H265 &&
                 forceSoftware &&
-                settings.softwareVideoDecoder == Settings.SoftwareVideoDecoder.BUNDLED_FFMPEG &&
+                softwareDecoder == Settings.SoftwareVideoDecoder.BUNDLED_FFMPEG &&
                 FfmpegHevcDecoder.isAvailable()
     }
 
@@ -1384,8 +1385,8 @@ class VideoDecoder(
      * `explicitSoftwareHevc` half of the announcement, so the decoder and the codec we asked the
      * phone for agree about whether H.265 was ever on the table.
      */
-    private fun bundledHevcSelected(): Boolean =
-        settings.forceSoftwareDecoding && when (settings.softwareVideoDecoder) {
+    private fun bundledHevcSelected(forceSoftware: Boolean, softwareDecoder: Settings.SoftwareVideoDecoder): Boolean =
+        forceSoftware && when (softwareDecoder) {
             Settings.SoftwareVideoDecoder.BUNDLED_FFMPEG -> isBundledHevcDecoderAvailable()
             Settings.SoftwareVideoDecoder.DEVICE_MEDIACODEC -> isHevcDecoderAvailable(includeSoftware = true)
         }

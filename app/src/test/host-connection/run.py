@@ -154,6 +154,7 @@ class AapTransport(
  private val micSessions=MicSessions()
  private fun retireMicrophone(){micSessions.close(shutdown=true)}
  private fun resetMicrophone(){}
+ private val mediaStatisticsTick=Runnable{}
  private val focusCycleGainRunnable=Runnable{}
  private val unrepairedCheckRunnable=Runnable{}
  private val videoBufferPool=ConcurrentLinkedQueue<ByteArray>()

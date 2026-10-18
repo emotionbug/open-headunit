@@ -4,6 +4,22 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class GalAudioReserveTest {
+    @Test fun `normal sender limits retain default reserve behavior at every preference`() {
+        for (multiplier in listOf(1, 2, 4, 8, 16)) {
+            for (hint in listOf(300L, 400L)) {
+                val baseline = AdaptiveJitterPolicy(48000, multiplier)
+                val requested = AdaptiveJitterPolicy(48000, multiplier).apply { requestedLimitMs = hint }
+                for (ms in 0L..40_000L step 40) {
+                    baseline.onArrival(ms, 1920)
+                    requested.onArrival(ms, 1920)
+                    if (ms == 4000L) { baseline.onUnderrun(ms); requested.onUnderrun(ms) }
+                    assertEquals("multiplier=$multiplier hint=$hint at $ms",
+                        baseline.targetFrames, requested.targetFrames)
+                }
+            }
+        }
+    }
+
     @Test fun `sender ceiling never shrinks saved preference or a full observed batch`() {
         val preferred = AdaptiveJitterPolicy(48000, 16)
         preferred.requestedLimitMs = 50

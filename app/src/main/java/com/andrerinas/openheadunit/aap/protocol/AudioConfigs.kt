@@ -1,14 +1,13 @@
 package com.andrerinas.openheadunit.aap.protocol
 
 import android.media.AudioManager
-import android.util.SparseArray
 import com.andrerinas.openheadunit.aap.protocol.proto.Media
 
 import com.andrerinas.openheadunit.decoder.audio.AudioDecoder
 import com.andrerinas.openheadunit.utils.Settings
 
 object AudioConfigs {
-    private val audioTracks = SparseArray<Media.AudioConfiguration>(3)
+    private val audioTracks = mutableMapOf<Int, Media.AudioConfiguration>()
 
     /**
      * Which system stream an Android Auto audio channel plays on.
@@ -43,7 +42,7 @@ object AudioConfigs {
     )
 
     fun get(channel: Int): Media.AudioConfiguration {
-        return audioTracks.get(channel)
+        return audioTracks.getValue(channel)
     }
 
     init {

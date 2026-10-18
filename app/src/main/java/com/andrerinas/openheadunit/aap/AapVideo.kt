@@ -1,6 +1,7 @@
 package com.andrerinas.openheadunit.aap
 
 import com.andrerinas.openheadunit.aap.protocol.messages.Messages
+import com.andrerinas.openheadunit.aap.protocol.proto.Media
 import com.andrerinas.openheadunit.decoder.video.VideoDecoder
 import com.andrerinas.openheadunit.decoder.video.VideoFaultInjector
 import com.andrerinas.openheadunit.decoder.video.VideoFaultReporter
@@ -11,6 +12,20 @@ import com.andrerinas.openheadunit.utils.Settings
 import java.nio.ByteBuffer
 
 internal class AapVideo(private val videoDecoder: VideoDecoder, private val settings: Settings, private val onFrameCorrupted: () -> Unit) {
+
+    internal val sessionConfig = VideoSessionConfig.from(settings)
+    @Volatile private var announcedCodec: String? = null
+
+    internal fun noteAnnouncedCodec(type: Int) {
+        announcedCodec = when (type) {
+            Media.MediaCodecType.MEDIA_CODEC_VIDEO_H265_VALUE -> "H.265"
+            Media.MediaCodecType.MEDIA_CODEC_VIDEO_H264_BP_VALUE -> "H.264"
+            else -> error("Unsupported announced video codec: $type")
+        }
+    }
+
+    internal fun usesBundledHevc(): Boolean = announcedCodec == "H.265" &&
+        sessionConfig.forceSoftware && sessionConfig.softwareDecoder == Settings.SoftwareVideoDecoder.BUNDLED_FFMPEG
 
     companion object {
         /** Enough for H.264 at the resolutions most head units negotiate. ~2MB. */
@@ -284,7 +299,7 @@ internal class AapVideo(private val videoDecoder: VideoDecoder, private val sett
         return when (val action = decision.action) {
             is VideoFragmentAssembler.Action.DecodeWhole -> {
                 messageBuffer.clear()
-                videoDecoder.decode(buf, action.payloadOffset, len - action.payloadOffset, settings.forceSoftwareDecoding, settings.videoCodec)
+                videoDecoder.decode(buf, action.payloadOffset, len - action.payloadOffset, sessionConfig.forceSoftware, announcedCodec ?: sessionConfig.codec, sessionConfig.softwareDecoder)
                 true
             }
 
@@ -350,9 +365,9 @@ internal class AapVideo(private val videoDecoder: VideoDecoder, private val sett
                         legacyAssembledBuffer = ByteArray(assembledSize + 1024)
                     }
                     messageBuffer.get(legacyAssembledBuffer!!, 0, assembledSize)
-                    videoDecoder.decode(legacyAssembledBuffer!!, 0, assembledSize, settings.forceSoftwareDecoding, settings.videoCodec)
+                    videoDecoder.decode(legacyAssembledBuffer!!, 0, assembledSize, sessionConfig.forceSoftware, announcedCodec ?: sessionConfig.codec, sessionConfig.softwareDecoder)
                 } else {
-                    videoDecoder.decode(messageBuffer.array(), 0, assembledSize, settings.forceSoftwareDecoding, settings.videoCodec)
+                    videoDecoder.decode(messageBuffer.array(), 0, assembledSize, sessionConfig.forceSoftware, announcedCodec ?: sessionConfig.codec, sessionConfig.softwareDecoder)
                 }
 
                 messageBuffer.clear()

@@ -21,16 +21,17 @@ import com.andrerinas.openheadunit.utils.VideoFallbackPolicy
 import com.andrerinas.openheadunit.aap.GalConnectionContract
 import com.andrerinas.openheadunit.aap.GalMediaOffer
 import com.andrerinas.openheadunit.aap.AudioSessionConfig
+import com.andrerinas.openheadunit.aap.VideoSessionConfig
 
 internal class ServiceDiscoveryResponse private constructor(proto: Control.ServiceDiscoveryResponse)
     : AapMessage(Channel.ID_CTR, Control.ControlMsgType.MESSAGE_SERVICE_DISCOVERY_RESPONSE_VALUE, proto) {
-    constructor(context: Context, audioConfig: AudioSessionConfig, contract: GalConnectionContract)
-        : this(makeProto(context, audioConfig, contract))
+    constructor(context: Context, audioConfig: AudioSessionConfig, videoConfig: VideoSessionConfig, contract: GalConnectionContract)
+        : this(makeProto(context, audioConfig, videoConfig, contract))
 
     val mediaOffer = GalMediaOffer.from(proto)
 
     companion object {
-        private fun makeProto(context: Context, audioConfig: AudioSessionConfig, contract: GalConnectionContract): Control.ServiceDiscoveryResponse {
+        private fun makeProto(context: Context, audioConfig: AudioSessionConfig, videoConfig: VideoSessionConfig, contract: GalConnectionContract): Control.ServiceDiscoveryResponse {
             val settings = App.provide(context).settings
             // Initialize HeadUnitScreenConfig with actual physical screen dimensions
             HeadUnitScreenConfig.init(context, context.resources.displayMetrics, settings)
@@ -58,9 +59,9 @@ internal class ServiceDiscoveryResponse private constructor(proto: Control.Servi
                 service.id = Channel.ID_VID
                 service.mediaSinkService = Control.Service.MediaSinkService.newBuilder().also { mediaSinkServiceBuilder ->
                     val explicitSoftwareHevc =
-                        settings.videoCodec == VideoDecoder.CodecType.H265.settingsValue &&
-                                settings.forceSoftwareDecoding &&
-                                when (settings.softwareVideoDecoder) {
+                        videoConfig.codec == VideoDecoder.CodecType.H265.settingsValue &&
+                                videoConfig.forceSoftware &&
+                                when (videoConfig.softwareDecoder) {
                                     com.andrerinas.openheadunit.utils.Settings.SoftwareVideoDecoder.BUNDLED_FFMPEG ->
                                         com.andrerinas.openheadunit.decoder.video.VideoDecoder.isBundledHevcDecoderAvailable()
                                     com.andrerinas.openheadunit.utils.Settings.SoftwareVideoDecoder.DEVICE_MEDIACODEC ->
@@ -71,7 +72,7 @@ internal class ServiceDiscoveryResponse private constructor(proto: Control.Servi
                     val hevcAvailableForHighResolution =
                         com.andrerinas.openheadunit.decoder.video.VideoDecoder.isHevcReliable() || explicitSoftwareHevc
 
-                    val codecToRequest = when (settings.videoCodec) {
+                    val codecToRequest = when (videoConfig.codec) {
                         "H.265" -> if (hevcAvailableForUserChoice) {
                             Media.MediaCodecType.MEDIA_CODEC_VIDEO_H265
                         } else {

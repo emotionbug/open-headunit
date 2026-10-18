@@ -70,14 +70,22 @@ internal sealed class GalMediaFormat {
     data class Video(val value: Control.Service.MediaSinkService.VideoConfiguration) : GalMediaFormat()
 }
 
-internal class GalMediaOffer private constructor(private val sinks: Map<Int, List<GalMediaFormat>>) {
+internal class GalMediaOffer private constructor(
+    private val sinks: Map<Int, List<GalMediaFormat>>,
+    private val codecs: Map<Int, Int>
+) {
+    fun codec(channel: Int): Int? = codecs[channel]
     fun indices(channel: Int): List<Int> = sinks[channel]?.indices?.toList() ?: emptyList()
     fun format(channel: Int, index: Int): GalMediaFormat? = sinks[channel]?.getOrNull(index)
 
     companion object {
         fun from(discovery: Control.ServiceDiscoveryResponse): GalMediaOffer {
             val sinks = mutableMapOf<Int, List<GalMediaFormat>>()
+            val codecs = mutableMapOf<Int, Int>()
             for (service in discovery.servicesList) {
+                if (service.id == Channel.ID_MIC && service.hasMediaSourceService()) {
+                    codecs[service.id] = service.mediaSourceService.type.number
+                }
                 if (!service.hasMediaSinkService()) continue // Includes microphone source exclusion.
                 val sink = service.mediaSinkService
                 val formats = when {
@@ -87,8 +95,9 @@ internal class GalMediaOffer private constructor(private val sinks: Map<Int, Lis
                 }
                 require(!sinks.containsKey(service.id)) { "Duplicate media sink ${service.id}" }
                 sinks[service.id] = formats
+                codecs[service.id] = sink.availableType.number
             }
-            return GalMediaOffer(sinks.toMap())
+            return GalMediaOffer(sinks.toMap(), codecs.toMap())
         }
     }
 }

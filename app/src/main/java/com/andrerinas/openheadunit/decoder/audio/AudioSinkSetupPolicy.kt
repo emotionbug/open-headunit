@@ -7,8 +7,8 @@ package com.andrerinas.openheadunit.decoder.audio
  * 298 ms of its capacity: the framework gave the first track a deep buffer and the replacement a
  * low-latency one, and every underrun and shed window of a 23 minute capture came after it.
  *
- * The channel's rate and channel count are fixed by `AudioConfigs`, so the codec is the whole of
- * what a setup can change.
+ * This policy compares codec ownership. AapAudio also compares the selected discovery format;
+ * a different rate/channel count needs a new sink, while an identical Start retains its bank.
  */
 object AudioSinkSetupPolicy {
 

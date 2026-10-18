@@ -82,7 +82,7 @@ reading is assumed safe merely because the error returned quickly.
 | Profile | Audio sink | Video sink | UI and navigation |
 | --- | --- | --- | --- |
 | 1.2 compatibility | Existing handling; honor an explicit ackless Start if sent | Existing handling | Legacy discovery and margin updates |
-| 1.6 fallback | Existing formats and buffers | Existing handling | Also handles modern navigation state/position notifications |
+| 1.6 fallback | Existing formats and buffers | Validates against advertised sinks/configurations | Also handles modern navigation state/position notifications |
 | 5.0 experimental | Start options, advisory bank limit and requested telemetry; sender normally selects ackless | Legacy credit path unless Start says otherwise | UiConfig discovery and replacement-safe updates |
 | 6.0 experimental | Start and standalone options | Sender normally selects ackless; options and requested telemetry; timing requests retained | Same UI contract; energy forecast consumed without a response |
 | 6.1 experimental | Same observed contract as 6.0 | Same observed contract as 6.0 | Separate version identity, shared implementation |
@@ -151,7 +151,7 @@ resource policy, not recovered protocol limits.
 
 | Request | Receiver behavior | Boundary |
 | --- | --- | --- |
-| Audio buffer limit | Advisory ceiling on adaptive reserve | Saved preference, a full observed supply batch and underrun recovery take precedence; no immediate trim when a request arrives |
+| Audio buffer limit | Hint for the minimum reserve reached after quiet decay | Saved preference, a full observed supply batch and underrun recovery take precedence; no immediate trim when a request arrives |
 | Media statistics | Per-active-channel reports with bounded storage and cadence | PCM bank estimate and bank overflow/underrun event deltas; MediaCodec output-buffer counts. Unavailable fields are omitted |
 | Video timing window | Validated and retained; controller unsupported | The sender does not establish the reference point of its min/max delay. Codec latency is not a safe substitute |
 | A/V synchronization and signed sync offset | Retained and reported as unsupported | Needs a shared source timeline through AAC, resampling and output playheads, plus a verified offset convention |
@@ -163,6 +163,12 @@ again before writing. Equal repeated options do not reset a window. Sampling avo
 lifecycle monitor, so a track rebuild cannot block ACKs through that lock. It does not enqueue a historical report per media packet. Audio tails may
 continue after Stop, but no new report is generated for that stopped session. Reports describe
 receiver observation windows, not an inferred cohort of source packets.
+
+The audio buffer limit does not resize the ring or the Android device buffer, and it is not a hard
+queue ceiling. The quiet-decay floor is `min(initial ceiling, max(user floor, requested limit))`.
+Consequently the sender's usual 300/400ms requests do not change the existing reserve policy.
+A smaller request can lower the quiet floor only when the user's floor is below the initial
+150ms ceiling. It cannot reduce a saved 16x preference or limit underrun recovery.
 
 The audio buffer limit does not resize the ring or the Android device buffer. After ten quiet
 seconds it can lower the floor of the existing 5ms-per-second reserve decay. Receiving a new
@@ -211,3 +217,28 @@ Unit tests cover serial probing, version bounds, legacy fallback, split/coalesce
 failed exchanges before TLS, final-options ownership, per-channel ACK mode, repeated session IDs,
 Stop/update ownership, signed Duration encoding and replacement-safe UI fields. Hardware
 interoperability of the new opt-in profiles remains separate from these deterministic checks.
+
+
+## Service lifecycle and selected formats
+
+- Setup rejects unsupported channel/codec combinations before READY. Video must match the
+  advertised codec; audio continues to accept supported PCM/AAC framing selected by the phone.
+  A microphone Setup is accepted only if that source was advertised.
+- Video codec and software backend preferences are frozen with discovery. Decoder creation and
+  the software-HEVC ACK window consume that same snapshot instead of rereading mutable settings.
+- Start's configuration index selects the actual audio rate, channels and PCM duration calculation.
+  Identical formats keep the existing decoder and bank. A format change requires a new decoder;
+  remaining audio in an incompatible old format is not transferred to it. Repeated Setup retains
+  the previous selected index until Start selects another one.
+- CSD before Start is retained as an owned, bounded copy and used only with a matching AAC-LC
+  format. CSD still consumes no ACK credit. New Setup retires the previous pending CSD.
+- ChannelClose retires runtime requests and statistics. Active audio drains through the existing
+  Stop path, retaining tail ACK ownership; microphone capture is closed even if Stop was omitted.
+- Initial UiConfig and subsequent margin updates use the same odd-pixel split: the extra pixel
+  goes to the right/top. Selecting primary after fallback also restores display/touch geometry.
+
+Microphone ANC/EC fields remain diagnostic requests, not a promise about hardware processing.
+The inspected AA17/18 builders always send false for both; using those values as mandatory
+switches would disable the user's configured effects. Local microphone settings and Android's
+actual effect availability remain authoritative. Firmware processing associated with the capture
+source may also exist independently of the app's AudioEffect instances.

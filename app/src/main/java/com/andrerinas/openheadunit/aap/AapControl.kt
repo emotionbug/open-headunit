@@ -120,8 +120,13 @@ internal class AapControlMedia(
         session.options?.let { noteMediaOptions(it) }
 
         // Geometry follows the selected advertised format before the first frame is laid out.
-        if (session.format is GalMediaFormat.Video && session.configurationIndex == VideoFallbackPolicy.FALLBACK_INDEX) {
-            HeadUnitScreenConfig.adoptFallback()
+        when (val format = session.format) {
+            is GalMediaFormat.Video -> HeadUnitScreenConfig.selectAnnouncedVideo(
+                session.configurationIndex, format.value)
+            is GalMediaFormat.Audio -> if (!aapAudio.selectFormat(channel, format.value)) {
+                aapTransport.quit()
+                return -1
+            }
         }
 
         aapTransport.noteAudioSinkStarted(channel)
@@ -141,6 +146,20 @@ internal class AapControlMedia(
     private fun mediaSetupRequest(request: Media.MediaSetupRequest, channel: Int): Int {
 
         AppLog.i("Media Setup Request: %d on channel %s", request.type, Channel.name(channel))
+        val validCodec = when {
+            Channel.isAudio(channel) -> AudioSinkCodecPolicy.codecFor(request.type) != null
+            channel == Channel.ID_MIC -> request.type == Media.MediaCodecType.MEDIA_CODEC_AUDIO_PCM_VALUE &&
+                aapTransport.mediaSessions.codec(channel) == request.type
+            channel == Channel.ID_VID -> aapTransport.mediaSessions.codec(channel) == request.type
+            else -> false
+        }
+        if (!validCodec) {
+            // Config has READY/WAIT, not an error status. Never acknowledge a codec that
+            // this channel would then interpret as a different wire format.
+            AppLog.e("Media Setup rejected: unsupported codec ${request.type} on channel $channel")
+            aapTransport.quit()
+            return -1
+        }
         aapTransport.mediaSessions.stop(channel)
         aapTransport.applyMediaRuntime(channel)
 
@@ -150,6 +169,14 @@ internal class AapControlMedia(
             else aapTransport.mediaSessions.configurationIndices(channel)
         if (indices.isEmpty()) {
             AppLog.e("Media Setup rejected: sink $channel was not advertised")
+            aapTransport.quit()
+            return -1
+        }
+        if (Channel.isAudio(channel) && indices.any {
+                val format = aapTransport.mediaSessions.format(channel, it) as? GalMediaFormat.Audio
+                format == null || !GalAudioFormat.supported(format.value)
+            }) {
+            AppLog.e("Media Setup rejected: unsupported advertised audio format on $channel")
             aapTransport.quit()
             return -1
         }
@@ -171,7 +198,15 @@ internal class AapControlMedia(
         // Pushing AudioFocusNotification
         if (Channel.isAudio(channel)) {
             aapAudio.noteSinkCodec(channel, request.type)
-            aapAudio.precreateAudioTrack(channel)
+            // Repeated Setup must not switch a live index-1 sink back to index 0 before
+            // Start chooses anything. The same offer remains frozen for this connection.
+            val index = aapTransport.mediaSessions.current(channel)?.configurationIndex
+                ?.takeIf { it in indices } ?: indices.first()
+            val format = aapTransport.mediaSessions.format(channel, index) as? GalMediaFormat.Audio
+            if (format == null || !aapAudio.selectFormat(channel, format.value)) {
+                aapTransport.quit()
+                return -1
+            }
             val focusNotification = Control.AudioFocusNotification.newBuilder()
                 .setFocusState(Control.AudioFocusNotification.AudioFocusStateType.STATE_GAIN)
                 .setUnsolicited(true)
@@ -184,10 +219,7 @@ internal class AapControlMedia(
 
     private fun maxUnackedFor(channel: Int): Int {
         if (channel == Channel.ID_VID) {
-            val softwareHevc =
-                aapTransport.settings.videoCodec == VideoDecoder.CodecType.H265.settingsValue &&
-                        aapTransport.settings.forceSoftwareDecoding &&
-                        aapTransport.settings.softwareVideoDecoder == Settings.SoftwareVideoDecoder.BUNDLED_FFMPEG
+            val softwareHevc = aapTransport.aapVideo.usesBundledHevc()
             if (softwareHevc) {
                 // Keep the phone closer to decoder pace. A large wireless window lets video
                 // backlog turn into visible input lag when 2K HEVC is decoded in software.
@@ -238,13 +270,19 @@ internal class AapControlMedia(
      * Keep the request at INFO: it records the phone's ANC/EC preferences and maxUnacked window,
      * so a silent assistant can be traced from the request through capture and uplink summaries.
      * The window controls sending; ANC/EC settings describe the request, not proof that a device
-     * enabled those effects. Native startup is asynchronous and must not block media reception.
+     * enabled those effects. AA17/18's inspected builders set both fields to false regardless
+     * of capture mode; treating them as mandatory switches would disable the user's existing
+     * effects on every request. Local settings/device support therefore remain authoritative.
+     * Native startup is asynchronous and must not block media reception.
      */
     private fun micRequest(micRequest: Media.MicrophoneRequest): Int {
         AppLog.i("Mic request: %s", micRequest)
 
         if (!micRequest.open) {
             aapTransport.closeMicSession(reply = true)
+        } else if (aapTransport.mediaSessions.codec(Channel.ID_MIC) == null) {
+            AppLog.w("Mic request declined: microphone was not advertised on this connection")
+            aapTransport.rejectMicSession()
         } else if (MicrophonePolicy.declineReason(aapTransport.settings.useHeadUnitMicrophone,
                 micRecorder.isAvailable) != MicrophonePolicy.Decline.NONE) {
             // A disabled head-unit microphone leaves capture with the phone or Bluetooth
@@ -388,7 +426,19 @@ internal class AapControlService(
             }
             Control.ControlMsgType.MESSAGE_CHANNEL_CLOSE_NOTIFICATION_VALUE -> {
                 AppLog.i("RX: Channel Close Notification on chan ${message.channel}")
+                if (message.channel == Channel.ID_MIC) aapTransport.closeMicSession()
+                if (Channel.isAudio(message.channel) &&
+                    aapTransport.isAudioSinkStarted(message.channel)) {
+                    // Close is terminal even when a peer omits Stop. Drain rather than flush,
+                    // and release playback focus once the retained tail becomes quiescent.
+                    aapTransport.noteAudioSinkStopped(message.channel)
+                    aapAudio.stopAudio(message.channel)
+                }
                 aapTransport.mediaSessions.stop(message.channel)
+                // CONTROL routes this notification here even on a media channel. Retire its
+                // runtime requests as well as its options; buffered tail data keeps its ACK
+                // ownership, so closing the channel does not flush playback or change ACK mode.
+                aapTransport.applyMediaRuntime(message.channel)
                 return 0
             }
             else -> AppLog.e("Unsupported Control message type: ${message.type}")
@@ -402,8 +452,9 @@ internal class AapControlService(
 
         val msg = discoveryResponse ?: run {
             val contract = checkNotNull(aapTransport.galContract) { "Service discovery before GAL agreement" }
-            ServiceDiscoveryResponse(context, aapAudio.sessionConfig, contract).also {
+            ServiceDiscoveryResponse(context, aapAudio.sessionConfig, aapTransport.aapVideo.sessionConfig, contract).also {
                 aapTransport.mediaSessions.advertise(contract.media, it.mediaOffer)
+                it.mediaOffer.codec(Channel.ID_VID)?.let(aapTransport.aapVideo::noteAnnouncedCodec)
                 discoveryResponse = it
             }
         }

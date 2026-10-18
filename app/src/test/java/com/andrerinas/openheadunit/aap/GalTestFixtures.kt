@@ -22,6 +22,10 @@ internal fun galTestDiscovery(videoFallback: Boolean = false): Control.ServiceDi
             Control.Service.MediaSinkService.newBuilder().setAvailableType(Media.MediaCodecType.MEDIA_CODEC_AUDIO_PCM)
                 .addAudioConfigs(audio)))
     }
+    response.addServices(Control.Service.newBuilder().setId(Channel.ID_MIC).setMediaSourceService(
+        Control.Service.MediaSourceService.newBuilder().setType(Media.MediaCodecType.MEDIA_CODEC_AUDIO_PCM)
+            .setAudioConfig(Media.AudioConfiguration.newBuilder().setSampleRate(16000)
+                .setNumberOfBits(16).setNumberOfChannels(1))))
     val video = Control.Service.MediaSinkService.VideoConfiguration.newBuilder()
         .setCodecResolution(Control.Service.MediaSinkService.VideoConfiguration.VideoCodecResolutionType._1280x720)
         .setFrameRate(Control.Service.MediaSinkService.VideoConfiguration.VideoFrameRateType._30)
