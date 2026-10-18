@@ -27,7 +27,7 @@ class PeerCloseReasonTest {
         set("videoBacklog", java.util.concurrent.atomic.AtomicInteger())
         set("videoShedTotal", java.util.concurrent.atomic.AtomicLong())
         // Keep the real retirement path: callback failure must not skip resource cleanup.
-        for (name in listOf("videoDecoder", "aapAudio", "aapVideo", "ssl", "micSessions", "focusCycleLever")) {
+        for (name in listOf("videoDecoder", "aapAudio", "aapVideo", "ssl", "micSessions", "focusCycleLever", "sensorSubscriptions")) {
             val field = AapTransport::class.java.getDeclaredField(name).apply { isAccessible = true }
             field.set(it, mock(field.type))
         }

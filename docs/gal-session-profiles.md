@@ -237,6 +237,20 @@ interoperability of the new opt-in profiles remains separate from these determin
 - Initial UiConfig and subsequent margin updates use the same odd-pixel split: the extra pixel
   goes to the right/top. Selecting primary after fallback also restores display/touch geometry.
 
+## Sensor requests
+
+Only sensors in the connection's discovery offer can be subscribed. `-1` stops a subscription;
+`0` permits change-driven updates. Stop and channel close invalidate queued events, including
+an event waiting for its rate slot. Starting NIGHT/LOCATION/DRIVING_STATUS requests an initial value;
+stopping never triggers a new value.
+
+The historical OHU field name `min_update_period` is misleading: the inspected AA14–18 continuous-event limiters
+use the positive value as Hz. OHU uses that cadence for positive requests and coalesces to the
+latest sample, sending it at the next slot even if no further callback occurs. This is a receiver
+policy derived from the inspected sender, not a version-independent statement about the original
+schema. The observed LOCATION/NIGHT/DRIVING_STATUS callers request zero. One pending value and one
+scheduled task per active subscription keep sensor work separate from the audio flow-control policy.
+
 Microphone ANC/EC fields remain diagnostic requests, not a promise about hardware processing.
 The inspected AA17/18 builders always send false for both; using those values as mandatory
 switches would disable the user's configured effects. Local microphone settings and Android's

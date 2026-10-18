@@ -124,7 +124,7 @@ class AapTransport(
     // Messages refused because the backlog was already at its ceiling. See VIDEO_BACKLOG_LIMIT.
     private val videoShedTotal = java.util.concurrent.atomic.AtomicLong(0)
     private val micRecorder: MicRecorder = MicRecorder(context)
-    private val startedSensors = HashSet<Int>(4)
+    internal val sensorSubscriptions = GalSensorSubscriptions<SensorEvent>()
     private val droppedSensorEvents = HashMap<Int, Int>(4)
     private var lastSensorDropLogMs = 0L
     private val keyCodes = mutableMapOf<Int, Int>()
@@ -764,13 +764,6 @@ class AapTransport(
         }
     }
 
-    // Synchronized against noteDroppedSensorEvent, whose log line iterates startedSensors from the
-    // main thread while this adds from the poll thread.
-    @Synchronized
-    internal fun startSensor(type: Int) {
-        startedSensors.add(type)
-    }
-
     /**
      * Send one already-built, unfragmented message: preserve channel/flags in the cleartext
      * four-byte envelope and encrypt [type][service payload]. The pre-encryption length is not
@@ -854,6 +847,7 @@ class AapTransport(
             AppLog.i("AapTransport quitting (clean=$cleanEnd)")
             // Notify promptly; CommManager keeps this owner until awaitTermination completes.
             cleanupStep("notify") { cb?.invoke(cleanEnd) }
+            cleanupStep("sensors") { sensorSubscriptions.stopAll() }
             cleanupStep("microphone") { retireMicrophone() }
             sendHandler?.removeCallbacks(mediaStatisticsTick)
             sendHandler?.removeCallbacks(focusCycleGainRunnable)
@@ -1211,9 +1205,26 @@ class AapTransport(
     }
 
     fun send(sensor: SensorEvent): Boolean {
-        if (isAlive && startedSensors.contains(sensor.sensorType)) {
-            send(sensor as AapMessage)
-            return true
+        val handler = sendHandler
+        if (isAlive && tlsWriter.isReady && handler != null) {
+            val queued = sensorSubscriptions.enqueue(sensor.sensorType, sensor)
+            if (queued != null) {
+                if (!queued.schedule) return true
+                // One pending value per subscription. A throttled final GPS fix must still
+                // arrive even if no further callbacks occur. Stop invalidates the ticket.
+                val posted = handler.post(object : Runnable {
+                    override fun run() {
+                        val delivery = sensorSubscriptions.take(queued.ticket, System.nanoTime())
+                        if (delivery.waitNs > 0) {
+                            if (!handler.postDelayed(this, 1 + (delivery.waitNs - 1) / 1_000_000)) {
+                                sensorSubscriptions.cancelQueued(queued.ticket)
+                            }
+                        } else delivery.value?.let { sendEncryptedMessage(it.data, it.size) }
+                    }
+                })
+                if (!posted) sensorSubscriptions.cancelQueued(queued.ticket)
+                return posted
+            }
         }
         noteDroppedSensorEvent(sensor.sensorType)
         return false
@@ -1235,7 +1246,7 @@ class AapTransport(
             return
         }
         lastSensorDropLogMs = now
-        AppLog.i("AapTransport: dropping sensor events, isAlive=$isAlive startedSensors=$startedSensors droppedByType=$droppedSensorEvents")
+        AppLog.i("AapTransport: dropping sensor events, isAlive=$isAlive startedSensors=${sensorSubscriptions.activeTypes()} droppedByType=$droppedSensorEvents")
     }
 
     fun send(message: AapMessage) {

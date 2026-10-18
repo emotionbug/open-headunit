@@ -29,6 +29,8 @@ internal class ServiceDiscoveryResponse private constructor(proto: Control.Servi
         : this(makeProto(context, audioConfig, videoConfig, contract))
 
     val mediaOffer = GalMediaOffer.from(proto)
+    val sensorTypes = proto.servicesList.filter { it.hasSensorSourceService() }
+        .flatMap { it.sensorSourceService.sensorsList }.map { it.type.number }.toSet()
 
     companion object {
         private fun makeProto(context: Context, audioConfig: AudioSessionConfig, videoConfig: VideoSessionConfig, contract: GalConnectionContract): Control.ServiceDiscoveryResponse {

@@ -151,6 +151,7 @@ class AapTransport(
  private val quitLock=Any()
  private var peerRequestedClose=false
  private val tlsWriter=object { fun retire(){} }
+ private val sensorSubscriptions=object { fun stopAll(){} }
  private val micSessions=MicSessions()
  private fun retireMicrophone(){micSessions.close(shutdown=true)}
  private fun resetMicrophone(){}

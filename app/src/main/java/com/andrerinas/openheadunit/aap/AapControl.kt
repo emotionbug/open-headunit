@@ -348,13 +348,18 @@ internal class AapControlSensor(
     private fun sensorStartRequest(request: Sensors.SensorRequest, channel: Int): Int {
         AppLog.i("Sensor Start Request sensor: %s, minUpdatePeriod: %d", request.type.name, request.minUpdatePeriod)
 
+        val accepted = aapTransport.sensorSubscriptions.request(request.type.number, request.minUpdatePeriod)
         val msg = AapMessage(channel, Sensors.SensorsMsgType.SENSOR_STARTRESPONSE_VALUE, Sensors.SensorResponse.newBuilder()
-                .setStatus(Common.MessageStatus.STATUS_SUCCESS)
+                .setStatus(if (accepted) Common.MessageStatus.STATUS_SUCCESS else Common.MessageStatus.STATUS_INVALID_SENSOR)
                 .build())
         AppLog.i(msg.toString())
 
         aapTransport.send(msg)
-        aapTransport.startSensor(request.type.number)
+        if (!accepted || request.minUpdatePeriod == -1L) return 0
+
+        if (request.type == Sensors.SensorType.DRIVING_STATUS) {
+            aapTransport.send(DrivingStatusEvent(Sensors.SensorBatch.DrivingStatusData.Status.UNRESTRICTED))
+        }
 
         if (request.type == Sensors.SensorType.NIGHT) {
             AppLog.i("Night sensor requested. Triggering immediate update.")
@@ -373,8 +378,8 @@ internal class AapControlSensor(
             // locks, and the broader accessor would hand it a network fix to send instead.
             val fix = LocationHolder.currentGpsFix(context)
             if (fix != null) {
-                val sentOnWire = aapTransport.send(LocationUpdateEvent(fix))
-                AppLog.i("LOCATION sensor requested. Sending current fix immediately. sentOnWire=$sentOnWire")
+                val queued = aapTransport.send(LocationUpdateEvent(fix))
+                AppLog.i("LOCATION sensor requested. Sending current fix immediately. queued=$queued")
             } else {
                 AppLog.i("LOCATION sensor requested. No recent GPS fix to prime with.")
             }
@@ -426,6 +431,7 @@ internal class AapControlService(
             }
             Control.ControlMsgType.MESSAGE_CHANNEL_CLOSE_NOTIFICATION_VALUE -> {
                 AppLog.i("RX: Channel Close Notification on chan ${message.channel}")
+                if (message.channel == Channel.ID_SEN) aapTransport.sensorSubscriptions.stopAll()
                 if (message.channel == Channel.ID_MIC) aapTransport.closeMicSession()
                 if (Channel.isAudio(message.channel) &&
                     aapTransport.isAudioSinkStarted(message.channel)) {
@@ -455,6 +461,7 @@ internal class AapControlService(
             ServiceDiscoveryResponse(context, aapAudio.sessionConfig, aapTransport.aapVideo.sessionConfig, contract).also {
                 aapTransport.mediaSessions.advertise(contract.media, it.mediaOffer)
                 it.mediaOffer.codec(Channel.ID_VID)?.let(aapTransport.aapVideo::noteAnnouncedCodec)
+                aapTransport.sensorSubscriptions.advertise(it.sensorTypes)
                 discoveryResponse = it
             }
         }
@@ -620,9 +627,6 @@ internal class AapControlGateway(
                 .build())
         aapTransport.send(msg)
 
-        if (channel == Channel.ID_SEN) {
-            aapTransport.send(DrivingStatusEvent(Sensors.SensorBatch.DrivingStatusData.Status.UNRESTRICTED))
-        }
         return 0
     }
 }

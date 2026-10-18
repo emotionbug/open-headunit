@@ -23,6 +23,7 @@ class GalMediaControlTest {
                 .apply { isAccessible = true }.set(transport, value)
             field("aapAudio", audio)
             field("aapVideo", mock<AapVideo>())
+            field("sensorSubscriptions", GalSensorSubscriptions<Any>())
             field("mediaSessions", sessions)
             field("galContract", galTestContract(profile))
             whenever(audio.selectFormat(any(), any())).thenReturn(true)
