@@ -43,7 +43,8 @@ public final class NativeTimeStretch {
     }
 
     private void parity() {
-        for (int engine = 1; engine <= 3; engine++) for (int pattern = 0; pattern < 4; pattern++)
+        for (int engine = 1; engine <= 4; engine++) for (int pattern = 0; pattern < 4; pattern++)
+            for (double speed : new double[] {0.5, 0.8, 1.0, 1.01, 1.05, 1.1, 1.25, 1.5, 2.0})
             for (int length : new int[] {1, 479, 480, 3072, 24000}) {
                 long h = open(engine), reference = referenceOpen(engine);
                 try {
@@ -60,7 +61,7 @@ public final class NativeTimeStretch {
                             source[i] = value;
                             input.putShort(i * 2, value);
                         }
-                        double tempo = position < length / 2 ? 1.0 : 1.01;
+                        double tempo = position < length / 2 ? speed : 2.5 - speed;
                         process(h, frames, tempo);
                         referenceProcess(reference, source, frames, tempo);
                         compareOutput(h, reference, output, expected);
@@ -71,7 +72,7 @@ public final class NativeTimeStretch {
                     if (!finished(h)) throw new AssertionError("retained tail");
                 } finally { close(h); referenceClose(reference); }
             }
-        System.out.println("PASS 60 actual-JNI array/direct PCM and output-length comparisons");
+        System.out.println("PASS 720 actual-JNI array/direct PCM and output-length comparisons");
     }
 
     private java.lang.ref.WeakReference<ByteBuffer> bindTemporaryBuffers(long h) {
@@ -101,12 +102,12 @@ public final class NativeTimeStretch {
         bridge.parity();
         bridge.bufferLifetime();
         rejects(() -> bridge.open(0));
-        rejects(() -> bridge.open(4));
+        rejects(() -> bridge.open(5));
         rejects(() -> bridge.process(0, 480, 1.0));
         rejects(() -> bridge.receive(0));
         rejects(() -> bridge.finish(0));
         rejects(() -> bridge.finished(0));
-        for (int engine = 1; engine <= 3; engine++) {
+        for (int engine = 1; engine <= 4; engine++) {
             long handle = bridge.open(engine);
             if (handle == 0) throw new AssertionError("missing owner");
             try {
@@ -132,7 +133,7 @@ public final class NativeTimeStretch {
                 rejects(() -> bridge.process(handle, -1, 1.0));
                 rejects(() -> bridge.process(handle, 0, 1.0));
                 rejects(() -> bridge.process(handle, 481, 1.0));
-                for (double tempo : new double[] {Double.NaN, Double.POSITIVE_INFINITY, 0.99, 1.02}) {
+                for (double tempo : new double[] {Double.NaN, Double.POSITIVE_INFINITY, 0.49, 2.01}) {
                     rejects(() -> bridge.process(handle, 240, tempo));
                 }
                 for (int i = 0; i < 960; i++) pcm.putShort(i * 2, (short) 1000);

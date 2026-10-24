@@ -79,7 +79,7 @@ internal fun timeStretchWorkerRegression() {
         }
     }
     val bank = AdaptivePcmBuffer(nativeTimeCorrection = true)
-    val worker = TimeStretchWorker(AudioTimeCorrectionMode.SOUNDTOUCH, bank, { 0L }, {}, { error(it) }, ::delayedEngine)
+    val worker = TimeStretchWorker(AudioTimeCorrectionMode.WSOLA, bank, { 0L }, {}, { error(it) }, ::delayedEngine)
     try {
         val data = ShortArray(480) { 1000 }
         worker.offer(data, data.size, 0); data.fill(0)
@@ -99,7 +99,7 @@ internal fun timeStretchWorkerRegression() {
     val full = AdaptivePcmBuffer(nativeTimeCorrection = true)
     val initial = ShortArray(144_000) { 100 }
     full.write(initial, initial.size, 0)
-    val waiting = TimeStretchWorker(AudioTimeCorrectionMode.R3_STANDARD, full, { 0L }, {}, {}, ::delayedEngine)
+    val waiting = TimeStretchWorker(AudioTimeCorrectionMode.PHASE_VOCODER, full, { 0L }, {}, {}, ::delayedEngine)
     try {
         waiting.offer(ShortArray(960) { 1000 }, 960, 0); waiting.finish()
         waitUntil("worker holds produced tail outside a full bank") { waiting.producedFrames > 0 }
@@ -116,7 +116,7 @@ internal fun timeStretchWorkerRegression() {
         var retired = 0
         val mixer = AudioMixer(3)
         val state = AudioMixer.Channel(48000, 2, 2, false, { retired++ },
-            AudioTimeCorrectionMode.SOUNDTOUCH, createEngine = { throw IllegalStateException("fixture") })
+            AudioTimeCorrectionMode.WSOLA, createEngine = { throw IllegalStateException("fixture") })
         val failed = state.timeStretch!!
         try {
             failed.offer(ShortArray(480), 480, 0)
@@ -178,7 +178,7 @@ internal fun timeStretchWorkerRegression() {
         val releaseFinal = java.util.concurrent.CountDownLatch(1)
         val retained = AudioMixer.Channel(48000, 2, 2, false, {
             permanentRetirements.incrementAndGet(); lease.retire(5, identity)
-        }, AudioTimeCorrectionMode.SOUNDTOUCH, createEngine = {
+        }, AudioTimeCorrectionMode.WSOLA, createEngine = {
             val delegate = delayedEngine()
             object : TimeStretchEngine by delegate {
                 var finalized = false
@@ -252,7 +252,7 @@ internal fun timeStretchWorkerRegression() {
     // finish across an idle poll, then release it without another packet or Start.
     val finalEntered = java.util.concurrent.CountDownLatch(1)
     val finalRelease = java.util.concurrent.CountDownLatch(1)
-    val pending = AudioMixer.Channel(48000, 2, 2, false, {}, AudioTimeCorrectionMode.SOUNDTOUCH,
+    val pending = AudioMixer.Channel(48000, 2, 2, false, {}, AudioTimeCorrectionMode.WSOLA,
         createEngine = {
             val delegate = delayedEngine()
             object : TimeStretchEngine by delegate {

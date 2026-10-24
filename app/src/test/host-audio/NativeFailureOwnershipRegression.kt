@@ -57,7 +57,7 @@ internal fun nativeFailureOwnershipRegression() {
                 val mixer = get(track, "mixer") as AudioMixer
                 val original = get(track, "mixerChannel") as AudioMixer.Channel
                 val state = AudioMixer.Channel(original.rate, original.channels, 2, true,
-                    original.onOutputStopped, AudioTimeCorrectionMode.SOUNDTOUCH, createEngine = {
+                    original.onOutputStopped, AudioTimeCorrectionMode.WSOLA, createEngine = {
                         opened.incrementAndGet()
                         object : TimeStretchEngine {
                             var supplied = false

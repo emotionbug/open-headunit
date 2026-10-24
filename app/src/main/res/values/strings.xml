@@ -1621,10 +1621,11 @@
 
     <string name="audio_matching_mode">Music time correction</string>
     <string name="audio_matching_ohu">OHU (low CPU, default)</string>
-    <string name="audio_matching_soundtouch">SoundTouch (balanced)</string>
-    <string name="audio_matching_r3">Rubber Band R3 (quality priority)</string>
-    <string name="audio_matching_r3_short">Rubber Band R3 Short (lighter R3)</string>
-    <string name="audio_matching_description">Chooses how audio catches up without changing pitch. OHU is intended for low-powered devices. SoundTouch and R3 need more CPU and add processing latency. R3 Short reduces the processing cost of R3. \n\nSoundTouch and R3: PCM music on Android 5.0+. Navigation, voice responses, system sounds, AAC and older devices use OHU.\nReconnect to apply.</string>
+    <string name="audio_matching_wsola">WSOLA</string>
+    <string name="audio_matching_phase_vocoder">Phase Vocoder</string>
+    <string name="audio_matching_phase_vocoder_short">Phase Vocoder Short</string>
+    <string name="audio_matching_phase_gradient">Phase Gradient</string>
+    <string name="audio_matching_description">OHU remains the default. WSOLA aligns overlapping waveforms; Phase Vocoder adjusts spectral phases. Short uses a shorter analysis window. Phase Gradient integrates phase gradients to reconstruct phases. These independent methods add processing latency; their names do not rank sound quality.\n\nNative methods: PCM music on Android 5.0+. Navigation, voice responses, system sounds, AAC and older devices use OHU.\nReconnect to apply. Removed engine preferences reset to OHU.</string>
     <string name="detailed_audio_diagnostics">Detailed audio diagnostics</string>
     <string name="detailed_audio_diagnostics_description">Record audio processing, buffer recovery and output progress. Reconnect to apply turning this on or off. Export Logs includes the retained history even if ordinary log capture is stopped. History is cleared when the app process exits.</string>
 </resources>

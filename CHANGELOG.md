@@ -1,5 +1,6 @@
 # Changelog
 ### 4.0.0-alpha
+- Audio: replace vendored time-stretch engines with independent WSOLA, Phase Vocoder (standard and short-window), and Phase Gradient implementations. OHU remains the default; removed engine preferences reset to OHU. Native correction remains limited to PCM music on Android 5.0 or later.
 - New Homescreen, thanks to @andrecuellar
 - AAP: send one version request over TCP, so a slow head unit server is not left deaf
 - AAP: Keep media and navigation display updates off the receive path

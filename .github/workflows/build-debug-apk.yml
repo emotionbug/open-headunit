@@ -45,8 +45,8 @@ jobs:
       - name: Build debug APK
         run: ./gradlew :app:assembleGithubDebug --no-daemon --stacktrace
 
-      - name: Verify packaged audio notices
-        run: python3 app/src/test/packaging/check_audio_notices.py app/build/outputs/apk/github/debug/*.apk
+      - name: Verify packaged license and source guide
+        run: python3 app/src/test/packaging/check_source_assets.py app/build/outputs/apk/github/debug/*.apk
 
       - name: Upload debug APK and matching source
         uses: actions/upload-artifact@v4

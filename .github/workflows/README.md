@@ -40,11 +40,11 @@ these status checks:
   log capture. Per-test CTest and overall workflow-step timeouts bound hangs.
   `host-audio-diagnostics` preserves toolchain, build and test logs even on failure.
   These host tests use Android test doubles, not a device HAL or a CPU benchmark.
-- **Matching source and notices.** Both APK workflows run
+- **Matching source and license.** Both APK workflows run
   `tools/package-source.sh` before building, refusing a dirty checkout, and
   put `open-headunit-source.tar.gz`, `SOURCE_REVISION.txt` and
-  `SOURCE_SHA256.txt` in the APK artifact. They verify the license text in the
-  actual APK with `app/src/test/packaging/check_audio_notices.py` before upload.
+  `SOURCE_SHA256.txt` in the APK artifact. They verify the project license and
+  source/build guide in the actual APK with `app/src/test/packaging/check_source_assets.py`.
   Preserve the paired source when publishing a release; Actions artifacts expire.
   See `docs/AUDIO_SOURCE.md` for rebuilding and distributor instructions.
 - **`github` flavor only.** CI builds the `github` flavor. The `playstore`

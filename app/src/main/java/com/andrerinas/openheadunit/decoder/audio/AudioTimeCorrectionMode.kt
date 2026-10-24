@@ -2,7 +2,8 @@ package com.andrerinas.openheadunit.decoder.audio
 
 /** Stable saved values. The lightweight OHU matcher remains the default on every device. */
 enum class AudioTimeCorrectionMode(val preferenceValue: String, val nativeEngine: Int) {
-    OHU("ohu", 0), SOUNDTOUCH("soundtouch", 1), R3_STANDARD("r3-standard", 2), R3_SHORT("r3-short", 3);
+    OHU("ohu", 0), WSOLA("wsola", 1), PHASE_VOCODER("phase-vocoder", 2),
+    PHASE_VOCODER_SHORT("phase-vocoder-short", 3), PHASE_GRADIENT("phase-gradient", 4);
 
     /** Native lookahead belongs to continuous music, not short SPEECH/SYSTEM prompts.
      * The phone cannot observe this receiver's added engine tail, so delaying a prompt
@@ -15,6 +16,7 @@ enum class AudioTimeCorrectionMode(val preferenceValue: String, val nativeEngine
         if (this == OHU || !isMediaSink || !isPcm || sdkInt < 21 || !nativeAvailable()) OHU else this
 
     companion object {
+        /** Removed engine preferences deliberately reset to OHU, not a different algorithm. */
         fun fromPreference(value: String?): AudioTimeCorrectionMode =
             entries.firstOrNull { it.preferenceValue == value } ?: OHU
     }

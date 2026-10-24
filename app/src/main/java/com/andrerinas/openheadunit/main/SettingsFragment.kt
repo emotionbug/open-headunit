@@ -2487,14 +2487,15 @@ class SettingsFragment : Fragment() {
         ))
 
         val matchingModes = com.andrerinas.openheadunit.decoder.audio.AudioTimeCorrectionMode.entries
-        val matchingLabels = arrayOf(getString(R.string.audio_matching_ohu), getString(R.string.audio_matching_soundtouch),
-            getString(R.string.audio_matching_r3), getString(R.string.audio_matching_r3_short))
+        val matchingLabels = arrayOf(getString(R.string.audio_matching_ohu), getString(R.string.audio_matching_wsola),
+            getString(R.string.audio_matching_phase_vocoder), getString(R.string.audio_matching_phase_vocoder_short),
+            getString(R.string.audio_matching_phase_gradient))
         val matchingIndex = matchingModes.indexOf(pendingAudioTimeCorrectionMode ?: settings.audioMatchingMode)
         items.add(SettingItem.SettingEntry(
             stableId = "audioMatchingMode",
             nameResId = R.string.audio_matching_mode,
             value = matchingLabels[matchingIndex],
-            searchKeywords = kw(R.string.audio_matching_ohu, R.string.audio_matching_soundtouch, R.string.audio_matching_r3, R.string.audio_matching_r3_short),
+            searchKeywords = kw(R.string.audio_matching_ohu, R.string.audio_matching_wsola, R.string.audio_matching_phase_vocoder, R.string.audio_matching_phase_vocoder_short, R.string.audio_matching_phase_gradient),
             onClick = {
                 AlertDialog.Builder(requireContext())
                     .setTitle(R.string.audio_matching_mode)

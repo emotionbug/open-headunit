@@ -1,119 +1,211 @@
 #include "audio_time_stretcher.h"
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <iostream>
+#include <limits>
 #include <stdexcept>
 #include <vector>
 
-static void check(bool condition, const char* message) { if (!condition) throw std::runtime_error(message); }
+using Engine = AudioTimeStretcher::Engine;
+constexpr double pi = 3.14159265358979323846;
+constexpr std::array<double, 9> tempos{0.5, 0.8, 1.0, 1.01, 1.05, 1.1, 1.25, 1.5, 2.0};
+struct CaseContext { Engine engine{}; size_t frames = 0; double tempo = 1; bool changing = false; };
+static CaseContext context;
+static void check(bool condition, const char* message) {
+    if (!condition) {
+        std::cerr << "FAIL engine=" << static_cast<int>(context.engine) << " frames=" << context.frames
+                  << " tempo=" << context.tempo << " changing=" << context.changing << ": " << message << '\n';
+        throw std::runtime_error(message);
+    }
+}
+template<class Action> static void rejects(Action action) {
+    try { action(); } catch (const std::exception&) { return; }
+    throw std::runtime_error("invalid request was accepted");
+}
+struct Render { std::vector<int16_t> pcm; int firstOutputAfter = -1; };
 
-// Measure lookahead in supplied source frames, not host execution time. A 16 kHz
-// mono capture block contains 1,024 frames; after conversion that is 3,072 frames
-// here. Processing that block quickly cannot make an engine's future input exist.
-static void promptLookahead(AudioTimeStretcher::Engine type) {
-    for (int frames : {3072, 24000}) {
-        AudioTimeStretcher engine(type);
-        std::vector<int16_t> result;
-        int16_t input[960]{}, output[960];
-        int supplied = 0, firstOutputAfter = -1;
-        bool finalizing = false;
-        auto drain = [&] {
-            size_t n;
-            while ((n = engine.receive(output, 480))) {
-                if (!finalizing && firstOutputAfter < 0) firstOutputAfter = supplied;
-                result.insert(result.end(), output, output + n * 2);
-            }
-        };
-        for (int pos = 0; pos < frames; pos += 480) {
-            const int count = std::min(480, frames - pos);
-            for (int f = 0; f < count; ++f) {
-                const int position = pos + f;
-                const double envelope = std::min(1.0, std::min((position + 1) / 240.0, (frames - position) / 240.0));
-                const auto sample = static_cast<int16_t>(envelope *
-                    (8000 * std::sin(position * .0576) + 4000 * std::sin(position * .1111)));
-                input[f * 2] = input[f * 2 + 1] = sample;
-            }
-            engine.process(input, count, 1.0);
-            supplied += count;
-            drain();
+static Render render(Engine type, const std::vector<int16_t>& source, double tempo,
+                     size_t inputBlock = 480, size_t outputBlock = 480, bool changing = false) {
+    context = {type, source.size() / 2, tempo, changing};
+    AudioTimeStretcher engine(type);
+    Render result;
+    std::array<int16_t, 962> output{};
+    const size_t frames = source.size() / 2;
+    size_t supplied = 0;
+    auto drain = [&] {
+        size_t count;
+        do {
+            output.fill(12345);
+            count = engine.receive(output.data() + 1, outputBlock);
+            check(count <= outputBlock, "receive exceeded capacity");
+            check(output[0] == 12345 && output[outputBlock * 2 + 1] == 12345, "receive overwrote bounds");
+            if (count && result.firstOutputAfter < 0) result.firstOutputAfter = static_cast<int>(supplied);
+            result.pcm.insert(result.pcm.end(), output.begin() + 1, output.begin() + 1 + count * 2);
+        } while (count);
+    };
+    double expectedLength = 0;
+    while (supplied < frames) {
+        const size_t boundary = changing ? 4800 - supplied % 4800 : frames - supplied;
+        const size_t count = std::min({inputBlock, frames - supplied, boundary});
+        const double speed = changing ? tempos[(supplied / 4800 * 5) % tempos.size()] : tempo;
+        engine.process(source.data() + supplied * 2, count, speed);
+        expectedLength += count / speed;
+        supplied += count;
+        drain();
+    }
+    engine.finish();
+    drain();
+    check(engine.finished(), "final source did not fully drain");
+    check(result.pcm.size() / 2 == static_cast<size_t>(std::llround(expectedLength)), "duration does not follow source tempo");
+    engine.finish();
+    check(engine.receive(output.data(), 480) == 0, "repeated finish duplicated audio");
+    rejects([&] { engine.process(output.data(), 1, 1); });
+    return result;
+}
+
+static std::vector<int16_t> tone(size_t frames, double frequency, int stereo) {
+    std::vector<int16_t> pcm(frames * 2);
+    for (size_t i = 0; i < frames; ++i) {
+        pcm[i * 2] = static_cast<int16_t>(12000 * std::cos(2 * pi * frequency * i / 48000));
+        pcm[i * 2 + 1] = stereo == 0 ? 0 : static_cast<int16_t>(pcm[i * 2] * stereo);
+    }
+    return pcm;
+}
+static double frequency(const std::vector<int16_t>& pcm) {
+    // Interpolated positive zero crossings avoid FFT-bin quantization. Ignore the
+    // endpoint windows; a resampling impostor at 1.01 would measure about 444.4 Hz.
+    const size_t frames = pcm.size() / 2;
+    double first = -1, last = 0;
+    size_t crossings = 0;
+    for (size_t i = 4801; i < frames - 4800; ++i) {
+        const double before = pcm[(i - 1) * 2], after = pcm[i * 2];
+        if (before <= 0 && after > 0) {
+            const double position = i - 1 + (-before) / (after - before);
+            if (first < 0) first = position;
+            last = position; ++crossings;
         }
-        const size_t beforeStop = result.size() / 2;
-        finalizing = true;
-        engine.finish(); drain();
-        check(engine.finished(), "prompt did not finish");
-        int lastAudible = -1;
-        for (size_t f = 0; f < result.size() / 2; ++f) {
-            check(result[f * 2] == result[f * 2 + 1], "mono prompt changed stereo balance");
-            if (std::abs(int(result[f * 2])) > 32) lastAudible = static_cast<int>(f);
+    }
+    check(crossings > 100, "pitched source lost its periodicity");
+    return (crossings - 1) * 48000 / (last - first);
+}
+
+static void unityAndShortInputs(Engine type) {
+    for (size_t frames : {size_t(1), size_t(17), size_t(240), size_t(479), size_t(480), size_t(3072), size_t(24000)}) {
+        std::vector<int16_t> source(frames * 2);
+        for (size_t i = 0; i < source.size(); ++i)
+            source[i] = static_cast<int16_t>((i * 8191 + 7919) % 65536 - 32768);
+        const auto result = render(type, source, 1.0, 239, 7);
+        for (size_t i = 0; i < source.size(); ++i)
+            check(std::abs(int(source[i]) - result.pcm[i]) <= 1, "unity did not preserve PCM");
+        for (double tempo : tempos) {
+            const auto corrected = render(type, tone(frames, 440, -1), tempo, 17, 1);
+            check(!corrected.pcm.empty(), "short source disappeared");
+            check(*std::max_element(corrected.pcm.begin(), corrected.pcm.end()) > 100, "short source became silent");
         }
-        check(lastAudible >= frames - 240, "prompt ending disappeared");
-        if (frames == 24000) {
-            const int maximumLookahead = type == AudioTimeStretcher::Engine::SoundTouch ? 4800 :
-                type == AudioTimeStretcher::Engine::R3Standard ? 4320 : 2400;
-            check(firstOutputAfter > 0 && firstOutputAfter <= maximumLookahead, "native source lookahead increased");
-        }
-        std::cout << "prompt engine=" << static_cast<int>(type) << " input=" << frames
-                  << " firstOutputAfter=" << firstOutputAfter << " beforeStop=" << beforeStop
-                  << " total=" << result.size() / 2 << " lastAudible=" << lastAudible << '\n';
+    }
+    for (double tempo : tempos) {
+        const auto prompt = render(type, tone(24000, 440, 1), tempo);
+        check(prompt.firstOutputAfter > 0 && prompt.firstOutputAfter <= 4800, "lookahead exceeds 100 ms");
+        std::cout << "engine=" << static_cast<int>(type) << " tempo=" << tempo
+                  << " firstOutputAfter=" << prompt.firstOutputAfter << '\n';
     }
 }
 
-int main() {
-    for (auto type : {AudioTimeStretcher::Engine::SoundTouch, AudioTimeStretcher::Engine::R3Standard, AudioTimeStretcher::Engine::R3Short}) {
-        promptLookahead(type);
-        for (int frames : {1, 240, 480, 4800, 48000}) for (double speed : {1., 1.01}) {
-            AudioTimeStretcher engine(type);
-            std::vector<int16_t> result;
-            int16_t input[960]{}, output[960];
-            auto drain = [&] {
-                size_t n;
-                while ((n = engine.receive(output, 480))) result.insert(result.end(), output, output + n * 2);
-            };
-            for (int pos = 0; pos < frames; pos += 480) {
-                const auto count = std::min(480, frames - pos);
-                for (int f = 0; f < count; ++f) {
-                    const auto value = static_cast<int16_t>(10000 * std::cos((pos + f) * 0.07));
-                    input[f * 2] = value; input[f * 2 + 1] = -value;
-                }
-                engine.process(input, count, speed);
-                drain();
-            }
-            const auto before = result.size();
-            engine.finish(); drain();
-            check(engine.finished(), "engine did not drain its tail");
-            check(!result.empty(), "short prompt disappeared");
-            check(result.size() >= before, "finalization removed emitted samples");
-            const auto peak = *std::max_element(result.begin(), result.end());
-            check(peak > 100, "non-silent prompt became silent");
-            engine.finish();
-            check(engine.receive(output, 480) == 0, "repeated finish duplicated the tail");
-            std::cout << static_cast<int>(type) << " frames=" << frames << " speed=" << speed
-                      << " emitted=" << result.size() / 2 << " tail=" << (result.size()-before)/2 << '\n';
-        }
-        // Corrections can expire between blocks. Late nonzero source must survive a
-        // unity/accelerated transition and finalization, without an app length cap.
-        AudioTimeStretcher changing(type);
-        std::vector<int16_t> tail;
-        int16_t input[960]{}, output[960];
-        auto collect = [&] {
-            size_t n;
-            while ((n = changing.receive(output, 480))) tail.insert(tail.end(), output, output + n * 2);
-        };
-        for (int block = 0; block < 100; ++block) {
-            for (int f = 0; f < 480; ++f) {
-                input[f * 2] = block >= 98 ? static_cast<int16_t>(12000 * std::cos(f * .1)) : 0;
-                input[f * 2 + 1] = -input[f * 2];
-            }
-            changing.process(input, 480, (block / 10) % 2 ? 1.01 : 1.0);
-            collect();
-        }
-        changing.finish(); collect();
-        check(changing.finished(), "ratio-changing stream did not finish");
-        std::cerr << "dynamic engine=" << static_cast<int>(type) << " frames=" << tail.size()/2 << '\n';
-        // R3 may return synthesis padding after source audio; keep it rather than
-        // truncating the native tail to an estimated source/tempo length.
-        check(tail.size() / 2 > 46000 && tail.size() / 2 < 56000, "unexpected output duration");
-        check(std::any_of(tail.begin() + 88000, tail.end(), [](int16_t v) { return v > 100; }),
-              "late source disappeared at finalization");
+static void pitchStereoAndTiming(Engine type) {
+    for (double tempo : tempos) for (int stereo : {-1, 0, 1}) {
+        const auto result = render(type, tone(96000, 440, stereo), tempo);
+        const double hz = frequency(result.pcm);
+        check(std::abs(hz - 440) < 1.0, "tempo correction shifted pitch");
+        for (size_t i = 0; i < result.pcm.size(); i += 2)
+            check(std::abs(int(result.pcm[i + 1]) - result.pcm[i] * stereo) <= 1, "stereo phase or isolation changed");
+        std::cout << "engine=" << static_cast<int>(type) << " tempo=" << tempo
+                  << " stereo=" << stereo << " pitch=" << hz << '\n';
     }
+    auto source = tone(48137, 523.25, -1);
+    const auto largeBlocks = render(type, source, 1, 480, 480, true);
+    const auto smallBlocks = render(type, source, 1, 17, 113, true);
+    check(largeBlocks.pcm == smallBlocks.pcm, "block boundaries reassigned source tempo");
+    std::fill(source.begin(), source.end() - 960, 0);
+    const auto late = render(type, source, 1, 239, 7, true);
+    check(std::any_of(late.pcm.end() - 4000, late.pcm.end(), [](int16_t v) { return std::abs(int(v)) > 100; }),
+          "last nonzero source was lost across tempo changes and Stop");
+    for (double tempo : tempos) {
+        const auto ending = render(type, source, tempo, 239, 7);
+        check(std::any_of(ending.pcm.end() - 4000, ending.pcm.end(),
+                         [](int16_t v) { return std::abs(int(v)) > 100; }),
+              "last source block disappeared at constant tempo");
+    }
+    for (size_t length : {size_t(48000), size_t(48001), size_t(48137)}) {
+        source.assign(length * 2, 0);
+        source[source.size() - 2] = 20000;
+        for (double tempo : tempos) {
+            const auto lastFrame = render(type, source, tempo, 239, 1);
+            check(std::any_of(lastFrame.pcm.end() - 4000, lastFrame.pcm.end(),
+                             [](int16_t v) { return std::abs(int(v)) > 1; }),
+                  "final source frame disappeared");
+        }
+    }
+    // A sharp attack late in a long silent source must remain audible and localized,
+    // including after the input ring has wrapped many times.
+    source.assign(96000 * 2, 0);
+    for (size_t frame = 94000; frame < 94032; ++frame) source[frame * 2] = source[frame * 2 + 1] = 20000;
+    for (double tempo : tempos) {
+        const auto transient = render(type, source, tempo);
+        const auto peak = std::max_element(transient.pcm.begin(), transient.pcm.end());
+        check(*peak > 1000, "transient was erased");
+        const auto peakFrame = static_cast<size_t>(peak - transient.pcm.begin()) / 2;
+        check(std::abs(static_cast<double>(peakFrame) - 94000 / tempo) < 2400, "transient timing drifted beyond 50 ms");
+    }
+}
+
+static void validationAndBackpressure(Engine type) {
+    context = {type, 0, 1, false};
+    AudioTimeStretcher engine(type);
+    int16_t input[960], output[960];
+    std::fill_n(input, 960, 1000);
+    check(engine.receive(nullptr, 0) == 0, "zero receive changed state");
+    rejects([&] { engine.receive(nullptr, 1); });
+    rejects([&] { engine.process(nullptr, 1, 1); });
+    rejects([&] { engine.process(input, 0, 1); });
+    rejects([&] { engine.process(input, 481, 1); });
+    for (double tempo : {0.49, 2.01, std::numeric_limits<double>::infinity(), std::numeric_limits<double>::quiet_NaN()})
+        rejects([&] { engine.process(input, 1, tempo); });
+    for (double tempo : {0.5, 1.0, 2.0}) {
+        context.tempo = tempo;
+        AudioTimeStretcher blocked(type);
+        size_t accepted = 0;
+        bool full = false;
+        for (int block = 0; block < 1000; ++block) {
+            try { blocked.process(input, 480, tempo); accepted += 480; }
+            catch (const std::overflow_error&) { full = true; break; }
+        }
+        check(full && accepted > 4800, "input backpressure is absent or cannot cover lookahead");
+        size_t received = 0, count;
+        while ((count = blocked.receive(output, 480))) received += count;
+        blocked.process(input, 480, tempo); accepted += 480;
+        blocked.finish();
+        while ((count = blocked.receive(output, 7))) {
+            received += count;
+            if (tempo == 1) for (size_t i = 0; i < count * 2; ++i)
+                check(std::abs(output[i] - 1000) <= 1, "backpressure corrupted source");
+        }
+        check(blocked.finished() && received == static_cast<size_t>(std::llround(accepted / tempo)),
+              "rejected block was partially accepted or drain failed");
+    }
+    AudioTimeStretcher empty(type);
+    empty.finish(); empty.finish();
+    check(empty.finished() && empty.receive(output, 480) == 0, "empty finalization emitted audio");
+}
+
+int main() {
+    std::cout << std::unitbuf;
+    rejects([] { AudioTimeStretcher invalid(static_cast<Engine>(0)); });
+    rejects([] { AudioTimeStretcher invalid(static_cast<Engine>(5)); });
+    for (auto type : {Engine::Wsola, Engine::PhaseVocoder, Engine::PhaseVocoderShort, Engine::PhaseGradient}) {
+        unityAndShortInputs(type);
+        pitchStereoAndTiming(type);
+        validationAndBackpressure(type);
+    }
+    std::cout << "PASS independent DSP duration/pitch/stereo/tail/tempo/limits/backpressure\n";
 }

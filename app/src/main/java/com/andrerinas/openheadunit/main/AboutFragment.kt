@@ -47,10 +47,9 @@ class AboutFragment : Fragment() {
         sb.append(parseMarkdownToHtml(readAsset("CHANGELOG.md")))
         sb.append("<br/><br/>")
 
-        sb.append("<h3>SoundTouch / Rubber Band — licenses &amp; source</h3>")
-        // Keep notices available offline, and preserve literal <...> in license texts.
-        sb.append(TextUtils.htmlEncode(readAsset("audio-third-party.txt")).replace("\n", "<br/>"))
-        sb.append("<br/><br/><h3>LICENSE</h3>")
+        sb.append("<h3>Source &amp; rebuilding</h3>")
+        sb.append(TextUtils.htmlEncode(readAsset("AUDIO_SOURCE.md")).replace("\n", "<br/>"))
+        sb.append("<br/><br/><h3>GNU Affero General Public License</h3>")
         sb.append(TextUtils.htmlEncode(readAsset("LICENSE")).replace("\n", "<br/>"))
 
         contentText.text = fromHtml(sb.toString())
