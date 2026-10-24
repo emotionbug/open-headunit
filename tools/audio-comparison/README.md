@@ -1,7 +1,7 @@
 # Local engine listening comparison
 
 Runs actual production JNI DSP on caller-supplied WAVs and produces a local
-HTML player, blinded-label excerpts, named full outputs, measurement JSON and
+HTML player, engine-labelled excerpts, named full outputs, measurement JSON and
 `comparison-audio.zip`. No recordings or previous third-party library binaries
 are bundled in this repository or the APK.
 
@@ -86,12 +86,14 @@ Open `index.html` locally, or serve its directory:
 python3 -m http.server 8765 --bind 127.0.0.1 --directory /path/to/comparison
 ```
 
-Listen before expanding “엔진 이름 보기”. Labels are shuffled independently for
-each input/profile with a reproducible seed. This hides engine names but is not
-a formal ABX test. Original reference and processed files can have different
-speed/duration, particularly in the existing-policy comparison. Full outputs
-include their boundaries; use them to inspect startup and tail artifacts that
-the 1–7 second excerpt deliberately excludes.
+Engine names are visible in a fixed order. Parentheses beside each player show
+that input/profile's thread CPU milliseconds per input second, block wall-time
+p99 and first-output source supply where measured. Memory consumption was not
+measured. The OHU row is explicitly core-only. This is not a blind/ABX test.
+Original reference and processed files can have different speed/duration,
+particularly in the existing-policy comparison. Full outputs include their
+boundaries; use them to inspect startup and tail artifacts that the 1–7 second
+excerpt deliberately excludes.
 
 - All inputs receive the same 0.5 gain (−6.02 dB) for processing headroom. There
   is no per-output normalization, limiter or loudness matching that could hide

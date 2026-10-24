@@ -11,7 +11,6 @@ import json
 import os
 from pathlib import Path
 import platform
-import random
 import re
 import shutil
 import subprocess
@@ -100,31 +99,37 @@ def signal_metrics(source, output, name, scenario):
 
 
 def make_page(out, rows, manifest):
-    rng = random.Random(1177)
+    engine_order = {name: index for index, name in enumerate(LABELS)}
     groups = []
-    keys = {}
     for name in manifest['inputs']:
         for scenario in ('matched', 'toggle') + WIDE_SCENARIOS:
             group = [r for r in rows if r['input'] == name and r['scenario'] == scenario]
             if not group:
                 continue
-            rng.shuffle(group)
-            key = name + '__' + scenario
-            keys[key] = {}
+            group.sort(key=lambda row: engine_order[row['engine']])
             cards = []
-            for index, row in enumerate(group):
-                letter = chr(65 + index)
-                keys[key][letter] = LABELS[row['engine']]
-                cards.append(f'<label>{letter}<audio controls preload="none" src="{row["clip"]}"></audio></label>')
-            answer = ' · '.join(f'{k}: {v}' for k, v in keys[key].items())
+            for row in group:
+                name_label = html.escape(LABELS[row['engine']])
+                cpu = row['thread_cpu_ms_median'] / (row['input_frames'] / 48000)
+                p99 = row['block_wall_p99_us_median'] / 1000
+                cost = f'CPU {cpu:.2f} ms/입력 1초 · 블록 p99 {p99:.3f} ms'
+                if row['engine'] == 'ohu':
+                    cost += ' · 접합 코어만 측정 · 첫 출력 미측정'
+                elif row.get('first_output_after_frames', -1) >= 0:
+                    cost += f' · 첫 출력 공급량 {row["first_output_after_frames"] / 48:g} ms'
+                else:
+                    cost += ' · Stop 이후 첫 출력'
+                cards.append(f'<div class="sample"><div><strong>{name_label}</strong> '
+                             f'<span class="cost">({cost})</span></div>'
+                             f'<audio aria-label="{name_label}" controls preload="none" src="{row["clip"]}"></audio></div>')
             detail = ('OHU가 실제 소비한 평균 보정량을 기준으로 다른 엔진의 요청 속도를 맞춤. '
                       '1.01 상한·기존 R3 종료 패딩 때문에 최종 길이는 다를 수 있음.' if scenario == 'matched' else
                       '입력 시간 100ms마다 1.00 / 1.01 교대. OHU는 자체 보정 간격을 유지하므로 실제 보정량이 다름.' if scenario == 'toggle' else
                       '입력 시간 100ms마다 0.5 / 2.0 교대. 극단 전환 스트레스 조건이며, 엔진 내부 버퍼에 속도 변경이 적용되는 방식 때문에 실제 출력 길이는 서로 다릅니다. 같은 평균 속도의 음질 순위로 해석하지 마세요.' if scenario == 'wide-toggle' else
                       f'요청 재생 속도 {scenario[5:]}×. 기존 엔진은 보관한 어댑터의 허용 범위만 확장한 연구용 빌드이며 앱 동작이 아님.')
             groups.append(f'<section data-input="{html.escape(name, quote=True)}" data-profile="{scenario}"><h2>{html.escape(name)} / {scenario}</h2><p>{detail}</p>'
-                          f'<label>원본<audio controls preload="none" src="clips/{name}__reference.wav"></audio></label>'
-                          + ''.join(cards) + f'<details><summary>엔진 이름 보기</summary><p>{answer}</p></details></section>')
+                          f'<div class="sample"><div>원본 (처리 전 기준 음원)</div><audio aria-label="원본" controls preload="none" src="clips/{name}__reference.wav"></audio></div>'
+                          + ''.join(cards) + '</section>')
     table = []
     for engine in LABELS:
         measured = [r for r in rows if r['engine'] == engine and r['scenario'] == 'constant']
@@ -138,11 +143,12 @@ def make_page(out, rows, manifest):
     page = '''<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>OHU 독자 구현 오디오 비교</title><link rel="icon" href="data:,"><style>
 body{font:16px/1.6 system-ui,sans-serif;margin:32px auto;padding:0 20px;max-width:1100px;background:#f5f6f8;color:#182332}
-section{background:white;border:1px solid #d7dce2;border-radius:10px;padding:20px;margin:24px 0}label{display:flex;gap:16px;align-items:center;margin:12px 0}audio{width:min(80vw,850px)}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ccc;padding:8px;text-align:left}summary{cursor:pointer}a{color:#0756a5}</style>
+section{background:white;border:1px solid #d7dce2;border-radius:10px;padding:20px;margin:24px 0}label{display:block;margin:12px 0}.sample{margin:20px 0}.cost{color:#46566b}audio{display:block;margin-top:6px;width:100%;max-width:850px}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ccc;padding:8px;text-align:left}a{color:#0756a5}</style>
 <h1>OHU 독자 구현 오디오 비교</h1>
 <p>기본 OHU · 기존 SoundTouch/R3 · 독자 WSOLA/Phase Vocoder/Phase Gradient</p>
 <p>같은 48kHz 스테레오 PCM16 입력에 공통 -6.02dB 여유를 적용했습니다. 출력별 음량 정규화는 하지 않았습니다.
-A–H는 음원·조건마다 순서가 섞입니다. 1–7초 구간을 비교하며, 이름을 공개하기 전에 들어보세요. 정식 ABX 시험이나 청취 점수는 아닙니다.</p>
+엔진명 옆 괄호에는 해당 음원·속도 조건의 PC 실측값을 표시합니다. CPU는 입력 1초당 사용한 스레드 CPU 시간이며, 메모리 사용량은 측정하지 않았습니다.
+1–7초 발췌 구간을 비교합니다. 엔진명은 고정 순서로 표시하며 블라인드 시험이나 청취 점수는 아닙니다.</p>
 <p><a href="comparison-audio.zip">WAV·보고서 ZIP</a> · <a href="metrics.json">전체 측정 JSON</a> · <a href="manifest.json">입력·코드·바이너리 출처</a></p>
 <h2>PC 측정 — Android 성능이 아님</h2><p>12초 입력을 한 번 예열 후 3회 측정. 표는 입력별 중앙값의 중앙값입니다.
 CPU 시간에는 JNI 블록 전달·출력 수집이 포함되며 파일 I/O·엔진 생성은 제외됩니다. OHU 행은 전체 믹서가 아닌 파형 선택·접합 코어이므로 절대 비용을 동등한 전체 파이프라인 비용으로 비교하지 마세요.
@@ -166,9 +172,9 @@ function filter(){const input=document.getElementById('input-filter').value,prof
 document.querySelectorAll('select').forEach(s=>s.addEventListener('change',filter));
 </script></html>'''
     (out / 'index.html').write_text(page)
-    (out / 'answer-key.json').write_text(json.dumps(keys, ensure_ascii=False, indent=2))
+    (out / 'answer-key.json').unlink(missing_ok=True)
     with zipfile.ZipFile(out / 'comparison-audio.zip', 'w', zipfile.ZIP_DEFLATED) as archive:
-        for pattern in ('index.html', 'metrics.json', 'manifest.json', 'answer-key.json', 'rendering-sources.zip', 'clips/*.wav', 'full/*.wav'):
+        for pattern in ('index.html', 'metrics.json', 'manifest.json', 'rendering-sources.zip', 'clips/*.wav', 'full/*.wav'):
             for path in out.glob(pattern):
                 archive.write(path, path.relative_to(out))
 
