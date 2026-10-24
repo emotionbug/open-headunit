@@ -1452,8 +1452,9 @@
     <string name="external_bt_candidate_transport_description">Forzar la conexión mediante el módulo Bluetooth de la unidad en lugar de la selección automática. Requiere un servicio de módulo compatible. Déjalo desactivado para permitir el Bluetooth de Android si el servicio no responde; activarlo impide esa alternativa.</string>
     <string name="audio_matching_mode">Corrección temporal de la música</string>
     <string name="audio_matching_ohu">OHU (bajo uso de CPU, predeterminado)</string>
-    <string name="audio_matching_soundtouch">SoundTouch (equilibrado)</string>
-    <string name="audio_matching_r3">Rubber Band R3 (prioridad a la calidad)</string>
-    <string name="audio_matching_r3_short">Rubber Band R3 Short (R3 más ligero)</string>
-    <string name="audio_matching_description">Elige cómo compensar el retraso del audio sin cambiar el tono. OHU está pensado para dispositivos de poca potencia. SoundTouch y R3 requieren más CPU y añaden latencia de procesamiento. R3 Short reduce el coste de procesamiento de R3.\n\nSoundTouch y R3: música PCM en Android 5.0 o posterior. Las indicaciones de navegación, las respuestas de voz, los sonidos del sistema, AAC y los dispositivos más antiguos usan OHU.\nVuelve a conectar para aplicar el cambio.</string>
+    <string name="audio_matching_wsola">WSOLA</string>
+    <string name="audio_matching_phase_vocoder">Phase Vocoder</string>
+    <string name="audio_matching_phase_vocoder_short">Phase Vocoder Short</string>
+    <string name="audio_matching_phase_gradient">Phase Gradient</string>
+    <string name="audio_matching_description">OHU sigue siendo el predeterminado. WSOLA alinea formas de onda superpuestas; Phase Vocoder ajusta las fases espectrales. Short usa una ventana de análisis más corta. Phase Gradient reconstruye fases integrando sus gradientes. Estas implementaciones independientes añaden latencia; sus nombres no clasifican la calidad del sonido.\n\nMétodos nativos: música PCM en Android 5.0 o posterior. Navegación, respuestas de voz, sonidos del sistema, AAC y dispositivos antiguos usan OHU.\nVuelve a conectar para aplicar. Los ajustes de motores eliminados se restablecen a OHU.</string>
 </resources>

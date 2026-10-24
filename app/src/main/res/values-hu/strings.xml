@@ -1445,8 +1445,9 @@
     <string name="external_bt_candidate_transport_description">Kapcsolódás kényszerítése a fejegység Bluetooth-modulján keresztül az automatikus választás helyett. Kompatibilis modulszolgáltatás szükséges. Hagyja kikapcsolva, hogy az Android Bluetooth használható maradjon, ha a szolgáltatás nem válaszol; bekapcsolva ez a tartalék út nem használható.</string>
     <string name="audio_matching_mode">Zene időkorrekciója</string>
     <string name="audio_matching_ohu">OHU (alacsony CPU-terhelés, alapértelmezett)</string>
-    <string name="audio_matching_soundtouch">SoundTouch (kiegyensúlyozott)</string>
-    <string name="audio_matching_r3">Rubber Band R3 (minőség előnyben)</string>
-    <string name="audio_matching_r3_short">Rubber Band R3 Short (kisebb terhelésű R3)</string>
-    <string name="audio_matching_description">Meghatározza, hogyan hozza be a hang a késést a hangmagasság megváltoztatása nélkül. Az OHU kisebb teljesítményű eszközökhöz készült. A SoundTouch és az R3 több CPU-t igényel, és feldolgozási késleltetést okoz. Az R3 Short csökkenti az R3 számításigényét.\n\nSoundTouch és R3: PCM-zene Android 5.0 vagy újabb rendszeren. A navigációs utasítások, hangos válaszok, rendszerhangok, AAC és régebbi eszközök az OHU-t használják.\nAz alkalmazáshoz csatlakozzon újra.</string>
+    <string name="audio_matching_wsola">WSOLA</string>
+    <string name="audio_matching_phase_vocoder">Phase Vocoder</string>
+    <string name="audio_matching_phase_vocoder_short">Phase Vocoder Short</string>
+    <string name="audio_matching_phase_gradient">Phase Gradient</string>
+    <string name="audio_matching_description">Az OHU marad az alapértelmezett. A WSOLA átfedő hullámformákat igazít; a Phase Vocoder spektrális fázisokat módosít. A Short rövidebb elemzési ablakot használ. A Phase Gradient fázisgradiensek integrálásával rekonstruálja a fázisokat. Ezek az önálló megvalósítások feldolgozási késleltetést okoznak; nevük nem hangminőségi rangsor.\n\nNatív módszerek: PCM-zene Android 5.0 vagy újabb rendszeren. A navigáció, hangos válaszok, rendszerhangok, AAC és régebbi eszközök OHU-t használnak.\nAz alkalmazáshoz csatlakozzon újra. Az eltávolított motorok beállítása OHU-ra áll vissza.</string>
 </resources>

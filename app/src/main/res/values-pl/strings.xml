@@ -1450,8 +1450,9 @@
     <string name="external_bt_candidate_transport_description">Wymuś połączenie przez moduł Bluetooth jednostki zamiast automatycznego wyboru. Wymaga zgodnej usługi modułu. Pozostaw wyłączone, aby umożliwić użycie Bluetooth Androida, gdy usługa nie odpowiada; włączenie blokuje tę drogę zastępczą.</string>
     <string name="audio_matching_mode">Korekcja czasu muzyki</string>
     <string name="audio_matching_ohu">OHU (niskie obciążenie CPU, domyślny)</string>
-    <string name="audio_matching_soundtouch">SoundTouch (zrównoważony)</string>
-    <string name="audio_matching_r3">Rubber Band R3 (priorytet jakości)</string>
-    <string name="audio_matching_r3_short">Rubber Band R3 Short (lżejszy R3)</string>
-    <string name="audio_matching_description">Wybiera sposób nadrabiania opóźnienia dźwięku bez zmiany jego wysokości. OHU jest przeznaczony dla mniej wydajnych urządzeń. SoundTouch i R3 bardziej obciążają CPU i dodają opóźnienie przetwarzania. R3 Short zmniejsza obciążenie związane z przetwarzaniem R3.\n\nSoundTouch i R3: muzyka PCM na Androidzie 5.0 lub nowszym. Wskazówki nawigacji, odpowiedzi głosowe, dźwięki systemowe, AAC i starsze urządzenia używają OHU.\nPołącz ponownie, aby zastosować zmianę.</string>
+    <string name="audio_matching_wsola">WSOLA</string>
+    <string name="audio_matching_phase_vocoder">Phase Vocoder</string>
+    <string name="audio_matching_phase_vocoder_short">Phase Vocoder Short</string>
+    <string name="audio_matching_phase_gradient">Phase Gradient</string>
+    <string name="audio_matching_description">OHU pozostaje domyślny. WSOLA wyrównuje nakładające się przebiegi; Phase Vocoder dostosowuje fazy widmowe. Short używa krótszego okna analizy. Phase Gradient odtwarza fazy przez całkowanie gradientów fazy. Te niezależne implementacje dodają opóźnienie przetwarzania; nazwy nie określają rankingu jakości dźwięku.\n\nMetody natywne: muzyka PCM na Androidzie 5.0 lub nowszym. Nawigacja, odpowiedzi głosowe, dźwięki systemowe, AAC i starsze urządzenia używają OHU.\nPołącz ponownie, aby zastosować. Ustawienia usuniętych silników wracają do OHU.</string>
 </resources>

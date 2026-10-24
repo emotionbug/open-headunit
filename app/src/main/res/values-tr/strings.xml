@@ -1438,8 +1438,9 @@
     <string name="external_bt_candidate_transport_description">Otomatik seçim yerine ünitenin Bluetooth modülü üzerinden bağlantıyı zorlayın. Uyumlu bir modül hizmeti gerektirir. Hizmet yanıt vermediğinde Android Bluetooth kullanılabilmesi için kapalı bırakın; açılması bu yedek yolu engeller.</string>
     <string name="audio_matching_mode">Müzik zaman düzeltmesi</string>
     <string name="audio_matching_ohu">OHU (düşük CPU kullanımı, varsayılan)</string>
-    <string name="audio_matching_soundtouch">SoundTouch (dengeli)</string>
-    <string name="audio_matching_r3">Rubber Band R3 (kalite öncelikli)</string>
-    <string name="audio_matching_r3_short">Rubber Band R3 Short (daha hafif R3)</string>
-    <string name="audio_matching_description">Ses perdesini değiştirmeden geciken sesin nasıl yetiştirileceğini seçer. OHU, düşük performanslı cihazlar içindir. SoundTouch ve R3 daha fazla CPU kullanır ve işleme gecikmesi ekler. R3 Short, R3 işleme yükünü azaltır.\n\nSoundTouch ve R3: Android 5.0 ve üzerindeki PCM müzik için kullanılır. Navigasyon yönlendirmeleri, sesli yanıtlar, sistem sesleri, AAC ve daha eski cihazlarda OHU kullanılır.\nUygulamak için yeniden bağlanın.</string>
+    <string name="audio_matching_wsola">WSOLA</string>
+    <string name="audio_matching_phase_vocoder">Phase Vocoder</string>
+    <string name="audio_matching_phase_vocoder_short">Phase Vocoder Short</string>
+    <string name="audio_matching_phase_gradient">Phase Gradient</string>
+    <string name="audio_matching_description">OHU varsayılan olarak kalır. WSOLA örtüşen dalga biçimlerini hizalar; Phase Vocoder spektral fazları ayarlar. Short daha kısa analiz penceresi kullanır. Phase Gradient faz gradyanlarını entegre ederek fazları yeniden oluşturur. Bu bağımsız uygulamalar işleme gecikmesi ekler; adlar ses kalitesini sıralamaz.\n\nYerel yöntemler: Android 5.0 ve üzerindeki PCM müzik. Navigasyon, sesli yanıtlar, sistem sesleri, AAC ve eski cihazlar OHU kullanır.\nUygulamak için yeniden bağlanın. Kaldırılan motorların ayarları OHU olarak sıfırlanır.</string>
 </resources>

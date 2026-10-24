@@ -1442,8 +1442,9 @@ Open Headunit предоставляется «как есть» без каки
     <string name="external_bt_candidate_transport_description">Принудительно подключаться через Bluetooth-модуль головного устройства вместо автоматического выбора. Нужна совместимая служба модуля. Оставьте выключенным, чтобы использовать Bluetooth Android, если служба не отвечает; включение блокирует этот запасной путь.</string>
     <string name="audio_matching_mode">Временная коррекция музыки</string>
     <string name="audio_matching_ohu">OHU (низкая нагрузка на ЦП, по умолчанию)</string>
-    <string name="audio_matching_soundtouch">SoundTouch (баланс)</string>
-    <string name="audio_matching_r3">Rubber Band R3 (приоритет качества)</string>
-    <string name="audio_matching_r3_short">Rubber Band R3 Short (облегчённый R3)</string>
-    <string name="audio_matching_description">Выбирает способ компенсации отставания звука без изменения его высоты. OHU предназначен для маломощных устройств. SoundTouch и R3 требуют больше ресурсов ЦП и добавляют задержку обработки. R3 Short снижает вычислительную нагрузку R3.\n\nSoundTouch и R3: музыка PCM на Android 5.0 и новее. Для подсказок навигации, голосовых ответов, системных звуков, AAC и старых устройств используется OHU.\nПереподключитесь, чтобы применить изменение.</string>
+    <string name="audio_matching_wsola">WSOLA</string>
+    <string name="audio_matching_phase_vocoder">Phase Vocoder</string>
+    <string name="audio_matching_phase_vocoder_short">Phase Vocoder Short</string>
+    <string name="audio_matching_phase_gradient">Phase Gradient</string>
+    <string name="audio_matching_description">OHU остаётся вариантом по умолчанию. WSOLA совмещает перекрывающиеся волны; Phase Vocoder корректирует спектральные фазы. Short использует более короткое окно анализа. Phase Gradient восстанавливает фазы интегрированием фазовых градиентов. Эти независимые реализации добавляют задержку обработки; названия не являются рейтингом качества звука.\n\nНативные методы: музыка PCM на Android 5.0 и новее. Навигация, голосовые ответы, системные звуки, AAC и старые устройства используют OHU.\nПереподключитесь для применения. Настройки удалённых движков сбрасываются на OHU.</string>
 </resources>

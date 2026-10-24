@@ -1448,8 +1448,9 @@
     <string name="external_bt_candidate_transport_description">Verbindung über das Bluetooth-Modul der Headunit statt automatischer Auswahl erzwingen. Erfordert einen kompatiblen Moduldienst. Ausgeschaltet lassen, damit bei ausbleibender Antwort Android-Bluetooth verwendet werden kann. Das Erzwingen verhindert diesen Rückfall.</string>
     <string name="audio_matching_mode">Zeitkorrektur für Musik</string>
     <string name="audio_matching_ohu">OHU (geringe CPU-Last, Standard)</string>
-    <string name="audio_matching_soundtouch">SoundTouch (ausgewogen)</string>
-    <string name="audio_matching_r3">Rubber Band R3 (Qualität bevorzugt)</string>
-    <string name="audio_matching_r3_short">Rubber Band R3 Short (weniger rechenintensiver R3)</string>
-    <string name="audio_matching_description">Legt fest, wie verzögertes Audio ohne Änderung der Tonhöhe aufholt. OHU eignet sich für leistungsschwache Geräte. SoundTouch und R3 benötigen mehr Rechenleistung und verursachen zusätzliche Verarbeitungsverzögerung. R3 Short verringert den Rechenaufwand von R3.\n\nSoundTouch und R3: PCM-Musik ab Android 5.0. Navigationsansagen, Sprachantworten, Systemtöne, AAC und ältere Geräte verwenden OHU.\nZum Anwenden erneut verbinden.</string>
+    <string name="audio_matching_wsola">WSOLA</string>
+    <string name="audio_matching_phase_vocoder">Phase Vocoder</string>
+    <string name="audio_matching_phase_vocoder_short">Phase Vocoder Short</string>
+    <string name="audio_matching_phase_gradient">Phase Gradient</string>
+    <string name="audio_matching_description">OHU bleibt Standard. WSOLA richtet überlappende Wellenformen aus; Phase Vocoder passt spektrale Phasen an. Short verwendet ein kürzeres Analysefenster. Phase Gradient rekonstruiert Phasen durch Integration von Phasengradienten. Diese eigenständigen Implementierungen verursachen Verarbeitungsverzögerung; die Namen sind keine Rangfolge der Klangqualität.\n\nNative Methoden: PCM-Musik ab Android 5.0. Navigationsansagen, Sprachantworten, Systemtöne, AAC und ältere Geräte verwenden OHU.\nZum Anwenden erneut verbinden. Gespeicherte Einstellungen entfernter Engines fallen auf OHU zurück.</string>
 </resources>
