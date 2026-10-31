@@ -170,6 +170,7 @@ class UsbLauncherManager(val service: AapService) {
     fun beginAttempt(tier: Tier, what: String, settingsRestart: CommManager.ConnectionState.Disconnected?,
         recheck: UsbRecheck): Boolean {
         val manager = App.provide(service).commManager
+        if (!manager.isCurrent(recheck) || !UsbReceiver.allowsAutomaticInput(service)) return false
         discardCancelledAttempt(manager)
         if (settingsRestart != null && SystemClock.elapsedRealtime() >= settingsRestart.settingsRestartUntilMs) return false
         val request = manager.admitUsbRequest(tier, what, settingsRestart, recheck) ?: return false
@@ -749,7 +750,14 @@ class UsbLauncherManager(val service: AapService) {
     ) {
         val settings = App.provide(service).settings
         val commManager = App.provide(service).commManager
-        if (!commManager.isCurrent(recheck)) return
+        val accepted = commManager.withAppConnectionLifecycleLock {
+            if (!commManager.isCurrent(recheck)) false else {
+                if (userRequested) UsbReceiver.releaseForExplicitInput(service)
+                true
+            }
+        }
+        if (!accepted || !UsbReceiver.allowsAutomaticInput(service)) return
+        if (UsbReceiver.takeUnplugResume(service)) liftUserCancel("the phone was unplugged beyond the re-enumeration bound")
         discardCancelledAttempt(commManager)
         if (settingsRestart != null && !settingsRestart.acceptsSettingsRestart(commManager.connectionState.value)) return
         val lastSession = settings.autoConnectLastSession
@@ -851,8 +859,9 @@ class UsbLauncherManager(val service: AapService) {
             }
         }
 
-        // USB auto-start mode: attempt AOA switch for any single non-accessory device
-        if (usbAutoStart) {
+        // A manual USB input (including Open releasing an Exit hold) has the same single-phone
+        // meaning as the USB tile. It does not require an automatic-connect setting or allowlist.
+        if (usbAutoStart || userRequested) {
             val nonAccessoryDevices = deviceList.filter { !UsbDeviceCompat.isInAccessoryMode(it) }
             if (nonAccessoryDevices.size == 1) {
                 performSingleConnect(nonAccessoryDevices[0], tier, settingsRestart, recheck)

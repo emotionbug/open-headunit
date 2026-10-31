@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import com.andrerinas.openheadunit.App
 import com.andrerinas.openheadunit.aap.AapProjectionActivity
 import com.andrerinas.openheadunit.connection.AppExitPolicy
+import com.andrerinas.openheadunit.connection.usb.UsbReceiver
 import com.andrerinas.openheadunit.main.MainActivity
 import com.andrerinas.openheadunit.main.SettingsActivity
 import java.util.UUID
@@ -51,8 +52,13 @@ internal object AppUiEntry {
     private fun acceptDelivery(activity: Activity, delivery: AppForegroundPolicy.Kind) {
         if (delivery != AppForegroundPolicy.Kind.OPEN) return
         val manager = App.provide(activity).commManager
-        val owner = manager.onAppRelaunched()
-        manager.restoreAppForEntry(owner)
+        // The Open and its USB scan are one input even if a peer Exit arrives on IO. Keep the
+        // hold until delivery; an older queued Open can never release a newer Stop's decision.
+        val (owner, usbScan) = manager.withAppConnectionLifecycleLock {
+            manager.onAppRelaunched() to
+                if (UsbReceiver.isUserStopped(activity)) manager.usbRecheckNow() else null
+        }
+        manager.restoreAppForEntry(owner, usbScan)
     }
     fun foregroundStarted(activity: Activity) {
         val entryActivity = isEntryActivity(activity) && App.isUserUnlocked(activity)
@@ -67,7 +73,10 @@ internal object AppUiEntry {
     fun resumed(activity: Activity) {
         val revision = policy.resumeRevision() ?: return
         val manager = App.provide(activity).commManager
-        val owner = manager.acceptAppResume(revision) ?: return
-        manager.restoreAppForEntry(owner)
+        val entry = manager.withAppConnectionLifecycleLock {
+            val owner = manager.acceptAppResume(revision) ?: return@withAppConnectionLifecycleLock null
+            owner to if (UsbReceiver.isUserStopped(activity)) manager.usbRecheckNow() else null
+        } ?: return
+        manager.restoreAppForEntry(entry.first, entry.second)
     }
 }
